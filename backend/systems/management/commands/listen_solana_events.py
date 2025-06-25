@@ -44,7 +44,7 @@ class Command(BaseCommand):
         #         "initial_supply": "u64",
         #     }
         # )
-        self.decoders["CreateAndInitToken"] = TokenEventDecoder(
+        self.decoders["CreateTokenWithVault"] = TokenEventDecoder(
             "TokenWithVaultCreatedEvent", {
                 "token_name": "string",
                 "token_symbol": "string",
