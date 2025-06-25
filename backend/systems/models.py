@@ -75,7 +75,7 @@ class Coin(models.Model): # we have to store the ath
     name = models.CharField(max_length=100)
     creator = models.ForeignKey(SolanaUser, on_delete=models.CASCADE, related_name='coins', to_field="wallet_address")
     created_at = models.DateTimeField(auto_now_add=True)
-    total_supply = models.DecimalField(max_digits=32, decimal_places=8)
+    total_supply = models.DecimalField(max_digits=32, decimal_places=9)
     image_url = models.URLField(max_length=500)
     ticker = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
