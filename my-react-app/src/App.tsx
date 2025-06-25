@@ -25,9 +25,10 @@ import Loginconnect from "./solanaClient/Loginconnect";
 import { SolanaProvider } from "./solanaClient";
 import PhantomError from "./components/PhantomError";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import DashBoardLayout from "./components/Dashboard/DashBoardLayout";
-import DashHome from "./components/Dashboard/DashHome";
+// import DashBoardLayout from "./components/DashBoard/DashBoardLayout";
+import DashHome from "./components/DashBoard/DashHome";
 import ComingSoon from "./components/general/ComingSoon";
+import DashBoard from "./pages/DashBoard";
 
 
 function App() {
@@ -80,7 +81,7 @@ function App() {
 								<Route path='/Talentpool' element={<Talentpool />} />
 								<Route path='/AboutDrs' element={<AboutDrs />} />
 								<Route path='/dashboard' element={
-									<DashBoardLayout />
+									<DashBoard />
 								}>
 									<Route path='home' element={<DashHome />} />
 									<Route path='coin/:id' element={<CoinPage />} />
