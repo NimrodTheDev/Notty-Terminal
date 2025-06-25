@@ -4,7 +4,6 @@ import { useSolana } from '../solanaClient/index';
 import { uploadFile } from '../solanaClient/usePinta';
 import DragAndDropFileInput from '../components/general/dragNdrop';
 import { Link } from 'react-router-dom';
-import { web3 } from '@project-serum/anchor';
 import { Toast } from '../components/general/Toast';
 // import Hero from '../components/landingPage/hero'
 
@@ -51,7 +50,7 @@ function CreateCoin() {
     const [tokenTwitter, setTokenTwitter] = useState("");
     const [tokenDiscord, setTokenDiscord] = useState("");
     const { CreateAndInitToken } = useSolana();
-    const [error, setError] = useState<string | null>(null);
+    const [error] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
     const [result, setResult] = useState<string | null>(null);
     const [showToast, setShowToast] = useState(false);
