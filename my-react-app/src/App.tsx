@@ -25,6 +25,9 @@ import Loginconnect from "./solanaClient/Loginconnect";
 import { SolanaProvider } from "./solanaClient";
 import PhantomError from "./components/PhantomError";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import DashBoardLayout from "./components/Dashboard/DashBoardLayout";
+import DashHome from "./components/Dashboard/DashHome";
+import ComingSoon from "./components/general/ComingSoon";
 
 
 function App() {
@@ -74,9 +77,27 @@ function App() {
 								<Route path="/login" element={<Loginconnect />} />
 								<Route path='/Wallet' element={<Wallet />} />
 								<Route path='/CoinMarket' element={<CoinMarket />} />
-								<Route path='/Talentpool' element={<Talentpool/>} />
+								<Route path='/Talentpool' element={<Talentpool />} />
 								<Route path='/AboutDrs' element={<AboutDrs />} />
-
+								<Route path='/dashboard' element={
+									<DashBoardLayout />
+								}>
+									<Route path='home' element={<DashHome />} />
+									<Route path='coin/:id' element={<CoinPage />} />
+									<Route path='coin/create' element={
+										<PhantomError>
+											<CreateCoin />
+										</PhantomError>
+									} />
+									<Route path='wallet' element={<Wallet />} />
+									<Route path='coinmarket' element={<CoinMarket />} />
+									<Route path='ownerCard' element={<ComingSoon />} />
+									<Route path='aboutdrs' element={<AboutDrs />} />
+									<Route path='history' element={<ComingSoon />} />
+									<Route path='chatRooms' element={<ComingSoon />} />
+									<Route path='profile' element={<ComingSoon />} />
+									<Route path='settings' element={<ComingSoon />} />
+								</Route>
 							</Routes>
 							<NottyTerminalFooter />
 						</Router>
