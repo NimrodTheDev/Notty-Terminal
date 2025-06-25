@@ -32,8 +32,20 @@ class Command(BaseCommand):
             auto_restart=True
         )
         self.decoders = {}
-        self.decoders["CreateToken"] = TokenEventDecoder(
-            "TokenCreatedEvent", {
+        # self.decoders["CreateToken"] = TokenEventDecoder(
+        #     "TokenCreatedEvent", {
+        #         "token_name": "string",
+        #         "token_symbol": "string",
+        #         "token_uri": "string",
+        #         "mint_address": "pubkey",
+        #         "creator": "pubkey",
+        #         "decimals": "u8",
+        #         "price_per_token": "u64",
+        #         "initial_supply": "u64",
+        #     }
+        # )
+        self.decoders["CreateAndInitToken"] = TokenEventDecoder(
+            "TokenWithVaultCreatedEvent", {
                 "token_name": "string",
                 "token_symbol": "string",
                 "token_uri": "string",
