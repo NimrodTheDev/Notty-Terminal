@@ -163,29 +163,29 @@ class Command(BaseCommand):
             not_found_exception=SolanaUser.DoesNotExist
         )
 
-        try:
-            self.ensure_connection()
-            if not Coin.objects.filter(address=logs["mint_address"]).exists() and creator:
-                attributes = logs.get('attributes') or {}
-                new_coin = Coin(
-                    address=logs["mint_address"],
-                    name=logs["token_name"],
-                    ticker=logs["token_symbol"],
-                    creator=creator,
-                    total_supply=self.bigint_to_float(logs["initial_supply"], logs["decimals"]),#Decimal("1000000.0"),
-                    image_url=logs.get("image", ""),
-                    current_price=Decimal("1.0"),
-                    description=logs.get("description", None),
-                    discord=attributes.get("discord"),
-                    website=attributes.get("website"),
-                    twitter=attributes.get("twitter"),
-                    decimals = logs["decimals"],
-                    price_per_token = logs["price_per_token"]
-                )
-                new_coin.save()
-                print(f"Created new coin with address: {logs['mint_address']}")
-        except Exception as e:
-            print(f"Error while saving coin: {e}")
+        # try:
+        self.ensure_connection()
+        if not Coin.objects.filter(address=logs["mint_address"]).exists() and creator:
+            attributes = logs.get('attributes') or {}
+            new_coin = Coin(
+                address=logs["mint_address"],
+                name=logs["token_name"],
+                ticker=logs["token_symbol"],
+                creator=creator,
+                total_supply=self.bigint_to_float(logs["initial_supply"], logs["decimals"]),#Decimal("1000000.0"),
+                image_url=logs.get("image", ""),
+                current_price=Decimal("1.0"),
+                description=logs.get("description", None),
+                discord=attributes.get("discord"),
+                website=attributes.get("website"),
+                twitter=attributes.get("twitter"),
+                decimals = logs["decimals"],
+                price_per_token = logs["price_per_token"]
+            )
+            new_coin.save()
+            print(f"Created new coin with address: {logs['mint_address']}")
+        # except Exception as e:
+        #     print(f"Error while saving coin: {e}")
     
     @sync_to_async(thread_sensitive=True)
     def handle_coin_initalization(self, signature: str, logs: dict):
