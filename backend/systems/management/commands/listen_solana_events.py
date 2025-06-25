@@ -40,15 +40,17 @@ class Command(BaseCommand):
                 "mint_address": "pubkey",
                 "creator": "pubkey",
                 "decimals": "u8",
-            }
-        )
-        self.decoders["InitVault"] = TokenEventDecoder(
-            "InitVaultEvent", {
-                "mint_address": "pubkey",
                 "price_per_token": "u64",
                 "initial_supply": "u64",
             }
         )
+        # self.decoders["InitVault"] = TokenEventDecoder(
+        #     "InitVaultEvent", {
+        #         "mint_address": "pubkey2",
+        #         "price_per_token": "u64",
+        #         "initial_supply": "u64",
+        #     }
+        # )
         trade_decoder = TokenEventDecoder(
             "TokenTransferEvent", {
                 "transfer_type": "u8",
@@ -158,7 +160,7 @@ class Command(BaseCommand):
                     name=logs["token_name"],
                     ticker=logs["token_symbol"],
                     creator=creator,
-                    total_supply=Decimal("1000000.0"),
+                    total_supply=self.bigint_to_float(logs["initial_supply"], logs["decimals"]),#Decimal("1000000.0"),
                     image_url=logs.get("image", ""),
                     current_price=Decimal("1.0"),
                     description=logs.get("description", None),
@@ -166,6 +168,7 @@ class Command(BaseCommand):
                     website=attributes.get("website"),
                     twitter=attributes.get("twitter"),
                     decimals = logs["decimals"],
+                    price_per_token = logs["price_per_token"]
                 )
                 new_coin.save()
                 print(f"Created new coin with address: {logs['mint_address']}")
@@ -174,6 +177,7 @@ class Command(BaseCommand):
     
     @sync_to_async(thread_sensitive=True)
     def handle_coin_initalization(self, signature: str, logs: dict):
+        print(logs["mint_address"])
         coin:Coin = self.custom_check(
             lambda: Coin.objects.get(address=logs["mint_address"]),
             not_found_exception=Coin.DoesNotExist
