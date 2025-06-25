@@ -75,7 +75,7 @@ class Coin(models.Model): # we have to store the ath
     name = models.CharField(max_length=100)
     creator = models.ForeignKey(SolanaUser, on_delete=models.CASCADE, related_name='coins', to_field="wallet_address")
     created_at = models.DateTimeField(auto_now_add=True)
-    total_supply = models.DecimalField(max_digits=20, decimal_places=8)
+    total_supply = models.DecimalField(max_digits=32, decimal_places=8)
     image_url = models.URLField(max_length=500)
     ticker = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -84,7 +84,7 @@ class Coin(models.Model): # we have to store the ath
     twitter = models.CharField(max_length=255, blank=True, null=True)
     score = models.IntegerField(default=150)
     decimals = models.SmallIntegerField(default= 9)
-    price_per_token = models.IntegerField(default= 25)
+    price_per_token = models.BigIntegerField(default= 25)
 
     current_price = models.DecimalField(max_digits=20, decimal_places=8, default=0)  # Added price field # start calculating
     ath = models.DecimalField(max_digits=20, decimal_places=8, default=0) # will work like coin to store the highest
