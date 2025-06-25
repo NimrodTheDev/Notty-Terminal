@@ -32,8 +32,8 @@ class Command(BaseCommand):
             auto_restart=True
         )
         self.decoders = {}
-        self.decoders["CreateToken"] = TokenEventDecoder(
-            "TokenCreatedEvent", {
+        self.decoders["CreateTokenWithVault"] = TokenEventDecoder(
+            "TokenWithVaultCreatedEvent", {
                 "token_name": "string",
                 "token_symbol": "string",
                 "token_uri": "string",
@@ -44,13 +44,6 @@ class Command(BaseCommand):
                 "initial_supply": "u64",
             }
         )
-        # self.decoders["InitVault"] = TokenEventDecoder(
-        #     "InitVaultEvent", {
-        #         "mint_address": "pubkey2",
-        #         "price_per_token": "u64",
-        #         "initial_supply": "u64",
-        #     }
-        # )
         trade_decoder = TokenEventDecoder(
             "TokenTransferEvent", {
                 "transfer_type": "u8",
@@ -77,10 +70,10 @@ class Command(BaseCommand):
         # check the type
         signature = getattr(event_data, 'signature', None)
         logs = getattr(event_data, 'logs', [])
-        print(logs)
+        # print(logs)
         event_type, currect_log = self.get_function_id(logs)
         if event_type and signature:
-            if event_type == "CreateToken":
+            if event_type == "CreateTokenWithVault":
                 if event_type in self.decoders:
                     for log in logs[currect_log:]:
                         event = self.decoders[event_type].decode(log)
@@ -94,13 +87,6 @@ class Command(BaseCommand):
                         event = self.decoders[event_type].decode(log)
                         if event:
                             await self.handle_trade(signature, event)
-                            break
-            if event_type == "InitVault":
-                if event_type in self.decoders:
-                    for log in logs[currect_log:]:
-                        event = self.decoders[event_type].decode(log)
-                        if event:
-                            await self.handle_coin_initalization(signature, event)
                             break
 
     async def get_metadata(self, log: dict) -> dict:
@@ -175,22 +161,6 @@ class Command(BaseCommand):
         except Exception as e:
             print(f"Error while saving coin: {e}")
     
-    @sync_to_async(thread_sensitive=True)
-    def handle_coin_initalization(self, signature: str, logs: dict):
-        print(logs["mint_address"])
-        coin:Coin = self.custom_check(
-            lambda: Coin.objects.get(address=logs["mint_address"]),
-            not_found_exception=Coin.DoesNotExist
-        )
-        coin.total_supply = self.bigint_to_float(logs["initial_supply"], coin.decimals)
-        coin.price_per_token = logs["price_per_token"]
-        try:
-            self.ensure_connection()
-            coin.save()
-            print(f"Initailized coin with address: {logs['mint_address']}")
-        except Exception as e:
-            print(f"Error while saving coin: {e}")
-
     @sync_to_async(thread_sensitive=True)
     def handle_trade(self, signature, logs):
         """Handle coin creation event"""
