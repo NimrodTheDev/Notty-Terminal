@@ -84,7 +84,7 @@ class Coin(models.Model): # we have to store the ath
     twitter = models.CharField(max_length=255, blank=True, null=True)
     score = models.IntegerField(default=150)
     decimals = models.SmallIntegerField(default= 9)
-    price_per_token = models.IntegerField(default= 25)
+    price_per_token = models.BigIntegerField(default= 25)
 
     current_price = models.DecimalField(max_digits=20, decimal_places=8, default=0)  # Added price field # start calculating
     ath = models.DecimalField(max_digits=20, decimal_places=8, default=0) # will work like coin to store the highest
