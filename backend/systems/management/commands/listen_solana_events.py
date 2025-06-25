@@ -92,7 +92,7 @@ class Command(BaseCommand):
         print(logs)
         event_type, currect_log = self.get_function_id(logs)
         if event_type and signature:
-            if event_type == "CreateToken":
+            if event_type == "CreateTokenWithVault":
                 if event_type in self.decoders:
                     for log in logs[currect_log:]:
                         event = self.decoders[event_type].decode(log)
