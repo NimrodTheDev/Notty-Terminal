@@ -1,4 +1,4 @@
-import { useState, ReactNode} from 'react'
+import { useState, ReactNode } from 'react'
 import { ArrowRight } from 'lucide-react';
 import { useSolana } from '../solanaClient/index';
 import { uploadFile } from '../solanaClient/usePinta';
@@ -176,7 +176,8 @@ function CreateCoin() {
             </div>
 
             <div className="max-[400px] h-[1200px] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
-                <div className="flex justify-center items-center absolute mt-10 flex-col border-gray-600 border max-w-[600px] w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded">
+                <div className="flex justify-center items-center absolute mt-10 flex-col border-gray-600 border max-w-[600px] 
+                w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded">
                     <div className="mb-8">
                         <h1 className="text-2xl font-bold text-center mb-2">Project details</h1>
                         <p className="text-gray-400">

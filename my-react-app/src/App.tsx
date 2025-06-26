@@ -67,7 +67,7 @@ function App() {
 								<Route path="/coinmarket" element={<CoinMarket />} />
 								<Route path="/talentpool" element={<Talentpool />} />
 								<Route path="/aboutdrs" element={<AboutDrs />} />
-								
+
 								{/* Dashboard routes */}
 								<Route path="/dashboard" element={<DashBoard />}>
 									<Route index element={<DashHome />} />
@@ -87,7 +87,7 @@ function App() {
 									<Route path="profile" element={<ComingSoon />} />
 									<Route path="settings" element={<ComingSoon />} />
 								</Route>
-								
+
 								<Route path="*" element={<div>Not found</div>} />
 							</Routes>
 							<NottyTerminalFooter />
