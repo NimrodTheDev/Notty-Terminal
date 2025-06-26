@@ -51,11 +51,11 @@ const DashHome = () => {
     ]);
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-6">
+        <div className="min-h-screen relative  bg-custom-dark-blue text-white p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-custom-light-purple rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-sm">SD</span>
                     </div>
                     <div>
@@ -70,21 +70,23 @@ const DashHome = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* SQL Queries */}
-                <div className="bg-gray-800 rounded-xl p-6">
-                    <div className="text-gray-400 text-sm mb-2">SQL Queries</div>
-                    <div className="text-3xl font-bold">12.86 SQL</div>
-                </div>
+            <div className="grid grid-cols-1  gap-6 mb-8">
+                <div className="flex gap-5 ">
+                    {/* SQL Queries */}
+                    <div className="bg-custom-nav-purple flex-1 rounded-xl p-4">
+                        <div className="text-gray-400 text-sm mb-2">SQL Queries</div>
+                        <div className="text-3xl font-bold">12.86 SQL</div>
+                    </div>
 
-                {/* Portfolio Value */}
-                <div className="bg-gray-800 rounded-xl p-6">
-                    <div className="text-gray-400 text-sm mb-2">Portfolio Value</div>
-                    <div className="text-3xl font-bold">$ 3,300</div>
+                    {/* Portfolio Value */}
+                    <div className="bg-custom-nav-purple rounded-xl flex-1 p-4">
+                        <div className="text-gray-400 text-sm mb-2">Portfolio Value</div>
+                        <div className="text-3xl font-bold">$ 3,300</div>
+                    </div>
                 </div>
 
                 {/* Coins Created */}
-                <div className="bg-gray-800 rounded-xl p-6 flex items-center justify-between">
+                <div className="bg-custom-nav-purple rounded-xl p-4 flex items-center justify-between">
                     <div>
                         <div className="text-gray-400 text-sm mb-2">Coins Created</div>
                         <div className="text-3xl font-bold">1</div>
@@ -105,7 +107,7 @@ const DashHome = () => {
                     {coins.map((coin) => (
                         <div
                             key={coin.id}
-                            className="bg-gray-800 rounded-xl p-6 flex items-center justify-between hover:bg-gray-750 transition-colors"
+                            className="bg-custom-nav-purple rounded-md p-6 flex items-center justify-between hover:bg-gray-750 transition-colors"
                         >
                             <div className="flex items-center space-x-4">
                                 <div className={`w-12 h-12 ${coin.color} rounded-full flex items-center justify-center`}>
