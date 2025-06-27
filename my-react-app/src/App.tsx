@@ -60,45 +60,35 @@ function App() {
 						<Router>
 							<Header />
 							<Routes>
-								<Route
-									path='/'
-									element={
-										<div>
-											<LandingPage />
-										</div>
-									}
-								/>
-								<Route path='/coin/:id' element={<CoinPage />} />
-								<Route path='*' element={<div>Not found</div>} />
-								<Route path='/coin/create' element={
-									<PhantomError>
-										< CreateCoin />
-									</PhantomError>
-								} />
+								<Route path="/" element={<LandingPage />} />
+								<Route path="/coin/:id" element={<CoinPage />} />
 								<Route path="/login" element={<Loginconnect />} />
-								<Route path='/Wallet' element={<Wallet />} />
-								<Route path='/CoinMarket' element={<CoinMarket />} />
-								<Route path='/Talentpool' element={<Talentpool />} />
-								<Route path='/AboutDrs' element={<AboutDrs />} />
-								<Route path='/dashboard' element={
-									<DashBoard />
-								}>
-									<Route path='home' element={<DashHome />} />
-									<Route path='coin/:id' element={<CoinPage />} />
-									<Route path='coin/create' element={
+								<Route path="/wallet" element={<Wallet />} />
+								<Route path="/coinmarket" element={<CoinMarket />} />
+								<Route path="/talentpool" element={<Talentpool />} />
+								<Route path="/aboutdrs" element={<AboutDrs />} />
+
+								{/* Dashboard routes */}
+								<Route path="/dashboard" element={<DashBoard />}>
+									<Route index element={<DashHome />} />
+									<Route path="home" element={<DashHome />} />
+									<Route path="coin/:id" element={<CoinPage />} />
+									<Route path="coin/create" element={
 										<PhantomError>
 											<CreateCoin />
 										</PhantomError>
 									} />
-									<Route path='wallet' element={<Wallet />} />
-									<Route path='coinmarket' element={<CoinMarket />} />
-									<Route path='ownerCard' element={<ComingSoon />} />
-									<Route path='aboutdrs' element={<AboutDrs />} />
-									<Route path='history' element={<ComingSoon />} />
-									<Route path='chatRooms' element={<ComingSoon />} />
-									<Route path='profile' element={<ComingSoon />} />
-									<Route path='settings' element={<ComingSoon />} />
+									<Route path="wallet" element={<Wallet />} />
+									<Route path="coinmarket" element={<CoinMarket />} />
+									<Route path="ownerCard" element={<ComingSoon />} />
+									<Route path="aboutdrs" element={<AboutDrs />} />
+									<Route path="history" element={<ComingSoon />} />
+									<Route path="chatRooms" element={<ComingSoon />} />
+									<Route path="profile" element={<ComingSoon />} />
+									<Route path="settings" element={<ComingSoon />} />
 								</Route>
+
+								<Route path="*" element={<div>Not found</div>} />
 							</Routes>
 							<NottyTerminalFooter />
 						</Router>

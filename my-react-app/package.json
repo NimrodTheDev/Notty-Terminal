@@ -32,6 +32,7 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.5.3",
     "stream-browserify": "^3.0.0",
+    "tailwind-scrollbar-hide": "^4.0.0",
     "util": "^0.12.5"
   },
   "devDependencies": {

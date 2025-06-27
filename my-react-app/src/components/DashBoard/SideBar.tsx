@@ -44,7 +44,7 @@ const Sidebar = () => {
     };
 
     return (
-        <div className=" bg-custom-dark-blue">
+        <div className=" bg-custom-dark-blue ">
             {/* Mobile Menu Button - Only visible on mobile */}
             <button
                 onClick={toggleMobileMenu}
@@ -57,7 +57,7 @@ const Sidebar = () => {
             {/* Overlay for mobile */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+                    className="fixed inset-0 bg-custom-dark-blue bg-opacity-50 z-30 lg:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
@@ -85,7 +85,7 @@ const Sidebar = () => {
                 </div>
 
                 {/* Main Navigation */}
-                <nav className="flex-1 px-4 py-6 overflow-y-auto">
+                <nav className="flex-1 px-4 py-6 overflow-y-hidden">
                     <ul className="space-y-2">
                         {menuItems.map((item) => {
                             const Icon = item.icon;
@@ -97,7 +97,7 @@ const Sidebar = () => {
                                         to={item.link}
                                         onClick={() => handleItemClick(item.name)}
                                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${isActive
-                                            ? 'bg-purple-600 text-white shadow-lg'
+                                            ? 'bg-custom-light-purple text-white shadow-lg'
                                             : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                             }`}
                                         aria-current={isActive ? "page" : undefined}
@@ -112,7 +112,7 @@ const Sidebar = () => {
                 </nav>
 
                 {/* Bottom Navigation */}
-                <div className="px-4 py-6 border-t border-gray-700">
+                <div className="px-4 py-6 border-t overflow-y-hidden border-gray-700">
                     <ul className="space-y-2">
                         {bottomItems.map((item) => {
                             const Icon = item.icon;
@@ -124,7 +124,7 @@ const Sidebar = () => {
                                         to={item.link}
                                         onClick={() => handleItemClick(item.name)}
                                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${isActive
-                                            ? 'bg-purple-600 text-white shadow-lg'
+                                            ? 'bg-custom-light-purple text-white shadow-lg'
                                             : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                             }`}
                                         aria-current={isActive ? "page" : undefined}
