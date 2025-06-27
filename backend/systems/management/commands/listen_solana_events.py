@@ -40,8 +40,8 @@ class Command(BaseCommand):
                 "mint_address": "pubkey",
                 "creator": "pubkey",
                 "decimals": "u8",
-                "price_per_token": "u64",
                 "initial_supply": "u64",
+                "price_per_token": "u64",
             }
         )
         trade_decoder = TokenEventDecoder(
