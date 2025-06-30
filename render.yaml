@@ -6,6 +6,10 @@ services:
   buildCommand: npm run build
   staticPublishPath: dist
   rootDir: my-react-app
+  routes:
+    - type: rewrite
+      source: /*
+      destination: /index.html
 
 - type: web
   name: solana-market-place-backend
