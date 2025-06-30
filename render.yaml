@@ -9,7 +9,7 @@ services:
   routes:
     - type: rewrite
       source: /*
-      destination: /index.html
+      destination: /index.html
 
 - type: web
   name: solana-market-place-backend
