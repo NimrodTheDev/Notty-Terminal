@@ -5,7 +5,7 @@ services:
   repo: https://github.com/NimrodTheDev/Notty-Terminal
   buildCommand: npm run build
   staticPublishPath: dist
-  rootDir: ./my-react-app
+  rootDir: my-react-app
 
 - type: web
   name: solana-market-place-backend
