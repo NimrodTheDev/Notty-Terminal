@@ -24,7 +24,8 @@ const Sidebar = () => {
         { name: 'Create Coin', icon: Plus, category: 'main', link: "coin/create" },
         { name: 'Chat Rooms', icon: MessageCircle, category: 'main', link: "chatRooms" },
         { name: 'About DRS', icon: Info, category: 'main', link: "aboutdrs" },
-        { name: 'History', icon: History, category: 'main', link: "history" }, // Added missing link
+        { name: 'History', icon: History, category: 'main', link: "history" },
+        // Added missing link
     ];
 
     const bottomItems = [

@@ -29,6 +29,7 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import DashHome from "./components/DashBoard/DashHome";
 import ComingSoon from "./components/general/ComingSoon";
 import DashBoard from "./pages/DashBoard";
+import Profile from "./pages/Profile";
 
 
 function App() {
@@ -92,8 +93,9 @@ function App() {
 									<Route path="aboutdrs" element={<AboutDrs />} />
 									<Route path="history" element={<ComingSoon />} />
 									<Route path="chatRooms" element={<ComingSoon />} />
-									<Route path="profile" element={<ComingSoon />} />
+									<Route path="profile" element={<Profile />} />
 									<Route path="settings" element={<ComingSoon />} />
+
 								</Route>
 
 								<Route path="*" element={<div>Not found</div>} />
