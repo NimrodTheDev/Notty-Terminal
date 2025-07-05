@@ -1,12 +1,9 @@
 from rest_framework import serializers
 from .models import (
-    DeveloperScore, 
-    TraderScore, 
-    CoinDRCScore, 
-    SolanaUser,
-    Coin,
-    UserCoinHoldings, 
-    Trade,
+    DeveloperScore, TraderScore, 
+    CoinDRCScore, SolanaUser,
+    Coin,UserCoinHoldings, 
+    Trade, TraderHistory
 )
 
 class SolanaUserSerializer(serializers.ModelSerializer):
@@ -166,3 +163,9 @@ class CoinDRCScoreSerializer(serializers.ModelSerializer):
             return obj.coin.rug_flag.is_rugged
         except Exception:
             return False
+
+# history
+class TraderHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TraderHistory
+        fields = ['id', 'key', 'score', 'created_at', 'description', 'user']

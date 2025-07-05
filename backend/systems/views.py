@@ -5,32 +5,34 @@ from .permissions import IsCronjobRequest
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 from rest_framework.views import APIView
 from django.db.models import Q
 from django.core.cache import cache
 
 from rest_framework.authtoken.models import Token
+from rest_framework.pagination import PageNumberPagination
 
 from .models import (
-    DeveloperScore, 
-    TraderScore, 
-    CoinDRCScore, 
+    DeveloperScore, TraderScore, 
+    CoinDRCScore, TraderHistory,
     Coin, UserCoinHoldings, Trade, SolanaUser,
 )
 
 from .serializers import (
-    DeveloperScoreSerializer, 
-    TraderScoreSerializer, 
-    CoinDRCScoreSerializer,
-    ConnectWalletSerializer,
-    CoinSerializer, 
-    UserCoinHoldingsSerializer, 
-    TradeSerializer, 
-    SolanaUserSerializer,
+    DeveloperScoreSerializer, TraderScoreSerializer, 
+    CoinDRCScoreSerializer, ConnectWalletSerializer,
+    CoinSerializer, UserCoinHoldingsSerializer, 
+    TradeSerializer, SolanaUserSerializer,
+    TraderHistorySerializer
 )
 
 User = get_user_model()
+
+class TraderHistoryPagination(PageNumberPagination):
+    page_size = 20  # default items per page
+    page_size_query_param = 'page_size'  # allow clients to override
+    max_page_size = 100
 
 class RecalculateDailyScoresView(APIView):
     permission_classes = [IsCronjobRequest]
@@ -450,3 +452,15 @@ class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
         
         serializer = self.get_serializer(coin_drc)
         return Response(serializer.data)
+
+class TraderHistoryListView(ListAPIView):
+    serializer_class = TraderHistorySerializer
+    pagination_class = TraderHistoryPagination
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        wallet = self.request.query_params.get('user')
+        qs = TraderHistory.objects.all().order_by('-created_at')
+        if wallet:
+            qs = qs.filter(user__wallet_address=wallet)
+        return qs
