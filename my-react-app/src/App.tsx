@@ -68,15 +68,6 @@ function App() {
 								<Route path="/coinmarket" element={<CoinMarket />} />
 								<Route path="/talentpool" element={<Talentpool />} />
 								<Route path="/aboutdrs" element={<AboutDrs />} />
-<<<<<<< HEAD
-
-=======
-								<Route path="coin/create" element={
-										<PhantomError>
-											<CreateCoin />
-										</PhantomError>
-									} />
->>>>>>> 6ba289d (Smart contract)
 								{/* Dashboard routes */}
 								<Route path="/dashboard" element={<DashBoard />}>
 									<Route index element={<DashHome />} />
