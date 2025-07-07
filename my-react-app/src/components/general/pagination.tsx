@@ -8,26 +8,26 @@
   onPageChange: (page: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-4">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Previous
-      </button>
-      
-      <span className="text-sm text-gray-300">
+    <div className="w-full flex flex-col sm:flex-row items-center gap-3 md:gap-4">
+      <span className="text-xs md:text-sm text-gray-300">
         Page {currentPage} of {totalPages}
       </span>
-      
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Next
-      </button>
+      <div className="flex w-full sm:w-auto justify-between gap-2">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="flex-1 sm:flex-none px-3 md:px-4 py-1 md:py-2 bg-gray-800 hover:bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs md:text-sm"
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="flex-1 sm:flex-none px-3 md:px-4 py-1 md:py-2 bg-gray-800 hover:bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs md:text-sm"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
