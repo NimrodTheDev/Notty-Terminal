@@ -145,7 +145,7 @@ class Trade(models.Model): # change to transaction hash
     trade_type = models.CharField(max_length=14, choices=TRADE_TYPES)
     coin_amount = models.DecimalField(max_digits=20, decimal_places=10)
     sol_amount = models.DecimalField(max_digits=20, decimal_places=10)
-    created_at = models.DateTimeField(default=timezone.now)#auto_now_add=True)#default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)#default=timezone.now)
 
     def __str__(self):
         return f"{self.get_trade_type_display()} Trade by {self.user.get_display_name()} on {self.coin.ticker}, created_at {self.created_at}"
@@ -171,7 +171,7 @@ class History(models.Model):
         abstract = True
     
 class TraderHistory(History):
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         SolanaUser, on_delete=models.CASCADE, 
         related_name='trader_history', to_field="wallet_address"
     )
@@ -183,7 +183,7 @@ class TraderHistory(History):
         ]
 
 class CoinHistory(History):
-    coin = models.OneToOneField(
+    coin = models.ForeignKey(
         Coin, on_delete=models.CASCADE, 
         related_name='coin_history', to_field="address"
     )
@@ -824,42 +824,34 @@ class TraderScore(DRCScore):
         ])
 
     def _check_sniping_and_dumping(self):
-        # if self.snipe_last_check and (
-        #     timezone.now() - self.snipe_last_check).total_seconds() < 8 * 3600:
-        #     return
+        if self.snipe_last_check and (
+            timezone.now() - self.snipe_last_check).total_seconds() < 8 * 3600:
+            return
         
         dump_penalty = 0
-        trades =  self.trader.trades.filter(
-            trade_type='SELL',
-        )
-        print(trades)
         trades = self.trader.trades.filter(
             trade_type='SELL',
             created_at__gte=self.snipe_last_check
         )
 
-        print(trades, self.snipe_last_check)
-
         for sell_trade in trades:
             buy = self.trader.trades.filter(
                 trade_type='BUY',
                 coin=sell_trade.coin,
-                # created_at__gt=self.snipe_last_check
+                created_at__gte=self.snipe_last_check,
                 created_at__lt=sell_trade.created_at
             ).order_by('created_at').first()
             if buy:
-                print(buy, "s")
                 coin_age_at_buy = (buy.created_at - buy.coin.created_at).total_seconds() / 3600
                 time_held = (sell_trade.created_at - buy.created_at).total_seconds() / 3600
                 # Sniped early (<2h) and dumped quickly (<4h)
                 if coin_age_at_buy < 2 and time_held < 4:
                     dump_penalty += 10
-        print(dump_penalty > 0)
-        print(dump_penalty)
         if dump_penalty > 0:
             log_trader_history(self.trader, TraderKey.SNIPE_DUMPS, -1*(dump_penalty))
             self.snipe_dumps += dump_penalty / 10
             self.score -= min(dump_penalty, 100)
+            self.snipe_last_check = timezone.now()
             self.save(update_fields=[
                 'snipe_last_check',
                 'score', 'snipe_dumps', 'updated_at',
