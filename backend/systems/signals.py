@@ -130,7 +130,7 @@ def update_on_holdings_delete(sender, instance, **kwargs):
     # Update trader score
     try:
         trader_score:TraderScore = instance.user.trader_score
-        trader_score.calculate_daily_score() # change to support ore sclaed growth
+        trader_score.calculate_daily_score() # change to support ore scaled growth
     except TraderScore.DoesNotExist:
         pass
 

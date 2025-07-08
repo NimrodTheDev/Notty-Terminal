@@ -98,7 +98,8 @@ class CoinViewSet(RestrictedViewset):
         serializer = TradeSerializer(trades, many=True)
         return Response(serializer.data)
 
-class UserCoinHoldingsViewSet(RestrictedViewset):
+class UserCoinHoldingsViewSet(RestrictedViewset): 
+    # we want to create a way to get all the held coins of a user it has to be the person sending the request
     """
     API endpoint for User Coin Holdings
     """
