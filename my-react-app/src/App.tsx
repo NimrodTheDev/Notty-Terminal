@@ -30,6 +30,7 @@ import DashHome from "./components/DashBoard/DashHome";
 import ComingSoon from "./components/general/ComingSoon";
 import DashBoard from "./pages/DashBoard";
 import Profile from "./pages/Profile";
+import HistoryPage from "./pages/History";
 
 
 function App() {
@@ -82,7 +83,7 @@ function App() {
 									<Route path="coinmarket" element={<CoinMarket />} />
 									<Route path="ownerCard" element={<ComingSoon />} />
 									<Route path="aboutdrs" element={<AboutDrs />} />
-									<Route path="history" element={<ComingSoon />} />
+									<Route path="history" element={<HistoryPage />} />
 									<Route path="chatRooms" element={<ComingSoon />} />
 									<Route path="profile" element={<Profile />} />
 									<Route path="settings" element={<ComingSoon />} />
