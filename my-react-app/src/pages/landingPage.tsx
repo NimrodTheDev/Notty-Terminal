@@ -22,7 +22,9 @@ const LandingPage = () => {
 							"Content-Type": "application/json",
 						}
 					})
+					// we arent saving the authentication
 						.then((res) => {
+							localStorage.setItem('auth_token', res.data.token);
 							console.log(res.data)
 						})
 						.catch((err) => {

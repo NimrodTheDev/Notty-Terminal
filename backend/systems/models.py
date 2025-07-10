@@ -68,11 +68,11 @@ class SolanaUser(AbstractUser):
         """Dynamically retrieve and recalculate the trade score."""
         if hasattr(self, 'trader_score'):
             return self.trader_score.recalculate_score()
-        return 200  # Default base score if no score record exists
+        return 150  # Default base score if no score record exists
 
 class Coin(models.Model): # we have to store the ath
     """Represents a coin on the platform"""
-    address = models.CharField(primary_key=True, max_length=44, unique=True, editable=False)
+    address = models.CharField(primary_key=True, max_length=44, unique=True, editable=True)#False)
     name = models.CharField(max_length=100)
     creator = models.ForeignKey(SolanaUser, on_delete=models.CASCADE, related_name='coins', to_field="wallet_address")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -108,7 +108,7 @@ class Coin(models.Model): # we have to store the ath
     @property
     def market_cap(self):
         """Calculates market cap: (Total Supply - Total Held) * Current Price"""
-        return (self.total_supply - self.total_held) * self.current_price
+        return self.total_held * self.current_price#(self.total_supply - self.total_held) * self.current_price
     
     @property
     def liquidity(self):
@@ -139,7 +139,7 @@ class Trade(models.Model): # change to transaction hash
         ('COIN_CREATE', 'Coin Creation'),
     ]
 
-    transaction_hash = models.CharField(max_length=88, primary_key=True, unique= True, editable= False)
+    transaction_hash = models.CharField(max_length=88, primary_key=True, unique= True, editable= True)#False)
     user = models.ForeignKey(SolanaUser, on_delete=models.CASCADE, related_name='trades', to_field="wallet_address")
     coin = models.ForeignKey(Coin, on_delete=models.CASCADE, related_name='trades', to_field="address")
     trade_type = models.CharField(max_length=14, choices=TRADE_TYPES)

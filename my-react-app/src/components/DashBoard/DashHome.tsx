@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect  } from "react";
 import axios from "axios";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from '@solana/web3.js';
@@ -16,19 +15,20 @@ type CoinItem = { // can make the coin object optional
     value : number;
     market_cap: number;
 };
+
 type UserInfo = { // can make the coin object optional
     devscore: number;
     tradescore: number;
 };
 
-// the back end data looks:
-// amount_held : "1100000.00000000"
-// coin : "2EXB4zm4Hj2E1s24VKmdXxupUBzUyDxxhnm22iEQxjTA"
-// coin_name : "bitcoin"
-// coin_ticker : "BTC"
-// current_price : 1
-// user :  "67xeoxxYgEvgXZRve4k9ABXootYuNL7BnXMbnGMbJvTj"
-// value : 1100000
+// we have issues when working with laports note <don't> remove this.
+// connect issue
+
+function shortenAddress(address:string) {
+    if (!address || address.length < 10) return address;
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
+  
 
 const DashHome = () => {
     const [coins, setCoins] = useState<CoinItem[]>(
@@ -79,13 +79,15 @@ const DashHome = () => {
             // }
         ]
     );
-    const [portfolioValue, setPortfolioValue] = useState(3_300);
-    const [createdCoins, setCreatedCoins] = useState(1);
+    const [portfolioValue, setPortfolioValue] = useState<number>(0);
+    const [createdCoins, setCreatedCoins] = useState<number>(0);
     const wallet = useWallet();
     const { connection } = useConnection();
-    const [balance, setBalance] = useState<number>(0); // should be zero not null
+    const [balance, setBalance] = useState<number>(0);
     const [userInfo, setUserInfo] = useState<UserInfo>({tradescore:0,devscore:0});
+    const [wAddress, setWAddress] = useState<string>('emptyaddress');
 
+    // for fetching the wallet amount
     useEffect(() => {
         const fetchBalance = async () => {
             console.log(wallet.connected)
@@ -93,33 +95,32 @@ const DashHome = () => {
                 const pubkey = wallet.publicKey;
                 if (pubkey instanceof PublicKey){
                     const lamports = await connection.getBalance(pubkey);
+                    setWAddress(pubkey.toBase58());
                 const sol = lamports / 1e9;
                 setBalance(sol);
                 }
             }
         };
         fetchBalance();
-      }, [wallet.connected]);
+      }, [wallet.connected, wallet.publicKey]);
 
     useEffect(() => {
         const fetchAllCoins = async () => {
             try {
-                
-                // create two promises for gettting all created coins and all 
                 const token = localStorage.getItem('auth_token');
                 const response = await axios.get(
-                    // `https://solana-market-place-backend.onrender.com/api/coins/my-coins`
-                    'http://127.0.0.1:8000/api/dashboard',
+                    `https://solana-market-place-backend.onrender.com/api/dashboard`,
+                    // 'http://127.0.0.1:8000/api/dashboard',
                     {
                         headers: { Authorization: `Token ${token}` }
                     }
 
                 )
                 const { user, holdings, created_coins: coins } = response.data;
-                
+                console.log(wallet.publicKey?.toBase58())
                 console.log("Holdings:", holdings);
-                // move et work calculations to the backend incase of pagification
-                const netWorth = holdings.reduce((sum: number, item: { value: number; }) => sum + (item.value || 0), 0) * 0.00675;
+                // move to work calculations to the backend incase of pagification
+                const netWorth = holdings.reduce((sum: number, item: { value: number; }) => sum + (item.value || 0), 0);
                 setPortfolioValue(netWorth);
                 setCreatedCoins(coins.length);
                 setCoins(holdings);
@@ -134,14 +135,15 @@ const DashHome = () => {
     return (
         <div className="min-h-screen relative  bg-custom-dark-blue text-white p-6">
             {/* Header */}
+            {/* remove the custom color #4D427B make t global */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-custom-light-purple rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#4D427B] rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-sm">SD</span>
                     </div>
                     <div>
                         <h1 className="text-xl font-bold">Dashboard</h1>
-                        <p className="text-gray-400 text-sm">8xrt...dF2k</p>
+                        <p className="text-gray-400 text-sm">{shortenAddress(wAddress)}</p>
                         {/* get the wallet address */}
                         <div className='flex space-x-2'>
                             <h2 className="text-l font-bold">Dev score: {userInfo?.devscore}</h2>
@@ -153,14 +155,14 @@ const DashHome = () => {
                 <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm text-gray-300">500</span>
-                    {/* Whatis this 500 */}
+                    {/* What is this 500 */}
                 </div>
             </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1  gap-6 mb-8">
                 <div className="flex gap-5 ">
-                    {/* SQL Queries */}
+                    {/* SQL Queries, change this when you see the it */}
                     <div className="bg-custom-nav-purple flex-1 rounded-xl p-4">
                         <div className="text-gray-400 text-sm mb-2">SOL Balance</div>
                         <div className="text-3xl font-bold">{balance.toFixed(4)} SOL</div>
@@ -179,9 +181,9 @@ const DashHome = () => {
                         <div className="text-gray-400 text-sm mb-2">Coins Created</div>
                         <div className="text-3xl font-bold">{createdCoins}</div>
                     </div>
-                    <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-2 transition-colors">
-                        <Link to="/dashboard/coin/create" className="text-sm space-x-4">
-                            <span className="flex text-sm"><Plus className="w-5 h-5" /> Create New</span>
+                    <button className="bg-[#232842] hover:bg-[#222635CC] rounded p-2 transition-colors px-4 py-2 border border-[#FFFFFF1A]">
+                        <Link to="/dashboard/coin/create" className="text-sm">
+                            <span className="flex text-sm gap-2"><Plus className="w-5 h-5" /> Create New</span>
                         </Link>
                     </button>
                 </div>
@@ -213,10 +215,10 @@ const DashHome = () => {
                             <div className="text-right">
                                 <div className="text-gray-400 text-xs mb-1">{coin.coin_ticker}</div>
                                 <div className="text-white font-semibold">
-                                    ${((coin.current_price*0.00675) * coin.value).toLocaleString()} ({((coin.current_price*0.00675 * coin.value) / 153.98).toFixed(2)} SOL)
+                                    ${(coin.current_price * coin.value).toLocaleString()} ({(coin.current_price * coin.value / 153.98).toFixed(2)} SOL)
                                 </div>
                                 <div className='flex space-x-1 justify-end items-center'>
-                                    <div className="text-white font-semibold">${(coin.market_cap*coin.current_price*0.00675).toLocaleString()}</div>
+                                    <div className="text-white font-semibold">${(coin.market_cap*coin.current_price).toLocaleString()}</div>
                                     <div className="text-green-400 text-sm">+1.90</div>
                                 </div>
                                 {/* <div className="text-green-400 text-sm">{coin.change}</div> */}
