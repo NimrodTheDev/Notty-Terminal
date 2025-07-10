@@ -107,27 +107,6 @@ const DashHome = () => {
                 
                 // create two promises for gettting all created coins and all 
                 const token = localStorage.getItem('auth_token');
-                // const response = await Promise.all(
-                //     [
-                //         axios.get(
-                //             // `https://solana-market-place-backend.onrender.com/api/coins/my-coins`
-                //             'http://127.0.0.1:8000/api/holdings/my-coins/?market_cap=1',
-                //             {
-                //                 headers: { Authorization: `Token ${token}` }
-                //             }
-
-                //         ),
-                //         axios.get(
-                //             // `https://solana-market-place-backend.onrender.com/api/coins/my-coins`
-                //             'http://127.0.0.1:8000/api/coins/my-coins',
-                //             {
-                //                 headers: { Authorization: `Token ${token}` }
-                //             }
-                //         )
-
-                //     ]
-                // )
-                // const [holdings, coins] = response.map(res => res.data);
                 const response = await axios.get(
                     // `https://solana-market-place-backend.onrender.com/api/coins/my-coins`
                     'http://127.0.0.1:8000/api/dashboard',
