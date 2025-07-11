@@ -81,6 +81,16 @@ class CoinViewSet(RestrictedViewset):
         cache.set(cache_key, serializer.data, timeout=60)  # cache for 1 minute
 
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='my-coins', permission_classes=[permissions.IsAuthenticated])
+    def my_coins(self, request):
+        """
+        Return all coins created by the authenticated user.
+        Assumes `request.user` is a SolanaUser or is linked to one.
+        """
+        coins = Coin.objects.filter(creator=request.user)
+        serializer = self.get_serializer(coins, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def holders(self, request, address=None):
@@ -98,7 +108,8 @@ class CoinViewSet(RestrictedViewset):
         serializer = TradeSerializer(trades, many=True)
         return Response(serializer.data)
 
-class UserCoinHoldingsViewSet(RestrictedViewset):
+class UserCoinHoldingsViewSet(RestrictedViewset): 
+    # we want to create a way to get all the held coins of a user it has to be the person sending the request
     """
     API endpoint for User Coin Holdings
     """
@@ -111,6 +122,57 @@ class UserCoinHoldingsViewSet(RestrictedViewset):
         if self.request.user.is_staff:
             return UserCoinHoldings.objects.all()
         return UserCoinHoldings.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['get'], url_path='my-coins', permission_classes=[permissions.IsAuthenticated])
+    def my_coins(self, request):
+        """
+        Return all held data created by the authenticated user.
+        Assumes `request.user` is a SolanaUser or is linked to one.
+        """
+        coins_held = UserCoinHoldings.objects.filter(user=request.user)
+        include_market_cap = request.query_params.get('market_cap') == '1'
+
+        serializer = self.serializer_class(
+            coins_held,
+            many=True,
+            context=self.get_serializer_context(),
+            include_market_cap=include_market_cap
+        )
+        return Response(serializer.data)
+
+class UserDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        context = {'request': request}
+
+        holdings = UserCoinHoldings.objects.filter(user=user)
+        created_coins = Coin.objects.filter(creator=user)
+
+        holdings_serializer = UserCoinHoldingsSerializer(
+            holdings,
+            many=True,
+            context=context,
+            include_market_cap=True
+        )
+        coins_serializer = CoinSerializer(
+            created_coins,
+            many=True,
+            context=context
+        )
+
+        return Response({
+            "user": {
+                "wallet_address": user.wallet_address,
+                "display_name": user.get_display_name(),
+                "bio": user.bio,
+                "devscore": user.devscore,
+                "tradescore": user.tradescore
+            },
+            "holdings": holdings_serializer.data,
+            "created_coins": coins_serializer.data
+        })
 
 class TradeViewSet(viewsets.ModelViewSet):
     """
@@ -456,11 +518,25 @@ class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
 class TraderHistoryListView(ListAPIView):
     serializer_class = TraderHistorySerializer
     pagination_class = TraderHistoryPagination
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        wallet = self.request.query_params.get('user')
         qs = TraderHistory.objects.all().order_by('-created_at')
-        if wallet:
+
+        wallet = self.request.query_params.get('user')
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+
+        if wallet: # might make optional
             qs = qs.filter(user__wallet_address=wallet)
+        else:
+            qs = qs.filter(user=self.request.user)
+        
+        if year and month:
+            qs = qs.filter(created_at__year=year, created_at__month=month)
+        elif year:
+            qs = qs.filter(created_at__year=year)
+        elif month:
+            qs = qs.filter(created_at__month=month)
+        
         return qs

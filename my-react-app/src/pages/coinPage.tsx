@@ -27,6 +27,8 @@ interface CoinData {
   total_supply: string;
   twitter: string | null;
   website: string | null;
+  decimals: number;
+  price_per_token: string;//if a string convert to number
 }
 
 const CoinPage: React.FC = () => {

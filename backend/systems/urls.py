@@ -18,6 +18,7 @@ auth_urls = [
     path("me/", views.MeView.as_view(), name="me"),
     path("recalculate-scores/", views.RecalculateDailyScoresView.as_view(), name="recalculate-scores"),
     path('trader-history/', views.TraderHistoryListView.as_view(), name='trader-history-list'),
+    path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
 ]
 
 urlpatterns = [

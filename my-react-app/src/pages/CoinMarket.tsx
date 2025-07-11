@@ -22,6 +22,7 @@ const CoinMarket: React.FC = () => {
           `https://solana-market-place-backend.onrender.com/api/coins/`
         );
         if (response.status === 200) {
+          // console.log(response.data)
           setAllCoins(response.data);
           setFilteredCoins(response.data); // initialize filtered coins with all
         } else {

@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import (
     SolanaUser, Coin, CoinDRCScore, 
     DeveloperScore, TraderScore, 
-    UserCoinHoldings, Trade
+    UserCoinHoldings, Trade,
+    TraderHistory
 )
 
 class SolanaUserAdmin(admin.ModelAdmin):
@@ -34,3 +35,4 @@ admin.site.register(TraderScore)
 admin.site.register(CoinDRCScore)
 admin.site.register(UserCoinHoldings)
 admin.site.register(Trade)
+admin.site.register(TraderHistory)
