@@ -24,7 +24,7 @@ from .serializers import (
     CoinDRCScoreSerializer, ConnectWalletSerializer,
     CoinSerializer, UserCoinHoldingsSerializer, 
     TradeSerializer, SolanaUserSerializer,
-    TraderHistorySerializer
+    TraderHistorySerializer, CoinHolderSerializer
 )
 
 User = get_user_model()
@@ -95,9 +95,16 @@ class CoinViewSet(RestrictedViewset):
     @action(detail=True, methods=['get'])
     def holders(self, request, address=None):
         """Get all holders of a specific coin"""
-        coin = self.get_object()
-        holders = coin.holders.all()
-        serializer = UserCoinHoldingsSerializer(holders, many=True)
+        coin = self.get_object()  # returns Coin instance
+
+        # Optimized queryset for serializer
+        holders = UserCoinHoldings.objects.filter(coin=coin)\
+            .select_related('user', 'coin')\
+            .only('user__wallet_address', 'amount_held', 'coin__total_supply')\
+            .order_by('-amount_held')
+        # display_name we can also add to check if available
+
+        serializer = CoinHolderSerializer(holders, many=True)
         return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
@@ -285,7 +292,6 @@ class MeView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-
 
 # ViewSets
 class DeveloperScoreViewSet(viewsets.ReadOnlyModelViewSet):

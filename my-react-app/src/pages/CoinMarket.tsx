@@ -76,7 +76,11 @@ const CoinMarket: React.FC = () => {
   };
 
   if (loadingList) {
-    return <div className="bg-gray-900 text-white min-h-screen p-4">Loading coins...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-custom-dark-blue">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
   }
 
   if (errorList) {
