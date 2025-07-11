@@ -5,7 +5,7 @@ import HistoryList from '../components/general/Historylist'
 import Pagination from '../components/general/pagination';
 
 export type HistoryItem = {
-  id: string;
+  name: string;
   time: string;
   description: string;
   points: string;
@@ -20,17 +20,18 @@ export default function HistoryPage() {
   const [selectedMonth, setSelectedMonth] = useState('July2025');
 
   const sampleData = [
-    { id: '1', time: "02:03 PM", description: "New Coin Created", points: "+10" },
-    { id: '2', time: "02:03 PM", description: "DRC Point new 234", points: "+10" },
-    { id: '3', time: "02:03 PM", description: "Token Swap Completed", points: "+15" },
-    { id: '4', time: "02:03 PM", description: "Account Verified", points: "+5" },
-    { id: '5', time: "02:03 PM", description: "NFT Minted", points: "+20" },
+    { name: 'User  1', time: "02:03 PM", description: "New Coin Created", points: "+10" },
+    { name: 'User  2', time: "02:03 PM", description: "DRC Point new 234", points: "+10" },
+    { name: 'User  3', time: "02:03 PM", description: "Token Swap Completed", points: "+15" },
+    { name: 'User  4', time: "02:03 PM", description: "Account Verified", points: "+5" },
+    { name: 'User  5', time: "02:03 PM", description: "NFT Minted", points: "+20" },
   ];
 
   const loadHistory = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('jwt');
+      console.log('Retrieved JWT Token:', token); 
       
       if (!token) {
         setHistory(sampleData);
@@ -51,7 +52,7 @@ export default function HistoryPage() {
       );
 
       setHistory(response.data.items.map((item: any) => ({
-        id: item.id,
+        name: item.username,
         time: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         description: item.eventDescription || 'Activity recorded',
         points: `+${item.points || '0'}`
@@ -79,12 +80,14 @@ export default function HistoryPage() {
     );
   }
 
+  const userName = localStorage.getItem('username') || 'User ';
+
   return (
     <div className="bg-gray-900 text-white p-4 md:p-6 min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-3 md:gap-0">
         <div className="space-y-1">
-          <h1 className="text-xl md:text-2xl font-bold">NOTTY TERMINAL</h1>
+          <h1 className="text-xl md:text-2xl font-bold"> Welcome {userName}, </h1> {/* Display user's name */}
           <h2 className="text-lg md:text-xl text-gray-300">History</h2>
         </div>
         
@@ -107,7 +110,7 @@ export default function HistoryPage() {
       {error ? (
         <div className="bg-red-900/50 text-red-300 p-4 rounded-md mb-4 text-sm md:text-base">
           {error.includes('login') ? (
-            <span>Please <a href="/login" className="text-blue-400 hover:underline">login</a> to view history</span>
+            <span>Please <a href="/landingpage" className="text-blue-400 hover:underline">login</a> to view history</span>
           ) : (
             error
           )}
