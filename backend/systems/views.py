@@ -174,7 +174,6 @@ class UserDashboardView(APIView):
             "created_coins": coins_serializer.data
         })
 
-
 class TradeViewSet(viewsets.ModelViewSet):
     """
     API endpoint for Trades
@@ -519,11 +518,25 @@ class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
 class TraderHistoryListView(ListAPIView):
     serializer_class = TraderHistorySerializer
     pagination_class = TraderHistoryPagination
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        wallet = self.request.query_params.get('user')
         qs = TraderHistory.objects.all().order_by('-created_at')
-        if wallet:
+
+        wallet = self.request.query_params.get('user')
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+
+        if wallet: # might make optional
             qs = qs.filter(user__wallet_address=wallet)
+        else:
+            qs = qs.filter(user=self.request.user)
+        
+        if year and month:
+            qs = qs.filter(created_at__year=year, created_at__month=month)
+        elif year:
+            qs = qs.filter(created_at__year=year)
+        elif month:
+            qs = qs.filter(created_at__month=month)
+        
         return qs
