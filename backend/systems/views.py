@@ -154,8 +154,11 @@ class UserDashboardView(APIView):
         user = request.user
         context = {'request': request}
 
-        holdings = UserCoinHoldings.objects.filter(user=user)
-        created_coins = Coin.objects.filter(creator=user)
+        # holdings = UserCoinHoldings.objects.filter(user=user)
+        # created_coins = Coin.objects.filter(creator=user)
+
+        holdings = UserCoinHoldings.objects.filter(user=user).select_related("coin")
+        created_coins = Coin.objects.filter(creator=user)  # add .only() if needed
 
         holdings_serializer = UserCoinHoldingsSerializer(
             holdings,
