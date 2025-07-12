@@ -28,7 +28,7 @@ def log_trader_history(user, key:TraderKey, score, description = None):
 
 def calculate_token_price(solprice, instance): # for trades when trades occur
     from systems.models import Coin
-    if instance is Coin:
+    if isinstance(instance, Coin):
         current_cap_sol = instance.current_marketcap + solprice
         start_cap_sol = instance.start_marketcap
         end_cap_sol = instance.end_marketcap
