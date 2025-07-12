@@ -69,6 +69,12 @@ function App() {
 								<Route path="/coinmarket" element={<CoinMarket />} />
 								<Route path="/talentpool" element={<Talentpool />} />
 								<Route path="/aboutdrs" element={<AboutDrs />} />
+								<Route path="coin/create" element={
+									<PhantomError>
+										<CreateCoin />
+									</PhantomError>
+								} />
+								{/* We can change it to redirect to the dashboard coin create page */}
 								{/* Dashboard routes */}
 								<Route path="/dashboard" element={<DashBoard />}>
 									<Route index element={<DashHome />} />
@@ -87,7 +93,7 @@ function App() {
 									<Route path="chatRooms" element={<ComingSoon />} />
 									<Route path="profile" element={<Profile />} />
 									<Route path="settings" element={<ComingSoon />} />
-
+									<Route path="help" element={<ComingSoon />} />
 								</Route>
 
 								<Route path="*" element={<div>Not found</div>} />
