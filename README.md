@@ -1,7 +1,7 @@
 # Notty Terminal
 
 <img src="https://raw.githubusercontent.com/NimrodTheDev/Notty-Terminal/main/public/logo2.png" width="100%" />
-
+ 
 ## The Permissionless Launchpad with Built-in Trust
 
 Notty Terminal is a revolutionary permissionless launchpad powered by a Dynamic Reputation System (DRS) that transforms on-chain behavior into quantifiable reputation and trust. In an industry plagued by rugs and scams, Notty creates a transparent ecosystem where every wallet builds a verifiable reputation based on real activity.
