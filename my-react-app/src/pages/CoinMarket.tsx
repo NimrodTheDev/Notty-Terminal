@@ -1,4 +1,4 @@
- // CoinMarket.tsx
+// CoinMarket.tsx
 import React, { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import CoinFilter, { CoinData, FilterOptions } from "../components/coin/CoinFilter"; 
