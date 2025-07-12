@@ -1,4 +1,4 @@
- import { useState } from "react";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Link } from "react-router-dom";
