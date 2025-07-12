@@ -1,5 +1,5 @@
 # Notty Terminal
-
+ 
 <img src="https://raw.githubusercontent.com/NimrodTheDev/Notty-Terminal/main/public/logo2.png" width="100%" />
 
 ## The Permissionless Launchpad with Built-in Trust
