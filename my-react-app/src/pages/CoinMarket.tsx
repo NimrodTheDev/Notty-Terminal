@@ -2,6 +2,7 @@
 import React, { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import CoinFilter, { CoinData, FilterOptions } from "../components/coin/CoinFilter"; 
+import Loader from "../components/general/loader"; // Imported the Loader component
 
 const CoinMarket: React.FC = () => {
   const [allCoins, setAllCoins] = useState<CoinData[]>([]); // fetch all coins
@@ -39,6 +40,7 @@ const CoinMarket: React.FC = () => {
       }
     };
     fetchAllCoins();
+
   }, []);
 
   // Client-side filtering logic applied on allCoins when filter or searchTerm changes
@@ -76,7 +78,11 @@ const CoinMarket: React.FC = () => {
   };
 
   if (loadingList) {
-    return <div className="bg-gray-900 text-white min-h-screen p-4">Loading coins...</div>;
+    return (
+      <div className="bg-gray-900 text-white min-h-screen p-4">
+                     <Loader /> {/* Display the Loader component while loading */}
+      </div>
+    );
   }
 
   if (errorList) {

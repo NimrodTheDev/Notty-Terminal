@@ -1,4 +1,4 @@
-import { useWallet } from "@solana/wallet-adapter-react";
+ import { useWallet } from "@solana/wallet-adapter-react";
 
 import FeaturesSection from "../components/landingPage/features";
 import Hero from "../components/landingPage/hero";

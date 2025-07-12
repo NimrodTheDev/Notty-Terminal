@@ -1,11 +1,11 @@
- import { useState, useEffect } from 'react';
+  import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import HistoryList from '../components/general/Historylist'
 import Pagination from '../components/general/pagination';
 
 export type HistoryItem = {
-  name: string;
+  id: string;
   time: string;
   name: string;
   description?: string;
@@ -32,26 +32,17 @@ export default function HistoryPage() {
   const [selectedMonth, setSelectedMonth] = useState('July2025');
 
   const sampleData = [
-<<<<<<< HEAD
-    { name: 'User  1', time: "02:03 PM", description: "New Coin Created", points: "+10" },
-    { name: 'User  2', time: "02:03 PM", description: "DRC Point new 234", points: "+10" },
-    { name: 'User  3', time: "02:03 PM", description: "Token Swap Completed", points: "+15" },
-    { name: 'User  4', time: "02:03 PM", description: "Account Verified", points: "+5" },
-    { name: 'User  5', time: "02:03 PM", description: "NFT Minted", points: "+20" },
-=======
     { id: '1', time: "02:03 PM", name: "New Coin Created", points: "+10" },
     { id: '2', time: "02:03 PM", name: "DRC Point new 234", points: "+10" },
     { id: '3', time: "02:03 PM", name: "Token Swap Completed", points: "+15" },
     { id: '4', time: "02:03 PM", name: "Account Verified", points: "+5" },
     { id: '5', time: "02:03 PM", name: "NFT Minted", points: "+20" },
->>>>>>> 15019cf3944c2f277e874010957628d62c599d74
   ];
 
   const loadHistory = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('jwt');
-      console.log('Retrieved JWT Token:', token); 
+      const token = localStorage.getItem('auth_token');
       
       if (!token) {
         setHistory(sampleData);
@@ -72,14 +63,6 @@ export default function HistoryPage() {
           headers: { Authorization: `Token ${token}` } // Bearer
         }
       );
-<<<<<<< HEAD
-
-      setHistory(response.data.items.map((item: any) => ({
-        name: item.username,
-        time: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        description: item.eventDescription || 'Activity recorded',
-        points: `+${item.points || '0'}`
-=======
       // GET /trader-history/?year=2025&month=7&page=1, for the queries page size, page, month, year, 
       // and user for diferent users if necessary
       setHistory(response.data.results.map((item: any) => ({
@@ -88,7 +71,6 @@ export default function HistoryPage() {
         name: item.key || 'Activity recorded',
         points: `+${item.score || '0'}`,
         description: item.description || 'Activity recorded',
->>>>>>> 15019cf3944c2f277e874010957628d62c599d74
       })));
       setTotalPages(Math.ceil(response.data.count / 5));
     } catch (err) {
@@ -112,14 +94,12 @@ export default function HistoryPage() {
     );
   }
 
-  const userName = localStorage.getItem('username') || 'User ';
-
   return (
     <div className="bg-custom-dark-blue text-white p-4 md:p-6 min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-3 md:gap-0">
         <div className="space-y-1">
-          <h1 className="text-xl md:text-2xl font-bold"> Welcome {userName}, </h1> {/* Display user's name */}
+          <h1 className="text-xl md:text-2xl font-bold">NOTTY TERMINAL</h1>
           <h2 className="text-lg md:text-xl text-gray-300">History</h2>
         </div>
         
@@ -145,7 +125,7 @@ export default function HistoryPage() {
       {error ? (
         <div className="bg-red-900/50 text-red-300 p-4 rounded-md mb-4 text-sm md:text-base">
           {error.includes('login') ? (
-            <span>Please <a href="/landingpage" className="text-blue-400 hover:underline">login</a> to view history</span>
+            <span>Please <a href="/login" className="text-blue-400 hover:underline">login</a> to view history</span>
           ) : (
             error
           )}
