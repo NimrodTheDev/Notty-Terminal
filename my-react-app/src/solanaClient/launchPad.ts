@@ -1,15 +1,11 @@
 import {
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
-  createMint,
   createMintToInstruction,
   createTransferInstruction,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptMint,
-  getOrCreateAssociatedTokenAccount,
-  mintTo,
-  TOKEN_PROGRAM_ID,
-  transfer
+  TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 import {
   BondingCurveConfig,
@@ -33,7 +29,6 @@ import {
 } from "@solana/web3.js";
 import { DEFAULT_CONFIG } from "../utils/bondingConfig";
 import { LaunchpadFirebaseDB } from "../firebase/db";
-import { BN } from "bn.js";
 
 export class SolanaLaunchpad {
   constructor(

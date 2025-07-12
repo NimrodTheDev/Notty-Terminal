@@ -1,12 +1,12 @@
 import { useState, ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
-import { useSolana } from "../solanaClient/index";
+// import { useSolana } from "../solanaClient/index";
 import { uploadFile } from "../solanaClient/usePinta";
 import DragAndDropFileInput from "../components/general/dragNdrop";
 import { Link } from "react-router-dom";
 import { Toast } from "../components/general/Toast";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Keypair } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { LaunchpadFirebaseDB } from "../firebase/db";
 import { SolanaLaunchpad } from "../solanaClient/launchPad";
 import { DEFAULT_CONFIG } from "../utils/bondingConfig";
@@ -46,46 +46,6 @@ const connection = new Connection(
 );
 const firebaseDB = new LaunchpadFirebaseDB();
 
-class PhantomSolanaLaunchpad {
-  constructor(
-    private connection: Connection,
-    private firebaseDB: LaunchpadFirebaseDB,
-    private config: typeof DEFAULT_CONFIG,
-    private walletPublicKey: PublicKey,
-    private signTransaction: (transaction: any) => Promise<any>
-  ) {}
-
-  async createToken(
-    tokenParams: TokenLaunchParams
-  ): Promise<{ mint: PublicKey; transaction: string }> {
-    try {
-      const mintKeypair = Keypair.generate();
-
-      const tokenData = {
-        mint: mintKeypair.publicKey.toString(),
-        creator: this.walletPublicKey.toString(),
-        totalSupply: this.config.totalSupply,
-        totalRaised: 0,
-        tokensAvailable: this.config.totalSupply,
-        isComplete: false,
-        createdAt: null,
-        updatedAt: null,
-        metadata: tokenParams
-      };
-
-      await this.firebaseDB.saveToken(tokenData);
-
-      return {
-        mint: mintKeypair.publicKey,
-        transaction: "mock-transaction-signature"
-      };
-    } catch (error) {
-      console.error("Error creating token:", error);
-      throw error;
-    }
-  }
-}
-
 function CreateCoin() {
   const [tokenName, settTokenName] = useState("");
   const [tokenSymbol, settTokenSymbol] = useState("");
@@ -98,7 +58,7 @@ function CreateCoin() {
   const [tokenWebsite, setTokenWebsite] = useState("");
   const [tokenTwitter, setTokenTwitter] = useState("");
   const [tokenDiscord, setTokenDiscord] = useState("");
-  const { CreateAndInitToken } = useSolana();
+  //   const { CreateAndInitToken } = useSolana();
   const [error] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {}

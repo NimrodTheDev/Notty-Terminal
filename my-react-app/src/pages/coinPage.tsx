@@ -35,7 +35,7 @@ const getDummyCoinData = (mintAddress: string) => ({
 });
 
 const CoinPage: React.FC = () => {
-  const [coinData, setCoinData] = useState<TokenData & CoinData>(); // to adjust this later
+  const [coinData, setCoinData] = useState<any | (TokenData & CoinData)>(); // to adjust this later
   const [loading, setLoading] = useState(true);
   const { id: mintAddress } = useParams();
   const { token: tokenData, loading: tokenLoading } = useToken(
@@ -48,7 +48,8 @@ const CoinPage: React.FC = () => {
       const dummyCoinData = getDummyCoinData(mintAddress || "");
       const mergedData = {
         ...tokenData,
-        ...dummyCoinData
+        ...dummyCoinData,
+        mint: (tokenData && tokenData.mint) || mintAddress
       };
       setCoinData(mergedData);
       setLoading(false);

@@ -7,16 +7,16 @@ import {
   getDoc,
   getDocs,
   updateDoc,
-  deleteDoc,
+  // deleteDoc,
   addDoc,
   query,
   orderBy,
   limit,
   where,
   onSnapshot,
-  serverTimestamp,
-  increment,
-  arrayUnion
+  serverTimestamp
+  // increment,
+  // arrayUnion
 } from "firebase/firestore";
 import type { TokenData, TransactionRecord } from "../bonding-interface";
 import {
