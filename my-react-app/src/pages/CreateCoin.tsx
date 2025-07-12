@@ -365,13 +365,13 @@ function CreateCoin() {
 
         <div className="mt-4 flex space-x-3">
           <Link
-            to={`/token/${tokenData.mint}`}
+            to={`/coin/${tokenData.mint}`}
             className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-center transition-colors"
           >
             View Token Page
           </Link>
           <Link
-            to={`/trade/${tokenData.mint}`}
+            to={`/coin/${tokenData.mint}`}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-center transition-colors"
           >
             Start Trading
