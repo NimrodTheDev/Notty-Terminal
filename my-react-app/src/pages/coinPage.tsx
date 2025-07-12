@@ -9,6 +9,7 @@ import { useToken } from "../hooks/useToken";
 import { TokenData } from "../bonding-interface";
 
 import { Buffer } from "buffer";
+import { CoinData } from "../components/coin/CoinFilter";
 window.Buffer = Buffer;
 
 // Dummy CoinData for testing
@@ -18,7 +19,7 @@ const getDummyCoinData = (mintAddress: string) => ({
   score: 8.5,
   creator: "DummyCreatorAddress",
   creator_display_name: "Dummy Creator",
-  current_price: "0.05",
+  current_price: 0.05,
   description: "This is a dummy token for testing purposes",
   image_url: "https://via.placeholder.com/150",
   market_cap: 1000000,
@@ -34,7 +35,7 @@ const getDummyCoinData = (mintAddress: string) => ({
 });
 
 const CoinPage: React.FC = () => {
-  const [coinData, setCoinData] = useState<any>(null);
+  const [coinData, setCoinData] = useState<TokenData & CoinData>(); // to adjust this later
   const [loading, setLoading] = useState(true);
   const { id: mintAddress } = useParams();
   const { token: tokenData, loading: tokenLoading } = useToken(
@@ -44,23 +45,10 @@ const CoinPage: React.FC = () => {
   useEffect(() => {
     if (!tokenLoading && mintAddress) {
       // Merge dummy data with tokenData from Firebase
-      const dummyCoinData = getDummyCoinData(mintAddress);
+      const dummyCoinData = getDummyCoinData(mintAddress || "");
       const mergedData = {
         ...tokenData,
-        ...dummyCoinData,
-        current_price: parseFloat(dummyCoinData.current_price),
-        price_per_token: parseFloat(dummyCoinData.price_per_token),
-        metadata: {
-          ...(tokenData?.metadata || {}),
-          name: dummyCoinData.name,
-          symbol: dummyCoinData.ticker,
-          description: dummyCoinData.description,
-          imageUrl: dummyCoinData.image_url,
-          website: dummyCoinData.website,
-          twitter: dummyCoinData.twitter,
-          telegram: dummyCoinData.telegram,
-          decimals: dummyCoinData.decimals
-        }
+        ...dummyCoinData
       };
       setCoinData(mergedData);
       setLoading(false);
