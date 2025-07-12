@@ -1,4 +1,4 @@
- // CoinPage.tsx
+// CoinPage.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CoinProfile from "../components/coin/coinProfile";
