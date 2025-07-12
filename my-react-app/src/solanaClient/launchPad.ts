@@ -29,7 +29,30 @@ import {
   } from "@solana/web3.js";
   import { DEFAULT_CONFIG } from "../utils/bondingConfig";
   import { LaunchpadFirebaseDB } from "../firebase/db";
+  import axios from "axios";
   
+  async function handelBackendSubmit(tokenData: any) {
+    const token = localStorage.getItem('auth_token');
+    const newTrade = {
+      transaction_hash: tokenData.tHash,
+      coin_address: tokenData.address,
+      trade_type: tokenData.type,
+      coin_amount: tokenData.coinAmount,
+      sol_amount: tokenData.solAmount,
+    };
+    console.log(newTrade);
+
+    // const response = await axios.post(
+    //   `http://127.0.0.1:8000/api/trades/`,
+    //   newTrade,
+    //   {
+    //     headers: { Authorization: `Token ${token}` }
+    //   }
+    // );
+    // // `https://solana-market-place-backend.onrender.com/api/trades/`
+    // console.log(response.data)
+  }
+
   export class SolanaLaunchpad {
     constructor(
       private connection: Connection,
@@ -198,7 +221,15 @@ import {
         const txSignature = await this.connection.sendRawTransaction(
           signedTx.serialize()
         );
-  
+
+        handelBackendSubmit({
+          tHash: txSignature,
+          address: mint.toString(),
+          type: 'BUY',
+          solAmount: solAmount,
+          coinAmount: tokensToReceive,
+        })
+        
         // Update Firebase
         const updates = {
           totalRaised: tokenData.totalRaised + solAmount * this.config.solPrice,

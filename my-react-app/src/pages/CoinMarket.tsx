@@ -3,6 +3,7 @@ import React, { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import CoinFilter, { CoinData, FilterOptions } from "../components/coin/CoinFilter"; 
 import Loader from "../components/general/loader"; // Imported the Loader component
+import { getSolanaPriceUSD } from "../hooks/solanabalance";
 
 const CoinMarket: React.FC = () => {
   const [allCoins, setAllCoins] = useState<CoinData[]>([]); // fetch all coins
@@ -23,9 +24,17 @@ const CoinMarket: React.FC = () => {
           `https://solana-market-place-backend.onrender.com/api/coins/`
         );
         if (response.status === 200) {
+          const coins = response.data; // ← assume this is an array
+          // Convert string fields to numbers for all coins
+          const solPrice = await getSolanaPriceUSD();
+          const parsedCoins = coins.map((coin: any) => ({
+            ...coin,
+            market_cap: parseFloat(coin.current_marketcap) * solPrice,
+            // current_price: parseFloat(coin.current_price),
+          }));
           // console.log(response.data)
-          setAllCoins(response.data);
-          setFilteredCoins(response.data); // initialize filtered coins with all
+          setAllCoins(parsedCoins);
+          setFilteredCoins(parsedCoins); // initialize filtered coins with all
         } else {
           setErrorList(`Unexpected status code: ${response.status}`);
           setAllCoins([]);
