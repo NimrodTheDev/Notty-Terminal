@@ -89,7 +89,7 @@ class TradeSerializer(serializers.ModelSerializer):
             'transaction_hash', 'user', 'coin', 'coin_symbol', 'trade_type',
             'trade_type_display', 'coin_amount', 'sol_amount', 'created_at'
         ]
-        read_only_fields = ['transaction_hash', 'user', 'created_at']
+        read_only_fields = ['user', 'created_at', 'coin']
    
     def get_trade_type_display(self, obj):
         return obj.get_trade_type_display()

@@ -27,6 +27,9 @@ from .serializers import (
     TraderHistorySerializer, CoinHolderSerializer
 )
 
+from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+
 User = get_user_model()
 
 class TraderHistoryPagination(PageNumberPagination):
@@ -62,15 +65,6 @@ class CoinViewSet(RestrictedViewset):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'address'
     http_method_names = ['get', 'post', 'options']
-
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     if not serializer.is_valid():
-    #         print("❌ Validation errors:", serializer.errors)  # Log to terminal
-    #         return Response(serializer.errors, status=400)
-
-    #     self.perform_create(serializer)
-    #     return Response(serializer.data, status=201)
 
     def perform_create(self, serializer):
         """Set user to current authenticated user"""
@@ -207,10 +201,27 @@ class TradeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Will change to ReadOnly later
     lookup_field = 'id'  # Should eventually be changed to transaction_hash
     http_method_names = ['get', 'post', 'options']
+
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     if not serializer.is_valid():
+    #         print("❌ Validation errors:", serializer.errors)  # Log to terminal
+    #         return Response(serializer.errors, status=400)
+
+    #     self.perform_create(serializer)
+    #     return Response(serializer.data, status=201)
     
     def perform_create(self, serializer):
         """Set user to current authenticated user"""
-        serializer.save(user=self.request.user)
+        coin_address = self.request.data.get("coin_address")
+        if not coin_address:
+            raise ValidationError("Missing coin_address")
+
+        # Fetch coin from DB
+        coin = get_object_or_404(Coin, address=coin_address)
+
+        # Save the trade instance with coin and user
+        serializer.save(user=self.request.user, coin=coin)
 
 class UserViewSet(RestrictedViewset): # check later
     """
