@@ -1,5 +1,5 @@
 import { Twitter, Globe } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import img from "../../assets/images/istockphoto-1409329028-612x612.jpg"
 // import { useParams } from "react-router-dom";
 // import axios from "axios";
@@ -33,8 +33,26 @@ interface CoinProfileProps {
 
 export default function CoinProfile({ coinData }: CoinProfileProps) {
   const [fireCount] = useState(coinData.score);
-  // const [url, setUrl] = useState(img);
+  const [image, setImage] = useState("");
   // const [data, setData] = useState<any>({});
+
+  useEffect(() => {
+    if (!coinData?.metadata?.imageUrl) return;
+
+    const fetchImage = async () => {
+      try {
+        const response = await fetch(coinData.metadata.imageUrl);
+        const json = await response.json();
+        coinData.metadata.imageUrl = json.image;
+        setImage(json.image);
+        // extract the image field
+      } catch (err) {
+        console.error("Error fetching image metadata:", err);
+      }
+    };
+
+    fetchImage();
+  }, [coinData?.metadata?.imageUrl]);
   console.log(coinData);
   const handleFireClick = () => {
     // setFireCount((prevCount) => prevCount + 1);
@@ -65,7 +83,9 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
           {/* aspect-[16/9] the solution to the aspect ration stuff, reomve it if its a problem */}
           <div className="rounded-xl overflow-hidden border-2 border-gray-700 mx-auto max-w-md aspect-[16/9]">
             <img
-              src={coinData.metadata.imageUrl || coinData.image_url || img}
+              src={
+                image || coinData.metadata.imageUrl || coinData.image_url || img
+              }
               alt={`${coinData.name} image`}
               className="w-full h-full object-cover"
             />
