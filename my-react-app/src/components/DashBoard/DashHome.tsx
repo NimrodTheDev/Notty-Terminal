@@ -28,7 +28,6 @@ function shortenAddress(address:string) {
     if (!address || address.length < 10) return address;
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
-  
 
 const DashHome = () => {
     const [coins, setCoins] = useState<CoinItem[]>(
@@ -135,7 +134,7 @@ const DashHome = () => {
     return (
         <div className="min-h-screen relative  bg-custom-dark-blue text-white p-6">
             {/* Header */}
-            {/* remove the custom color #4D427B make t global */}
+            {/* remove the custom color #4D427B make it global */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-[#4D427B] rounded-full flex items-center justify-center">
@@ -144,18 +143,12 @@ const DashHome = () => {
                     <div>
                         <h1 className="text-xl font-bold">Dashboard</h1>
                         <p className="text-gray-400 text-sm">{shortenAddress(wAddress)}</p>
-                        {/* get the wallet address */}
                         <div className='flex space-x-2'>
                             <h2 className="text-l font-bold">Dev score: {userInfo?.devscore}</h2>
                             <h2 className="text-l font-bold">Trader score: {userInfo?.tradescore}</h2>
                         </div>
                         
                     </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-300">500</span>
-                    {/* What is this 500 */}
                 </div>
             </div>
 
@@ -215,10 +208,10 @@ const DashHome = () => {
                             <div className="text-right">
                                 <div className="text-gray-400 text-xs mb-1">{coin.coin_ticker}</div>
                                 <div className="text-white font-semibold">
-                                    ${(coin.current_price * coin.value).toLocaleString()} ({(coin.current_price * coin.value / 153.98).toFixed(2)} SOL)
+                                    ${(coin.value).toLocaleString()} ({(coin.value / 153.98).toFixed(2)} SOL)
                                 </div>
                                 <div className='flex space-x-1 justify-end items-center'>
-                                    <div className="text-white font-semibold">${(coin.market_cap*coin.current_price).toLocaleString()}</div>
+                                    <div className="text-white font-semibold">${(coin.market_cap).toLocaleString()}</div>
                                     <div className="text-green-400 text-sm">+1.90</div>
                                 </div>
                                 {/* <div className="text-green-400 text-sm">{coin.change}</div> */}
