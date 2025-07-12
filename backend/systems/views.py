@@ -61,6 +61,20 @@ class CoinViewSet(RestrictedViewset):
     serializer_class = CoinSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'address'
+    http_method_names = ['get', 'post', 'options']
+
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     if not serializer.is_valid():
+    #         print("❌ Validation errors:", serializer.errors)  # Log to terminal
+    #         return Response(serializer.errors, status=400)
+
+    #     self.perform_create(serializer)
+    #     return Response(serializer.data, status=201)
+
+    def perform_create(self, serializer):
+        """Set user to current authenticated user"""
+        serializer.save(creator=self.request.user)
     
     @action(detail=False, methods=['get'], url_path='top-coins')
     def top_coins(self, request):
@@ -192,32 +206,11 @@ class TradeViewSet(viewsets.ModelViewSet):
     serializer_class = TradeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Will change to ReadOnly later
     lookup_field = 'id'  # Should eventually be changed to transaction_hash
+    http_method_names = ['get', 'post', 'options']
     
     def perform_create(self, serializer):
         """Set user to current authenticated user"""
         serializer.save(user=self.request.user)
-        
-        # Update holdings after a trade
-        coin = serializer.validated_data['coin']
-        amount = serializer.validated_data['coin_amount']
-        trade_type = serializer.validated_data['trade_type']
-        
-        # Get or create holdings for this user and coin
-        holdings, created = UserCoinHoldings.objects.get_or_create(
-            user=self.request.user,
-            coin=coin,
-            defaults={'amount_held': 0}
-        )
-        
-        # Update holdings based on trade type
-        if trade_type in ['BUY', 'COIN_CREATE']:
-            holdings.amount_held += amount
-        elif trade_type == 'SELL':
-            if holdings.amount_held < amount:
-                raise serializer.ValidationError("Not enough coins to sell")
-            holdings.amount_held -= amount
-            
-        holdings.save()
 
 class UserViewSet(RestrictedViewset): # check later
     """

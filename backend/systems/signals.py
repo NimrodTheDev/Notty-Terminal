@@ -8,6 +8,7 @@ from .models import (
     DeveloperScore, TraderScore, CoinDRCScore
 )
 from .utils.broadcast import broadcast_coin_created, broadcast_trade_created
+from .utils.logger import calculate_token_price
 
 # Create scores when users/coins are created
 @receiver(post_save, sender=SolanaUser)
@@ -22,7 +23,7 @@ def create_user_scores(sender, instance, created, **kwargs):
             DeveloperScore.objects.get_or_create(developer=instance)
 
 @receiver(post_save, sender=Trade)
-def update_holdings_and_scores_on_trade(sender, instance, created, **kwargs):
+def update_holdings_and_scores_on_trade(sender, instance:Trade, created, **kwargs):
     """
     Update user holdings and all related scores when a trade is created
     """
@@ -33,6 +34,11 @@ def update_holdings_and_scores_on_trade(sender, instance, created, **kwargs):
     with transaction.atomic():
         user = instance.user
         coin = instance.coin
+
+        calculate_token_price(
+            instance.sol_amount *(-1 if instance.trade_type == 'SELL' else 1), 
+            instance.coin
+        )
         
         # Get or create the user's holdings for this coin
         holdings, _ = UserCoinHoldings.objects.get_or_create(
