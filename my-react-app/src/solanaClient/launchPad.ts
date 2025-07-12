@@ -33,6 +33,7 @@ import {
 } from "@solana/web3.js";
 import { DEFAULT_CONFIG } from "../utils/bondingConfig";
 import { LaunchpadFirebaseDB } from "../firebase/db";
+import { BN } from "bn.js";
 
 export class SolanaLaunchpad {
   constructor(
@@ -189,7 +190,7 @@ export class SolanaLaunchpad {
           creatorTokenAccount,
           buyerTokenAccount,
           creatorPublicKey,
-          tokensToReceive * Math.pow(10, 6)
+          Number((tokensToReceive * Math.pow(10, 6)).toFixed(0))
         )
       );
 

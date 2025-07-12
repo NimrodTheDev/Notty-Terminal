@@ -3,11 +3,9 @@ import { PinataSDK } from "pinata";
 const apiKey = import.meta.env.VITE_PINATA_JWT;
 const gateway = import.meta.env.VITE_IPFS_GATEWAY;
 
-
-console.log(apiKey)
 const pinata = new PinataSDK({
   pinataJwt: apiKey,
-  pinataGateway: gateway,
+  pinataGateway: gateway
 });
 
 interface TokenMetadata {
@@ -50,16 +48,16 @@ export async function uploadFile(
       attributes: {
         website: metadata.website,
         twitter: metadata.twitter,
-        discord: metadata.discord,
-      },
+        discord: metadata.discord
+      }
     };
 
     // Create a JSON file from the metadata
     const metadataBlob = new Blob([JSON.stringify(tokenMetadata, null, 2)], {
-      type: "application/json",
+      type: "application/json"
     });
     const metadataFile = new File([metadataBlob], "metadata.json", {
-      type: "application/json",
+      type: "application/json"
     });
 
     // Upload the metadata file
@@ -70,7 +68,7 @@ export async function uploadFile(
   } catch (error) {
     console.error("Error uploading to IPFS:", error);
     // throw error;
-    return ''
+    return "";
   }
 }
 

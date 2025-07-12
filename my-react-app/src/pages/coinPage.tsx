@@ -1,73 +1,84 @@
- // CoinPage.tsx
+// CoinPage.tsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import CoinProfile from "../components/coin/coinProfile";
-// import HoldersAnalytics from "../components/coin/coinHolder";
 import CryptoTokenDetails from "../components/coin/cryptoTokenDetail";
-// import CoinComments from "../components/coin/comment";
-// import CryptoTradingWidget from "../components/coin/tradingWidget";
 import SimilarCoins from "../components/coin/similiarCoin";
 import BuyAndSell from "../components/coin/BuyAndSell";
 import { useParams } from "react-router-dom";
+import { useToken } from "../hooks/useToken";
+import { TokenData } from "../bonding-interface";
 
-interface CoinData {
-  address: string;
-  created_at: string;
-  score: number;
-  creator: string;
-  creator_display_name: string;
-  current_price: string;
-  description: string | null;
-  image_url: string;
-  market_cap: number;
-  name: string;
-  telegram: string | null;
-  ticker: string;
-  total_held: number;
-  total_supply: string;
-  twitter: string | null;
-  website: string | null;
-  decimals: number;
-  price_per_token: string;//if a string convert to number
-}
+import { Buffer } from "buffer";
+window.Buffer = Buffer;
+
+// Dummy CoinData for testing
+const getDummyCoinData = (mintAddress: string) => ({
+  address: mintAddress,
+  created_at: new Date().toISOString(),
+  score: 8.5,
+  creator: "DummyCreatorAddress",
+  creator_display_name: "Dummy Creator",
+  current_price: "0.05",
+  description: "This is a dummy token for testing purposes",
+  image_url: "https://via.placeholder.com/150",
+  market_cap: 1000000,
+  name: "Dummy Token",
+  telegram: "https://t.me/dummy",
+  ticker: "DUMMY",
+  total_held: 500000,
+  total_supply: "1000000",
+  twitter: "@dummytoken",
+  website: "https://dummytoken.com",
+  decimals: 6,
+  price_per_token: "0.05"
+});
 
 const CoinPage: React.FC = () => {
-  const [coinData, setCoinData] = useState<CoinData | null>(null);
+  const [coinData, setCoinData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { id } = useParams();
+  const { id: mintAddress } = useParams();
+  const { token: tokenData, loading: tokenLoading } = useToken(
+    mintAddress || ""
+  );
 
   useEffect(() => {
-    const fetchCoinData = async () => {
-      if (!id) {
-        setCoinData(null);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get<CoinData>(
-          `https://solana-market-place-backend.onrender.com/api/coins/${id}`
-        );
-        setCoinData(response.data);
-      } catch (e) {
-        setError("Failed to fetch coin data");
-        console.error("Error fetching coin data:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!tokenLoading && mintAddress) {
+      // Merge dummy data with tokenData from Firebase
+      const dummyCoinData = getDummyCoinData(mintAddress);
+      const mergedData = {
+        ...tokenData,
+        ...dummyCoinData,
+        current_price: parseFloat(dummyCoinData.current_price),
+        price_per_token: parseFloat(dummyCoinData.price_per_token),
+        metadata: {
+          ...(tokenData?.metadata || {}),
+          name: dummyCoinData.name,
+          symbol: dummyCoinData.ticker,
+          description: dummyCoinData.description,
+          imageUrl: dummyCoinData.image_url,
+          website: dummyCoinData.website,
+          twitter: dummyCoinData.twitter,
+          telegram: dummyCoinData.telegram,
+          decimals: dummyCoinData.decimals
+        }
+      };
+      setCoinData(mergedData);
+      setLoading(false);
+    }
+  }, [tokenLoading, mintAddress, tokenData]);
 
-    fetchCoinData();
-  }, [id]);
-
-  if (loading) {
-    return <div className="bg-gray-900 text-white min-h-screen p-4">Loading...</div>;
+  if (loading || tokenLoading) {
+    return (
+      <div className="bg-gray-900 text-white min-h-screen p-4">Loading...</div>
+    );
   }
 
-  if (error || !coinData) {
-    return <div className="bg-gray-900 text-white min-h-screen p-4">{error || "No data available"}</div>;
+  if (!coinData) {
+    return (
+      <div className="bg-gray-900 text-white min-h-screen p-4">
+        No data available
+      </div>
+    );
   }
 
   return (
@@ -77,12 +88,9 @@ const CoinPage: React.FC = () => {
           <div className="flex flex-col gap-2 w-full">
             <CoinProfile coinData={coinData} />
             <CryptoTokenDetails coinData={coinData} />
-            {/* <CoinComments coinData={coinData} /> */}
           </div>
           <div className="flex flex-col gap-2">
             <BuyAndSell coinData={coinData} />
-            {/* <CryptoTradingWidget coinData={coinData} /> */}
-            {/* <HoldersAnalytics coinData={coinData} /> */}
           </div>
         </div>
         <SimilarCoins coinData={coinData} />
