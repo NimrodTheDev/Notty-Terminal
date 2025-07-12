@@ -1,8 +1,0 @@
-[package]
-name = "notty_webassembly"
-version = "0.1.0"
-edition = "2021"
-description = "Web assembly for notty_terminal"
-authors = ["Onwukaike Martin Nkemakolam <nkemakolam.martin@gmail.com>]
-
-[dependencies]

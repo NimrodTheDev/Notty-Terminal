@@ -61,7 +61,8 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 
 				{/* Cat Image */}
 				<div className='mb-8'>
-					<div className='rounded-xl overflow-hidden border-2 border-gray-700 mx-auto max-w-md'>
+				{/* aspect-[16/9] the solution to the aspect ration stuff, reomve it if its a problem */}
+					<div className='rounded-xl overflow-hidden border-2 border-gray-700 mx-auto max-w-md aspect-[16/9]'>
 						<img
 							src={coinData.image_url || img}
 							alt={`${coinData.name} image`}

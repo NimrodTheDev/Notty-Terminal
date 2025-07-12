@@ -1,12 +1,9 @@
 from rest_framework import serializers
 from .models import (
-    DeveloperScore, 
-    TraderScore, 
-    CoinDRCScore, 
-    SolanaUser,
-    Coin,
-    UserCoinHoldings, 
-    Trade,
+    DeveloperScore, TraderScore, 
+    CoinDRCScore, SolanaUser,
+    Coin,UserCoinHoldings, 
+    Trade, TraderHistory
 )
 
 class SolanaUserSerializer(serializers.ModelSerializer):
@@ -50,14 +47,16 @@ class CoinSerializer(serializers.ModelSerializer):
             'address', 'ticker', 'name', 'creator', 'creator_display_name',
             'created_at', 'total_supply', 'image_url',
             'description', 'discord', 'website', 'twitter',
-            'current_price', 'total_held', 'market_cap', 'score'
+            'current_price', 'total_held', 'market_cap', 'score',
+            'price_per_token', 'decimals',
+
         ]
         read_only_fields = ['address', 'creator', 'creator_display_name', 'created_at']
     
     def get_creator_display_name(self, obj):
         return obj.creator.get_display_name()
 
-class UserCoinHoldingsSerializer(serializers.ModelSerializer):
+class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we  need images
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
     coin_name = serializers.ReadOnlyField(source='coin.name')
     current_price = serializers.ReadOnlyField(source='coin.current_price')
@@ -68,9 +67,17 @@ class UserCoinHoldingsSerializer(serializers.ModelSerializer):
         fields = ['user', 'coin', 'coin_ticker', 'coin_name', 'amount_held', 'current_price', 'value']
         read_only_fields = ['user', 'value']
     
+    def __init__(self, *args, **kwargs):
+        include_market_cap = kwargs.pop('include_market_cap', False)
+        super().__init__(*args, **kwargs)
+        if include_market_cap:
+            self.fields['market_cap'] = serializers.SerializerMethodField()
+
     def get_value(self, obj):
-        """Calculate the current value of the holdings"""
-        return obj.amount_held * obj.coin.current_price
+        return float(obj.amount_held) * float(obj.coin.current_price)
+
+    def get_market_cap(self, obj):
+        return float(obj.coin.market_cap)
 
 class TradeSerializer(serializers.ModelSerializer):
     coin_symbol = serializers.ReadOnlyField(source='coin.ticker')
@@ -166,3 +173,23 @@ class CoinDRCScoreSerializer(serializers.ModelSerializer):
             return obj.coin.rug_flag.is_rugged
         except Exception:
             return False
+
+# history
+class TraderHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TraderHistory
+        fields = ['id', 'key', 'score', 'created_at', 'description', 'user']
+
+class CoinHolderSerializer(serializers.ModelSerializer):
+    user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
+    held_percentage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserCoinHoldings
+        fields = ['user_wallet_address', 'amount_held', 'held_percentage']
+
+    def get_held_percentage(self, obj):
+        supply = obj.coin.total_supply
+        if not supply or supply == 0:
+            return 0.0
+        return float(obj.amount_held) / float(supply) * 100

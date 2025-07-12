@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from "react";
 import { Funnel } from "lucide-react";
-import {NFTCard} from "../landingPage/collection";
+import { NFTCard } from "../landingPage/collection";
 
 export interface CoinData {
   address: string;
@@ -52,7 +52,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         </div>
 
         {/* Navbar */}
-        <nav className="mb-8 bg-purple-800 px-6 py-3 rounded-md flex items-center flex-col justify-between w-full gap-2 md:flex-row">
+        <nav className="mb-8 mx-[-32px] bg-[#1d213799] px-6 py-3 flex items-center flex-col justify-between w-[calc(100%+64px)] gap-2 md:flex-row">
           <div className="flex items-center flex-1 max-w-lg">
             <input
               type="text"
@@ -75,7 +75,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
                 <button
                   key={type}
                   onClick={() => onFilterChange(type)}
-                  className={`block w-full py-2 px-3 rounded-md transition-colors duration-300 hover:bg-gradient-to-r hover:from-[#a4b9fa] hover:to-[#4a0a80] hover:text-white ${
+                  className={`block w-full py-2 px-3 transition-colors duration-300 hover:bg-[#865BAA] hover:text-white ${
                     filter === type
                       ? "bg-purple-700 text-white"
                       : "bg-purple-100 text-purple-700"
@@ -83,8 +83,8 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
                   aria-pressed={filter === type}
                 >
                   {type === "all"
-                    ? "Show All"
-                    : `By ${type.charAt(0).toUpperCase() + type.slice(1)}`}
+                    ? "All"
+                    : ` ${type.charAt(0).toUpperCase() + type.slice(1)}`}
                 </button>
               )
             )}
@@ -97,7 +97,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {coins.map((coin) => (
-              <NFTCard key={coin.address} nft={coin}  />
+              <NFTCard key={coin.address} nft={coin} />
             ))}
           </div>
         )}
@@ -107,4 +107,6 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
 };
 
 export default CoinFilter;
+
+
 

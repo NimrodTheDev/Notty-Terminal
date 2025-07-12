@@ -1,4 +1,4 @@
- // CoinPage.tsx
+// CoinPage.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CoinProfile from "../components/coin/coinProfile";
@@ -27,6 +27,8 @@ interface CoinData {
   total_supply: string;
   twitter: string | null;
   website: string | null;
+  decimals: number;
+  price_per_token: string;//if a string convert to number
 }
 
 const CoinPage: React.FC = () => {
@@ -49,6 +51,7 @@ const CoinPage: React.FC = () => {
           `https://solana-market-place-backend.onrender.com/api/coins/${id}`
         );
         setCoinData(response.data);
+		// we can add promise all or holder info, or finish it with the backend
       } catch (e) {
         setError("Failed to fetch coin data");
         console.error("Error fetching coin data:", e);
@@ -56,12 +59,15 @@ const CoinPage: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchCoinData();
   }, [id]);
 
-  if (loading) {
-    return <div className="bg-gray-900 text-white min-h-screen p-4">Loading...</div>;
+  if (loading) { // make better loading
+    return(
+		<div className="flex justify-center items-center h-screen bg-custom-dark-blue">
+			<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+		</div>
+	);
   }
 
   if (error || !coinData) {

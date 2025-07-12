@@ -1,4 +1,4 @@
-import { useState } from "react";
+ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Link } from "react-router-dom";
@@ -40,6 +40,9 @@ export default function Header() {
 
 				{/* Desktop Navigation links */}
 				<nav className='hidden md:flex md:items-center gap-6 text-sm text-gray-300'>
+					<Link to='/' className='block md:inline hover:text-white'>
+						Home
+					</Link>
 					<Link to='/dashboard' className='block md:inline hover:text-white'>
 						Dashboard
 					</Link>

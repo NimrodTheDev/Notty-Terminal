@@ -369,7 +369,7 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
           tokenName = tokenName,
           tokenSymbol = tokenSymbol,
           tokenUri = tokenUri,
-          new BN(( edit ? pricePerToken : 0.00004) * 1000000000),
+          new BN(( edit ? pricePerToken : 0.000000025)),
           new BN(( edit ? initialSupply : 1000000) * 1000000000)
         ).accounts({
           //@ts-ignore

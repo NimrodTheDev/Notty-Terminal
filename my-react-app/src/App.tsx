@@ -29,6 +29,8 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import DashHome from "./components/DashBoard/DashHome";
 import ComingSoon from "./components/general/ComingSoon";
 import DashBoard from "./pages/DashBoard";
+import Profile from "./pages/Profile";
+import HistoryPage from "./pages/History";
 
 
 function App() {
@@ -67,7 +69,12 @@ function App() {
 								<Route path="/coinmarket" element={<CoinMarket />} />
 								<Route path="/talentpool" element={<Talentpool />} />
 								<Route path="/aboutdrs" element={<AboutDrs />} />
-
+								<Route path="coin/create" element={
+									<PhantomError>
+										<CreateCoin />
+									</PhantomError>
+								} />
+								{/* We can change it to redirect to the dashboard coin create page */}
 								{/* Dashboard routes */}
 								<Route path="/dashboard" element={<DashBoard />}>
 									<Route index element={<DashHome />} />
@@ -82,10 +89,11 @@ function App() {
 									<Route path="coinmarket" element={<CoinMarket />} />
 									<Route path="ownerCard" element={<ComingSoon />} />
 									<Route path="aboutdrs" element={<AboutDrs />} />
-									<Route path="history" element={<ComingSoon />} />
+									<Route path="history" element={<HistoryPage />} />
 									<Route path="chatRooms" element={<ComingSoon />} />
-									<Route path="profile" element={<ComingSoon />} />
+									<Route path="profile" element={<Profile />} />
 									<Route path="settings" element={<ComingSoon />} />
+									<Route path="help" element={<ComingSoon />} />
 								</Route>
 
 								<Route path="*" element={<div>Not found</div>} />

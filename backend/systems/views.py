@@ -5,32 +5,34 @@ from .permissions import IsCronjobRequest
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 from rest_framework.views import APIView
 from django.db.models import Q
 from django.core.cache import cache
 
 from rest_framework.authtoken.models import Token
+from rest_framework.pagination import PageNumberPagination
 
 from .models import (
-    DeveloperScore, 
-    TraderScore, 
-    CoinDRCScore, 
+    DeveloperScore, TraderScore, 
+    CoinDRCScore, TraderHistory,
     Coin, UserCoinHoldings, Trade, SolanaUser,
 )
 
 from .serializers import (
-    DeveloperScoreSerializer, 
-    TraderScoreSerializer, 
-    CoinDRCScoreSerializer,
-    ConnectWalletSerializer,
-    CoinSerializer, 
-    UserCoinHoldingsSerializer, 
-    TradeSerializer, 
-    SolanaUserSerializer,
+    DeveloperScoreSerializer, TraderScoreSerializer, 
+    CoinDRCScoreSerializer, ConnectWalletSerializer,
+    CoinSerializer, UserCoinHoldingsSerializer, 
+    TradeSerializer, SolanaUserSerializer,
+    TraderHistorySerializer, CoinHolderSerializer
 )
 
 User = get_user_model()
+
+class TraderHistoryPagination(PageNumberPagination):
+    page_size = 20  # default items per page
+    page_size_query_param = 'page_size'  # allow clients to override
+    max_page_size = 100
 
 class RecalculateDailyScoresView(APIView):
     permission_classes = [IsCronjobRequest]
@@ -79,13 +81,30 @@ class CoinViewSet(RestrictedViewset):
         cache.set(cache_key, serializer.data, timeout=60)  # cache for 1 minute
 
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='my-coins', permission_classes=[permissions.IsAuthenticated])
+    def my_coins(self, request):
+        """
+        Return all coins created by the authenticated user.
+        Assumes `request.user` is a SolanaUser or is linked to one.
+        """
+        coins = Coin.objects.filter(creator=request.user)
+        serializer = self.get_serializer(coins, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def holders(self, request, address=None):
         """Get all holders of a specific coin"""
-        coin = self.get_object()
-        holders = coin.holders.all()
-        serializer = UserCoinHoldingsSerializer(holders, many=True)
+        coin = self.get_object()  # returns Coin instance
+
+        # Optimized queryset for serializer
+        holders = UserCoinHoldings.objects.filter(coin=coin)\
+            .select_related('user', 'coin')\
+            .only('user__wallet_address', 'amount_held', 'coin__total_supply')\
+            .order_by('-amount_held')
+        # display_name we can also add to check if available
+
+        serializer = CoinHolderSerializer(holders, many=True)
         return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
@@ -96,7 +115,8 @@ class CoinViewSet(RestrictedViewset):
         serializer = TradeSerializer(trades, many=True)
         return Response(serializer.data)
 
-class UserCoinHoldingsViewSet(RestrictedViewset):
+class UserCoinHoldingsViewSet(RestrictedViewset): 
+    # we want to create a way to get all the held coins of a user it has to be the person sending the request
     """
     API endpoint for User Coin Holdings
     """
@@ -109,6 +129,60 @@ class UserCoinHoldingsViewSet(RestrictedViewset):
         if self.request.user.is_staff:
             return UserCoinHoldings.objects.all()
         return UserCoinHoldings.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['get'], url_path='my-coins', permission_classes=[permissions.IsAuthenticated])
+    def my_coins(self, request):
+        """
+        Return all held data created by the authenticated user.
+        Assumes `request.user` is a SolanaUser or is linked to one.
+        """
+        coins_held = UserCoinHoldings.objects.filter(user=request.user)
+        include_market_cap = request.query_params.get('market_cap') == '1'
+
+        serializer = self.serializer_class(
+            coins_held,
+            many=True,
+            context=self.get_serializer_context(),
+            include_market_cap=include_market_cap
+        )
+        return Response(serializer.data)
+
+class UserDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        context = {'request': request}
+
+        # holdings = UserCoinHoldings.objects.filter(user=user)
+        # created_coins = Coin.objects.filter(creator=user)
+
+        holdings = UserCoinHoldings.objects.filter(user=user).select_related("coin")
+        created_coins = Coin.objects.filter(creator=user)  # add .only() if needed
+
+        holdings_serializer = UserCoinHoldingsSerializer(
+            holdings,
+            many=True,
+            context=context,
+            include_market_cap=True
+        )
+        coins_serializer = CoinSerializer(
+            created_coins,
+            many=True,
+            context=context
+        )
+
+        return Response({
+            "user": {
+                "wallet_address": user.wallet_address,
+                "display_name": user.get_display_name(),
+                "bio": user.bio,
+                "devscore": user.devscore,
+                "tradescore": user.tradescore
+            },
+            "holdings": holdings_serializer.data,
+            "created_coins": coins_serializer.data
+        })
 
 class TradeViewSet(viewsets.ModelViewSet):
     """
@@ -221,7 +295,6 @@ class MeView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-
 
 # ViewSets
 class DeveloperScoreViewSet(viewsets.ReadOnlyModelViewSet):
@@ -450,3 +523,29 @@ class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
         
         serializer = self.get_serializer(coin_drc)
         return Response(serializer.data)
+
+class TraderHistoryListView(ListAPIView):
+    serializer_class = TraderHistorySerializer
+    pagination_class = TraderHistoryPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = TraderHistory.objects.all().order_by('-created_at')
+
+        wallet = self.request.query_params.get('user')
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+
+        if wallet: # might make optional
+            qs = qs.filter(user__wallet_address=wallet)
+        else:
+            qs = qs.filter(user=self.request.user)
+        
+        if year and month:
+            qs = qs.filter(created_at__year=year, created_at__month=month)
+        elif year:
+            qs = qs.filter(created_at__year=year)
+        elif month:
+            qs = qs.filter(created_at__month=month)
+        
+        return qs

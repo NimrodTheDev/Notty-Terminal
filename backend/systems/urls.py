@@ -17,6 +17,8 @@ auth_urls = [
     path("connect_wallet/", views.ConnectWalletView.as_view(), name="connect_wallet"),
     path("me/", views.MeView.as_view(), name="me"),
     path("recalculate-scores/", views.RecalculateDailyScoresView.as_view(), name="recalculate-scores"),
+    path('trader-history/', views.TraderHistoryListView.as_view(), name='trader-history-list'),
+    path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
 ]
 
 urlpatterns = [

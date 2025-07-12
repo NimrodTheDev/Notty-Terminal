@@ -65,7 +65,7 @@ def update_holdings_and_scores_on_trade(sender, instance, created, **kwargs):
             delete_holdings = True
         
         # Update trader score - do this before potentially deleting holdings
-        trader_score, _ = TraderScore.objects.get_or_create(trader=user)
+        trader_score, _ = TraderScore.objects.get_or_create(trader=user) # I don't think this should be like that.
         
         # Update coin score - track 24h volume
         coin_score, _ = CoinDRCScore.objects.get_or_create(coin=coin)
@@ -95,7 +95,7 @@ def update_holdings_and_scores_on_trade(sender, instance, created, **kwargs):
         
         # Update holders count and recalculate scores
         coin_score.update_holders_count()
-        # trader_score.recalculate_score()
+        trader_score.calculate_daily_score()
         broadcast_trade_created(instance)
 
 @receiver(post_save, sender=Coin)
@@ -130,7 +130,7 @@ def update_on_holdings_delete(sender, instance, **kwargs):
     # Update trader score
     try:
         trader_score:TraderScore = instance.user.trader_score
-        # trader_score.recalculate_score() # change to support ore sclaed growth
+        trader_score.calculate_daily_score() # change to support ore scaled growth
     except TraderScore.DoesNotExist:
         pass
 

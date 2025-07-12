@@ -6,7 +6,6 @@ import {
     MessageCircle,
     Info,
     History,
-    User,
     Settings,
     HelpCircle,
     Menu,
@@ -19,16 +18,16 @@ const Sidebar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const menuItems = [
-        { name: 'Home', icon: Home, category: 'main', isActive: true, link: "home" },
+        { name: 'Dashboard', icon: Home, category: 'main', isActive: true, link: "home" },
         { name: 'Explorer Coins', icon: Coins, category: 'main', link: "coinmarket" },
         { name: 'Create Coin', icon: Plus, category: 'main', link: "coin/create" },
         { name: 'Chat Rooms', icon: MessageCircle, category: 'main', link: "chatRooms" },
         { name: 'About DRS', icon: Info, category: 'main', link: "aboutdrs" },
-        { name: 'History', icon: History, category: 'main', link: "history" }, // Added missing link
+        { name: 'History', icon: History, category: 'main', link: "history" },
+        // Added missing link
     ];
 
     const bottomItems = [
-        { name: 'Profile', icon: User, link: "profile" },
         { name: 'Settings', icon: Settings, link: "settings" },
         { name: 'Help & Support', icon: HelpCircle, link: "help" },
     ];
