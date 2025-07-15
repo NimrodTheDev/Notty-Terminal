@@ -63,12 +63,10 @@ function CreateCoin() {
   const [tokenWebsite, setTokenWebsite] = useState("");
   const [tokenTwitter, setTokenTwitter] = useState("");
   const [tokenDiscord, setTokenDiscord] = useState("");
-  //   const { CreateAndInitToken } = useSolana();
-  const [error] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {}
   );
-  const [result, setResult] = useState<string | null>(null);
+  const [, setResult] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState<ReactNode>("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
