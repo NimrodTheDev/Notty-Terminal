@@ -24,12 +24,12 @@ export default function ComingSoon() {
             <div className='relative z-10 text-center px-6 py-12 max-w-4xl'>
                 {/* Coming Soon Flexbox */}
                 <div className='flex flex-col items-center'>
-                    <h1 className='text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-200 text-transparent bg-clip-text transition-transform transform hover:scale-105'>
+                    <h1 className='text-3xl xs:text-4xl sm:text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-200 text-transparent bg-clip-text transition-transform transform hover:scale-105 break-words'>
                         Coming Soon! 🚀 <Loader className='inline-block animate-spin' style={{ animationDuration: '2s', transformOrigin: '50% 50%' }} />
                     </h1>
 
                     {/* Extra Write-up */}
-                    <div className='mt-8 text-gray-300 text-lg max-w-2xl mx-auto'>
+                    <div className='mt-4 sm:mt-8 text-gray-300 text-base xs:text-lg max-w-2xl mx-auto'>
                         <p className='bg-gray-800 p-4 rounded-md'>
                             Still in production. We are working hard to bring you the best experience possible! Stay tuned for updates! <Clock className='inline-block ml-2' />
                         </p>
