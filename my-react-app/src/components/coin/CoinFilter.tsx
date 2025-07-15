@@ -19,6 +19,9 @@ export interface CoinData {
   total_supply: string;
   twitter: string | null;
   website: string | null;
+  current_marketcap: number;
+  start_marketcap: number;
+  end_marketcap: number;
 }
 
 export interface FilterOptions {

@@ -3,8 +3,6 @@ import { PinataSDK } from "pinata";
 const apiKey = import.meta.env.VITE_PINATA_JWT;
 const gateway = import.meta.env.VITE_IPFS_GATEWAY;
 
-
-console.log(apiKey)
 const pinata = new PinataSDK({
   pinataJwt: apiKey,
   pinataGateway: gateway,
@@ -23,6 +21,11 @@ interface TokenMetadata {
   };
 }
 
+type UploadResult = {
+  metadataUrl: string;
+  imageUrl: string;
+};
+
 export async function uploadFile(
   imageFile: File,
   metadata: {
@@ -33,7 +36,7 @@ export async function uploadFile(
     twitter: string;
     discord: string;
   }
-): Promise<string> {
+): Promise<UploadResult|null> {
   try {
     // First upload the image file
     const imageUpload = await pinata.upload.public.file(imageFile);
@@ -66,12 +69,10 @@ export async function uploadFile(
     const metadataUpload = await pinata.upload.public.file(metadataFile);
     const metadataUrl = `https://${gateway}/ipfs/${metadataUpload.cid}`;
 
-    return metadataUrl;
+    return {metadataUrl, imageUrl};
   } catch (error) {
     console.error("Error uploading to IPFS:", error);
     // throw error;
-    return ''
+    return null;
   }
 }
-
-// await main();

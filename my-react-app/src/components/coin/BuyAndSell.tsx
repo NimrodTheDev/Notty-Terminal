@@ -19,10 +19,10 @@ function shortenAddress(address:string) {
 }
 
 async function getSolanaPriceUSD() {
-    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
-    const data = await response.json();
-    const price = data.solana.usd;
-    return price;
+  const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
+  const data = await response.json();
+  const price = data.solana.usd;
+  return price;
 }
 
 interface BuyAndSellProps {
@@ -30,6 +30,9 @@ interface BuyAndSellProps {
     ticker?: string;
     current_price?: string;
     decimals?: number;
+    current_marketcap?: number;
+    start_marketcap?: number;
+    end_marketcap?: number;
   };
 }
 
@@ -41,21 +44,19 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
     useToast();
   const { publicKey, signTransaction } = useWallet();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [livePrice, setLivePrice] = useState<number>(parseFloat(coinData?.current_price || "0"));
 
   // Initialize launchpad
   const connection = new Connection("https://api.devnet.solana.com");
   const firebaseDB = new LaunchpadFirebaseDB();
   const launchpad = new SolanaLaunchpad(connection, firebaseDB);
 
-    // const {BuyTokenMint, SellTokenMint} = useSolana()
-    const wallet = useWallet();
     const { connection: walletconnection } = useConnection();
 
     const [solPrice, setSolPrice] = useState<number>(1);
     const tokenPrice = useMemo(() => {
-        const coinPriceInSol = parseFloat(coinData?.current_price || '0');
-        return coinPriceInSol * solPrice;
-    }, [coinData?.current_price, solPrice]);
+        return livePrice * solPrice;
+    }, [livePrice, solPrice]);
     const {balance, refetchBalance} = useSolBalance(walletconnection);
 
     useEffect(() => {
@@ -100,26 +101,60 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
     	// { label: 'Holders with 500K-49M', value: '25%' },
     ]);
 
-    const getFormattedValues = (amount: string, price: number) => {
-        const parsedAmount = parseFloat(amount || '0');
-        const solVaue = parsedAmount * price
-        const usdValue = solVaue * solPrice;
+    const getFormattedValues = (amount: string) => {
+      const parsedAmount = parseFloat(amount || '0');
+      const marketCapInSol = coinData?.current_marketcap ?? 0; // already in SOL
+      const marketCapInUSD = marketCapInSol * solPrice;
     
-        const usdFormatted = usdValue.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 4,
-        });
+      let result = {
+        tokens: 0,
+        sol: 0,
+        usd: 0,
+        newPrice: 0,
+      };
+    
+      if (activeTab === 'buy') {
+        const newMarketCapUSD = marketCapInUSD + (parsedAmount * solPrice);
+        const newPrice = launchpad.calculatePrice(newMarketCapUSD);
+        const tokens = launchpad.calculateTokensForSol(parsedAmount, marketCapInUSD);
+        const usdValue = parsedAmount * solPrice;
+    
+        result = {
+          tokens,
+          sol: parsedAmount,
+          usd: usdValue,
+          newPrice,
+        };
+      } else if (activeTab === 'sell') {
+        const currentPrice = launchpad.calculatePrice(marketCapInUSD);
+        const usdReceived = parsedAmount * currentPrice;
+        const solReceived = usdReceived / solPrice;
+        const newMarketCapUSD = marketCapInUSD - usdReceived;
+        const newPrice = launchpad.calculatePrice(newMarketCapUSD);
+    
+        result = {
+          tokens: parsedAmount,
+          sol: solReceived,
+          usd: usdReceived,
+          newPrice,
+        };
+      }      
 
-        const solFormatted = `${solVaue.toFixed(4)} SOL`;
-        // look at price per token properly
-    
-        return { usdFormatted, solFormatted };
+      setLivePrice(result.newPrice/solPrice);
+
+      const usdFormatted = result.usd.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 4,
+      });
+      
+      const solFormatted = "~ "+(activeTab == 'buy' ?`${result.tokens.toFixed(4)} ${coinData?.ticker}`: `${result.sol.toFixed(4)} SOL`);
+      return { usdFormatted, solFormatted };
     };
 
     const { usdFormatted, solFormatted } = useMemo(() => {
-        return getFormattedValues(amount, parseFloat(coinData?.current_price || "0"));
-    }, [amount, coinData?.current_price]);
+      return getFormattedValues(amount);
+    }, [amount, activeTab, solPrice]);
 
     useEffect(() => {
         const fetchCoinHolders = async () => {
@@ -128,7 +163,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
             }
             try {
 				const response = await axios.get(
-					// `http://127.0.0.1:8000/api/coins/${mintAddress}/holders`
           `https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/holders`
 				);
 				const holders:Array<{}> = response.data
@@ -155,7 +189,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
     if (!mintAddress || !publicKey || !signTransaction) {
       showToastMessage("Please connect your wallet first", "error");
       return;
-    }
+    };
     console.log(mintAddress);
 
     try {
@@ -256,7 +290,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 
       <div className="flex justify-end text-sm text-gray-400 mt-1">
           <span className="italic tracking-tight">
-              ({usdFormatted}) {solFormatted}
+              {solFormatted} ({usdFormatted})
           </span>
       </div>
 
@@ -283,7 +317,10 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
           Balance: <span className="text-white font-medium break-all">{balance.toFixed(4)} SOL</span>
         </div>
         <div className="text-gray-400 break-words max-w-full sm:max-w-none text-right sm:text-left">
-          <span className="text-purple-400 break-all">${tokenPrice.toFixed(4)}</span> per token
+          <span className="text-purple-400 break-all">${tokenPrice.toLocaleString(undefined, {
+            maximumFractionDigits: 9,
+          })
+          }</span> per token
         </div>
       </div>
 
@@ -308,16 +345,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
           : activeTab === "buy"
           ? `Buy ${coinData?.ticker}`
           : `Sell ${coinData?.ticker}`}
-      </button>
-
-      <button
-          // onClick={handleAction}
-          className={`py-2 px-4 rounded-md w-24 w-full font-medium ${wallet.connected
-              ? 'bg-custom-light-purple text-white hover:bg-[#9A83F6] '
-              : 'bg-[#232842] text-gray-300 hover:bg-[#222635CC] border border-[#232842CC]'
-              }`}
-      >
-          {wallet.connected ? 'Trade' : 'Connect Wallet to trade'}
       </button>
 
       {/* Top Holders Section */}

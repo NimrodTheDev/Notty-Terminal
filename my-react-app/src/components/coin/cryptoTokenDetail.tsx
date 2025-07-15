@@ -22,6 +22,10 @@ interface CoinData {
 	total_supply: string;
 	twitter: string | null;
 	website: string | null;
+	marketcap: number;
+	current_marketcap: number;
+	start_marketcap: number;
+	end_marketcap: number;
 }
 
 interface CryptoTokenDetailsProps {
@@ -61,7 +65,7 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 
 				<div className="flex justify-between">
 					<div className="text-purple-200">Marketcap:</div>
-					<div className="text-right">${coinData.market_cap.toLocaleString()}</div>
+					<div className="text-right">${coinData.marketcap.toLocaleString()}</div>
 				</div>
 
 				<div className="flex justify-between">
