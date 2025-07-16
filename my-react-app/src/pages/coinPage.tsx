@@ -44,25 +44,6 @@ const CoinPage: React.FC = () => {
     mintAddress || ""
   );
 
-  // useEffect(()  => {
-  //   if (!tokenLoading && mintAddress) {
-  //     // Merge dummy data with tokenData from Firebase
-  //     const dummyCoinData = getDummyCoinData(mintAddress || "");
-  //     const mergedData = {
-  //       ...tokenData,
-  //       ...dummyCoinData,
-  //       mint: (tokenData && tokenData.mint) || mintAddress
-  //     };
-  //     const response = await axios.get(
-  //       // `http://127.0.0.1:8000/api/coins/${mintAddress}
-  //       `https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}`
-  //     );
-  //     console.log(response.data)
-  //     setCoinData(mergedData);
-  //     setLoading(false);
-  //   }
-  // }, [tokenLoading, mintAddress, tokenData]);
-
   useEffect(() => {
     const fetchCoin = async () => {
       if (!tokenLoading && mintAddress) {
