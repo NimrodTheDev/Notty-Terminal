@@ -31,7 +31,7 @@ interface SolanaContextType {
     tx: any;
     sellerTokenAccount: web3.PublicKey;
 }>
-CreateAndInitToken?: (tokenName: string, tokenSymbol: string, tokenUri: string, pricePerToken: number, initialSupply: number, edit: boolean) => Promise<{
+CreateAndInitToken?: (tokenName: string, tokenSymbol: string, tokenUri: string, pricePerToken: number, initialSupply: number, edit: boolean, userBuy: number) => Promise<{
   tx: any;
   mintAccount: web3.Keypair;
 }>
@@ -313,7 +313,7 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
     return { tx: resp, sellerTokenAccount: sellerTokenAccount };
   };
 
-  const CreateAndInitToken = async(tokenName: string, tokenSymbol: string, tokenUri: string, pricePerToken: number, initialSupply: number, edit: boolean)=>{
+  const CreateAndInitToken = async(tokenName: string, tokenSymbol: string, tokenUri: string, pricePerToken: number, initialSupply: number, edit: boolean, userBuy: number)=>{
     const encoder = new TextEncoder();
     const mintAccount = web3.Keypair.generate();
     const [metadataAddress] = web3.PublicKey.findProgramAddressSync(
@@ -370,7 +370,8 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
           tokenSymbol = tokenSymbol,
           tokenUri = tokenUri,
           new BN(( edit ? pricePerToken : 0.000000025)),
-          new BN(( edit ? initialSupply : 1000000) * 1000000000)
+          new BN(( edit ? initialSupply : 1000000) * 1000000000),
+          new BN(userBuy)
         ).accounts({
           //@ts-ignore
           payer: window.solana.publicKey,

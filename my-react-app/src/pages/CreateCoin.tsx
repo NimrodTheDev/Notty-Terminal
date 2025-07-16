@@ -13,9 +13,7 @@ import { DEFAULT_CONFIG } from "../utils/bondingConfig";
 import { TokenLaunchParams } from "../bonding-interface";
 import { getSolanaPriceUSD } from "../hooks/solanabalance";
 import axios from "axios";
-import {
-  calculateTokenPrice,
-} from "../utils/calculationHelpers";
+import { calculateTokenPrice } from "../utils/calculationHelpers";
 
 // Keep original animation styles
 const styles = `
@@ -63,12 +61,10 @@ function CreateCoin() {
   const [tokenWebsite, setTokenWebsite] = useState("");
   const [tokenTwitter, setTokenTwitter] = useState("");
   const [tokenDiscord, setTokenDiscord] = useState("");
-  //   const { CreateAndInitToken } = useSolana();
-  const [error] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {}
   );
-  const [result, setResult] = useState<string | null>(null);
+  const [, setResult] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState<ReactNode>("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
@@ -122,10 +118,7 @@ function CreateCoin() {
 
     if (!tokenDiscord.trim()) {
       errors.tokenDiscord = "Discord channel is required";
-    } 
-    // else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
-    //   errors.tokenDiscord = "Please enter a valid Discord invite link";
-    // }
+    }
 
     if (!tokenImage) {
       errors.tokenImage = "Project image is required";
@@ -150,12 +143,10 @@ function CreateCoin() {
 
   const handelBackendSubmit = async (tokenData: any) => {
     const token = localStorage.getItem('auth_token');
-    // "5MnF3sQuysmCzBFHTK6HwZzHzhQ444F7EYZy7vrsaFbhxStjA8sRLRkFr4eS3WTT7mmhthGMBeR2hY2i19vGRo8i"
-
-    const solprice = await getSolanaPriceUSD()
-    const startPrice = calculateTokenPrice(DEFAULT_CONFIG.startMarketCap, DEFAULT_CONFIG) / solprice
-    const endCap = DEFAULT_CONFIG.endMarketCap / solprice
-    const startCap = DEFAULT_CONFIG.startMarketCap  / solprice
+    const solprice = await getSolanaPriceUSD();
+    const startPrice = calculateTokenPrice(DEFAULT_CONFIG.startMarketCap, DEFAULT_CONFIG) / solprice;
+    const endCap = DEFAULT_CONFIG.endMarketCap / solprice;
+    const startCap = DEFAULT_CONFIG.startMarketCap  / solprice;
 
     const newCoin = {
       address: tokenData.mint,
@@ -175,14 +166,13 @@ function CreateCoin() {
     };
     console.log(newCoin);
     await axios.post(
-      // 'http://127.0.0.1:8000/api/coins/',
       'https://solana-market-place-backend.onrender.com/api/coins/',
       newCoin,
       {
-        headers: { Authorization: `Token ${token}` }
+        headers: { Authorization: `Token ${token}`}
       }
     );
-  }
+  };
 
   const handleSubmit = async () => {
     if (!validate()) {
@@ -220,8 +210,9 @@ function CreateCoin() {
         discord: tokenDiscord
       });
 
-      if (metadataResult){
-        ({ metadataUrl, imageUrl: image_url } = metadataResult);
+      if (metadataResult) {
+        metadataUrl = metadataResult.metadataUrl;
+        image_url = metadataResult.imageUrl;
       }
 
       if (metadataUrl.length === 0) {
@@ -260,9 +251,9 @@ function CreateCoin() {
           tokenCreationResult.mint.toString()
         );
 
-        tokenData.tHash = tokenCreationResult.transaction
-        tokenData.imageUrl = image_url
-        await handelBackendSubmit(tokenData);
+        if (tokenData) {
+          await handelBackendSubmit({ imageUrl: image_url, ...tokenData });
+        }
 
         setResult(tokenCreationResult.transaction);
         setCreatedTokenData(tokenData);
@@ -292,6 +283,7 @@ function CreateCoin() {
     }
   };
 
+  // BondingCurveInfo component moved below all helpers and state
   const BondingCurveInfo = ({ tokenData }: { tokenData: any }) => {
     if (!tokenData) return null;
 
@@ -395,7 +387,7 @@ function CreateCoin() {
   };
 
   return (
-    <div className="relative sm:min-h-[180vh] xl:min-h-[124vh]">
+    <div className="w-full flex flex-col">
       <style>{styles}</style>
       <div className="h-64 z-10 crtGradient background-container top-10 left-10">
         <div className="h-40 justify-center">
@@ -411,10 +403,10 @@ function CreateCoin() {
         </div>
       </div>
 
-      <div className="max-[400px] h-[1200px] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
+      <div className="max-[400px] h-[100%] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
         <div
-          className="flex justify-center items-center absolute mt-10 flex-col border-gray-600 border max-w-[600px] 
-                w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded"
+          className="flex justify-center items-center mt-[-100px] mb-[50px] flex-col border-gray-600 border max-w-[600px] \
+                w-full  mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded"
         >
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-center mb-2">
@@ -460,241 +452,231 @@ function CreateCoin() {
             </div>
           </div>
 
-          <form className="flex flex-col justify-center w-full max-w-[500px] mx-auto mb-10 mt=10">
-            {/* Bonding Curve Info Panel - Added to original form */}
-            <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-500/30">
-              <h3 className="text-lg font-semibold text-purple-300 mb-2">
-                💎 Bonding Curve Features
-              </h3>
-              <ul className="text-sm text-gray-300 space-y-1">
-                <li>
-                  • Starting Market Cap:{" "}
-                  {formatMarketCap(DEFAULT_CONFIG.startMarketCap)}
-                </li>
-                <li>
-                  • Target Market Cap:{" "}
-                  {formatMarketCap(DEFAULT_CONFIG.endMarketCap)}
-                </li>
-                <li>
-                  • Total Supply: {DEFAULT_CONFIG.totalSupply.toLocaleString()}{" "}
-                  tokens
-                </li>
-                <li>• Automatic Raydium migration when target reached</li>
-              </ul>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <label
-                  htmlFor="projectName"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Project name
-                </label>
-                <input
-                  type="text"
-                  id="projectName"
-                  className={`w-full bg-gray-800 border ${
-                    validationErrors.tokenName
-                      ? "border-red-500"
-                      : "border-gray-700"
-                  } rounded px-4 py-2 text-white no-background`}
-                  placeholder="Enter your project name"
-                  onChange={(e) => settTokenName(e.target.value)}
-                />
-                {validationErrors.tokenName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenName}
-                  </p>
-                )}
+          {/* Only show the form if BondingCurveInfo is NOT showing */}
+          {!showBondingCurveInfo && (
+            <form className="flex flex-col justify-center w-full max-w-[500px] mx-auto mb-10 mt=10">
+              {/* Bonding Curve Info Panel - Added to original form */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-500/30">
+                <h3 className="text-lg font-semibold text-purple-300 mb-2">
+                  💎 Bonding Curve Features
+                </h3>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  <li>
+                    • Starting Market Cap:{" "}
+                    {formatMarketCap(DEFAULT_CONFIG.startMarketCap)}
+                  </li>
+                  <li>
+                    • Target Market Cap:{" "}
+                    {formatMarketCap(DEFAULT_CONFIG.endMarketCap)}
+                  </li>
+                  <li>
+                    • Total Supply: {DEFAULT_CONFIG.totalSupply.toLocaleString()}{" "}
+                    tokens
+                  </li>
+                  <li>• Automatic Raydium migration when target reached</li>
+                </ul>
               </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  htmlFor="projectDesc"
-                >
-                  Project description
-                </label>
-                <textarea
-                  id="projectDesc"
-                  className={`w-full h-[200px] bg-gray-800 border ${
-                    validationErrors.tokenDescription
-                      ? "border-red-500"
-                      : "border-gray-700"
-                  } rounded px-4 py-2 text-white no-background resize-none`}
-                  placeholder="Describe your projects"
-                  onChange={(e) => setTokenDescription(e.target.value)}
-                />
-                {validationErrors.tokenDescription && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenDescription}
-                  </p>
-                )}
+              <div className="space-y-6">
+                <div>
+                  <label
+                    htmlFor="projectName"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Project name
+                  </label>
+                  <input
+                    type="text"
+                    id="projectName"
+                    className={`w-full bg-gray-800 border ${
+                      validationErrors.tokenName
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded px-4 py-2 text-white no-background`}
+                    placeholder="Enter your project name"
+                    onChange={(e) => settTokenName(e.target.value)}
+                  />
+                  {validationErrors.tokenName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    htmlFor="projectDesc"
+                  >
+                    Project description
+                  </label>
+                  <textarea
+                    id="projectDesc"
+                    className={`w-full h-[200px] bg-gray-800 border ${
+                      validationErrors.tokenDescription
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded px-4 py-2 text-white no-background resize-none`}
+                    placeholder="Describe your projects"
+                    onChange={(e) => setTokenDescription(e.target.value)}
+                  />
+                  {validationErrors.tokenDescription && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenDescription}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    htmlFor="projectSymb"
+                  >
+                    Project symbol
+                  </label>
+                  <input
+                    type="text"
+                    id="projectSymb"
+                    className={`w-full bg-gray-800 border ${
+                      validationErrors.tokenSymbol
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded px-4 py-2 text-white no-background`}
+                    placeholder="Set token symbol"
+                    onChange={(e) =>
+                      settTokenSymbol(e.target.value.toUpperCase())
+                    }
+                  />
+                  {validationErrors.tokenSymbol && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenSymbol}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    htmlFor="projectImage"
+                  >
+                    Project Image
+                  </label>
+                  <DragAndDropFileInput
+                    singleFile={true}
+                    onFileSelect={function (files: File[]): void {
+                      setTokenImage(files[0]);
+                    }}
+                    id={"file"}
+                  />
+                  {validationErrors.tokenImage && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenImage}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="webAddress"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Website Address
+                  </label>
+                  <input
+                    type="url"
+                    id="webAddress"
+                    className={`w-full bg-gray-800 border ${
+                      validationErrors.tokenWebsite
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded px-4 py-2 text-white no-background`}
+                    placeholder="https://your-website.com"
+                    onChange={(e) => setTokenWebsite(e.target.value)}
+                  />
+                  {validationErrors.tokenWebsite && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenWebsite}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="twithand"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Twitter Handle
+                  </label>
+                  <input
+                    type="text"
+                    id="twithand"
+                    className={`w-full bg-gray-800 border ${
+                      validationErrors.tokenTwitter
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded px-4 py-2 text-white no-background`}
+                    placeholder="@yourhandle"
+                    onChange={(e) => setTokenTwitter(e.target.value)}
+                  />
+                  {validationErrors.tokenTwitter && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenTwitter}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="discord"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Discord Channel
+                  </label>
+                  <input
+                    type="url"
+                    id="discord"
+                    className={`w-full bg-gray-800 border ${
+                      validationErrors.tokenDiscord
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded px-4 py-2 text-white no-background`}
+                    placeholder="https://discord.gg/your-channel"
+                    onChange={(e) => setTokenDiscord(e.target.value)}
+                  />
+                  {validationErrors.tokenDiscord && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.tokenDiscord}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  htmlFor="projectSymb"
+              <div className="flex justify-end mt-8">
+                <button
+                  type="button"
+                  className={`flex items-center justify-center ${
+                    connected && publicKey
+                      ? "bg-custom-light-purple hover:bg-indigo-600 text-white"
+                      : "bg-gray-600 text-gray-300 cursor-not-allowed"
+                  } px-6 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                  onClick={handleSubmit}
+                  disabled={loading.bool || !connected || !publicKey}
                 >
-                  Project symbol
-                </label>
-                <input
-                  type="text"
-                  id="projectSymb"
-                  className={`w-full bg-gray-800 border ${
-                    validationErrors.tokenSymbol
-                      ? "border-red-500"
-                      : "border-gray-700"
-                  } rounded px-4 py-2 text-white no-background`}
-                  placeholder="Set token symbol"
-                  onChange={(e) =>
-                    settTokenSymbol(e.target.value.toUpperCase())
-                  }
-                />
-                {validationErrors.tokenSymbol && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenSymbol}
-                  </p>
-                )}
+                  {loading.bool
+                    ? loading.msg + "..."
+                    : !connected || !publicKey
+                    ? "Connect Wallet to Launch"
+                    : "Launch Token with Bonding Curve"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </button>
               </div>
-
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  htmlFor="projectImage"
-                >
-                  Project Image
-                </label>
-                <DragAndDropFileInput
-                  singleFile={true}
-                  onFileSelect={function (files: File[]): void {
-                    setTokenImage(files[0]);
-                  }}
-                  id={"file"}
-                />
-                {validationErrors.tokenImage && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenImage}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="webAddress"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Website Address
-                </label>
-                <input
-                  type="url"
-                  id="webAddress"
-                  className={`w-full bg-gray-800 border ${
-                    validationErrors.tokenWebsite
-                      ? "border-red-500"
-                      : "border-gray-700"
-                  } rounded px-4 py-2 text-white no-background`}
-                  placeholder="https://your-website.com"
-                  onChange={(e) => setTokenWebsite(e.target.value)}
-                />
-                {validationErrors.tokenWebsite && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenWebsite}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="twithand"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Twitter Handle
-                </label>
-                <input
-                  type="text"
-                  id="twithand"
-                  className={`w-full bg-gray-800 border ${
-                    validationErrors.tokenTwitter
-                      ? "border-red-500"
-                      : "border-gray-700"
-                  } rounded px-4 py-2 text-white no-background`}
-                  placeholder="@yourhandle"
-                  onChange={(e) => setTokenTwitter(e.target.value)}
-                />
-                {validationErrors.tokenTwitter && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenTwitter}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="discord"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Discord Channel
-                </label>
-                <input
-                  type="url"
-                  id="discord"
-                  className={`w-full bg-gray-800 border ${
-                    validationErrors.tokenDiscord
-                      ? "border-red-500"
-                      : "border-gray-700"
-                  } rounded px-4 py-2 text-white no-background`}
-                  placeholder="https://discord.gg/your-channel"
-                  onChange={(e) => setTokenDiscord(e.target.value)}
-                />
-                {validationErrors.tokenDiscord && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors.tokenDiscord}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-8">
-              <button
-                type="button"
-                className={`flex items-center justify-center ${
-                  connected && publicKey
-                    ? "bg-custom-light-purple hover:bg-indigo-600 text-white"
-                    : "bg-gray-600 text-gray-300 cursor-not-allowed"
-                } px-6 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-                onClick={handleSubmit}
-                disabled={loading.bool || !connected || !publicKey}
-              >
-                {loading.bool
-                  ? loading.msg + "..."
-                  : !connected || !publicKey
-                  ? "Connect Wallet to Launch"
-                  : "Launch Token with Bonding Curve"}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Bonding curve info after creation */}
-            {showBondingCurveInfo && createdTokenData && (
-              <BondingCurveInfo tokenData={createdTokenData} />
-            )}
-          </form>
-        </div>
-
-        <div className="flex flex-col items-center justify-center overflow-hidden w-full">
-          {result && (
-            <Link
-              to={`https://explorer.solana.com/tx/${result}?cluster=devnet`}
-              className="text-green-500 underline"
-              target="_blank"
-            >
-              link to TX hash
-            </Link>
+            </form>
           )}
-          {error && <p className="text-red-500">{error}</p>}
+
+          {/* Show BondingCurveInfo after creation, outside the form */}
+          {showBondingCurveInfo && createdTokenData && (
+            <BondingCurveInfo tokenData={createdTokenData} />
+          )}
         </div>
       </div>
 

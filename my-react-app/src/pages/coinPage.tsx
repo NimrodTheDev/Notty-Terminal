@@ -98,14 +98,14 @@ const CoinPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-custom-dark-blue w-full items-center">
-      <div className="bg-custom-dark-blue flex flex-col gap-2 mx-auto text-white max-w-7xl p-4">
-        <div className="flex flex-col sm:flex-row">
+    <div className="bg-custom-dark-blue w-full items-center overflow-x-hidden">
+      <div className="bg-custom-dark-blue flex flex-col gap-2 mx-auto text-white max-w-7xl p-2 xs:p-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <div className="flex flex-col gap-2 w-full">
             <CoinProfile coinData={coinData} />
             <CryptoTokenDetails coinData={coinData} />
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 w-full sm:w-auto">
             <BuyAndSell coinData={coinData} />
           </div>
         </div>
