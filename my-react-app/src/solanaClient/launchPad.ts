@@ -42,15 +42,15 @@ import {
     };
     console.log(newTrade);
 
-    // const response = await axios.post(
-    //   `http://127.0.0.1:8000/api/trades/`,
-    //   newTrade,
-    //   {
-    //     headers: { Authorization: `Token ${token}` }
-    //   }
-    // );
-    // // `https://solana-market-place-backend.onrender.com/api/trades/`
-    // console.log(response.data)
+    const response = await axios.post(
+      // `http://127.0.0.1:8000/api/trades/`,
+      `https://solana-market-place-backend.onrender.com/api/trades/`,
+      newTrade,
+      {
+        headers: { Authorization: `Token ${token}` }
+      }
+    );
+    console.log(response.data)
   }
 
   export class SolanaLaunchpad {

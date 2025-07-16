@@ -175,13 +175,13 @@ function CreateCoin() {
     };
     console.log(newCoin);
     await axios.post(
-      'http://127.0.0.1:8000/api/coins/',
+      // 'http://127.0.0.1:8000/api/coins/',
+      'https://solana-market-place-backend.onrender.com/api/coins/',
       newCoin,
       {
         headers: { Authorization: `Token ${token}` }
       }
     );
-    // 'https://solana-market-place-backend.onrender.com/api/coins/'
   }
 
   const handleSubmit = async () => {
