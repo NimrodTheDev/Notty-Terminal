@@ -44,10 +44,10 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
   onFilterChange,
 }) => {
   return (
-    <div className="bg-gray-900 min-h-screen p-4 sm:p-8 z-10 w-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-gray-900 min-h-screen p-4 sm:p-8 z-10 w-fit">
+      <div className="mx-auto">
         {/* Header */}
-        <div className="max-w-2xl mx-auto text-center rounded-md px-6 mb-8">
+        <div className="mx-auto text-center rounded-md px-6 mb-8">
           <h1 className="text-5xl font-bold mb-3 text-gray-100">MarketPlace</h1>
           <p className="text-lg text-gray-400">
             Discover and invest in innovative projects launched on the blockchain.
@@ -55,14 +55,14 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         </div>
 
         {/* Navbar */}
-        <nav className="mb-8 mx-[-32px] bg-[#1d213799] px-6 py-3 flex items-center flex-col justify-between w-[calc(100%+64px)] gap-2 md:flex-row">
-          <div className="flex items-center flex-1 max-w-lg">
+        <nav className="mb-8 mx-[-32px] bg-[#1d213799] px-6 py-3 flex items-center flex-col justify-between w-[calc(100%+64px)] gap-2 md:flex-row ">
+          <div className="flex items-center flex-1 max-w-fit">
             <input
               type="text"
               placeholder="Let's Go!"
               value={searchTerm}
               onChange={onSearchChange}
-              className="w-full rounded-md px-3 py-1 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              className="w-full rounded-md px-1 py-1 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
               aria-label="Search coins by ID or name"
               spellCheck={false}
             />

@@ -13,14 +13,7 @@ import { DEFAULT_CONFIG } from "../utils/bondingConfig";
 import { TokenLaunchParams } from "../bonding-interface";
 import { getSolanaPriceUSD } from "../hooks/solanabalance";
 import axios from "axios";
-import {
-  calculateTokenPrice,
-} from "../utils/calculationHelpers";
-import { getSolanaPriceUSD } from "../hooks/solanabalance";
-import axios from "axios";
-import {
-  calculateTokenPrice,
-} from "../utils/calculationHelpers";
+import { calculateTokenPrice } from "../utils/calculationHelpers";
 
 // Keep original animation styles
 const styles = `
@@ -125,14 +118,7 @@ function CreateCoin() {
 
     if (!tokenDiscord.trim()) {
       errors.tokenDiscord = "Discord channel is required";
-    } 
-    // else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
-    if (!tokenDiscord.trim()) {
-      errors.tokenDiscord = "Discord channel is required";
-    } 
-    // else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
-    //   errors.tokenDiscord = "Please enter a valid Discord invite link";
-    // }
+    }
 
     if (!tokenImage) {
       errors.tokenImage = "Project image is required";
@@ -157,48 +143,10 @@ function CreateCoin() {
 
   const handelBackendSubmit = async (tokenData: any) => {
     const token = localStorage.getItem('auth_token');
-    // "5MnF3sQuysmCzBFHTK6HwZzHzhQ444F7EYZy7vrsaFbhxStjA8sRLRkFr4eS3WTT7mmhthGMBeR2hY2i19vGRo8i"
-
-    const solprice = await getSolanaPriceUSD()
-    const startPrice = calculateTokenPrice(DEFAULT_CONFIG.startMarketCap, DEFAULT_CONFIG) / solprice
-    const endCap = DEFAULT_CONFIG.endMarketCap / solprice
-    const startCap = DEFAULT_CONFIG.startMarketCap  / solprice
-
-    const newCoin = {
-      address: tokenData.mint,
-      name: tokenData.metadata.name,
-      ticker: tokenData.metadata.symbol,
-      description: tokenData.metadata.description,
-      website: tokenWebsite,
-      discord: tokenDiscord,
-      twitter: tokenTwitter,
-      decimals: tokenData.metadata.decimals,
-      current_price: startPrice.toFixed(10),
-      image_url: tokenData.imageUrl,
-      total_supply: tokenData.totalSupply,
-      end_marketcap: endCap.toFixed(9),
-      start_marketcap: startCap.toFixed(9),
-      current_marketcap: startCap.toFixed(9),
-    };
-    console.log(newCoin);
-    await axios.post(
-      'http://127.0.0.1:8000/api/coins/',
-      newCoin,
-      {
-        headers: { Authorization: `Token ${token}` }
-      }
-    );
-    // 'https://solana-market-place-backend.onrender.com/api/coins/'
-  }
-
-  const handelBackendSubmit = async (tokenData: any) => {
-    const token = localStorage.getItem('auth_token');
-    // "5MnF3sQuysmCzBFHTK6HwZzHzhQ444F7EYZy7vrsaFbhxStjA8sRLRkFr4eS3WTT7mmhthGMBeR2hY2i19vGRo8i"
-
-    const solprice = await getSolanaPriceUSD()
-    const startPrice = calculateTokenPrice(DEFAULT_CONFIG.startMarketCap, DEFAULT_CONFIG) / solprice
-    const endCap = DEFAULT_CONFIG.endMarketCap / solprice
-    const startCap = DEFAULT_CONFIG.startMarketCap  / solprice
+    const solprice = await getSolanaPriceUSD();
+    const startPrice = calculateTokenPrice(DEFAULT_CONFIG.startMarketCap, DEFAULT_CONFIG) / solprice;
+    const endCap = DEFAULT_CONFIG.endMarketCap / solprice;
+    const startCap = DEFAULT_CONFIG.startMarketCap  / solprice;
 
     const newCoin = {
       address: tokenData.mint,
@@ -224,8 +172,7 @@ function CreateCoin() {
         headers: { Authorization: `Token ${token}`}
       }
     );
-    
-  }
+  };
 
   const handleSubmit = async () => {
     if (!validate()) {
@@ -255,10 +202,6 @@ function CreateCoin() {
       let image_url = '';
 
       const metadataResult = await uploadFile(tokenImage, {
-      let metadataUrl = '';
-      let image_url = '';
-
-      const metadataResult = await uploadFile(tokenImage, {
         name: tokenName,
         symbol: tokenSymbol,
         description: tokenDescription,
@@ -267,12 +210,9 @@ function CreateCoin() {
         discord: tokenDiscord
       });
 
-      if (metadataResult){
-        ({ metadataUrl, imageUrl: image_url } = metadataResult);
-      }
-
-      if (metadataResult){
-        ({ metadataUrl, imageUrl: image_url } = metadataResult);
+      if (metadataResult) {
+        metadataUrl = metadataResult.metadataUrl;
+        image_url = metadataResult.imageUrl;
       }
 
       if (metadataUrl.length === 0) {
@@ -311,13 +251,8 @@ function CreateCoin() {
           tokenCreationResult.mint.toString()
         );
 
-        tokenData.tHash = tokenCreationResult.transaction
-        tokenData.imageUrl = image_url
-        await handelBackendSubmit(tokenData);
-
         if (tokenData) {
-
-            await handelBackendSubmit({imageUrl: image_url,...tokenData});
+          await handelBackendSubmit({ imageUrl: image_url, ...tokenData });
         }
 
         setResult(tokenCreationResult.transaction);
@@ -348,6 +283,7 @@ function CreateCoin() {
     }
   };
 
+  // BondingCurveInfo component moved below all helpers and state
   const BondingCurveInfo = ({ tokenData }: { tokenData: any }) => {
     if (!tokenData) return null;
 
@@ -469,7 +405,7 @@ function CreateCoin() {
 
       <div className="max-[400px] h-[100%] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
         <div
-          className="flex justify-center items-center mt-[-100px] mb-[50px] flex-col border-gray-600 border max-w-[600px] 
+          className="flex justify-center items-center mt-[-100px] mb-[50px] flex-col border-gray-600 border max-w-[600px] \
                 w-full  mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded"
         >
           <div className="mb-8">
