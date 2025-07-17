@@ -14,27 +14,7 @@ import { Buffer } from "buffer";
 import { CoinData } from "../components/coin/CoinFilter";
 window.Buffer = Buffer;
 
-// Dummy CoinData for testing
-const getDummyCoinData = (mintAddress: string) => ({
-  address: mintAddress,
-  created_at: new Date().toISOString(),
-  score: 8.5,
-  creator: "DummyCreatorAddress",
-  creator_display_name: "Dummy Creator",
-  current_price: 0.05,
-  description: "This is a dummy token for testing purposes",
-  image_url: "https://via.placeholder.com/150",
-  market_cap: 1000000,
-  name: "Dummy Token",
-  telegram: "https://t.me/dummy",
-  ticker: "DUMMY",
-  total_held: 500000,
-  total_supply: "1000000",
-  twitter: "@dummytoken",
-  website: "https://dummytoken.com",
-  decimals: 6,
-  price_per_token: "0.05"
-});
+
 
 const CoinPage: React.FC = () => {
   const [coinData, setCoinData] = useState<any | (TokenData & CoinData)>(); // to adjust this later
