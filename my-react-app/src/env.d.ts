@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_IPFS_GATEWAY: string
   readonly VITE_APP_NAME: string
   readonly VITE_APP_ENV: string
+  readonly VITE_BACKENED_API: string
 }
 
 interface ImportMeta {

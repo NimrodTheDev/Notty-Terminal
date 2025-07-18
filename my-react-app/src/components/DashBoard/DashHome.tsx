@@ -85,6 +85,7 @@ const DashHome = () => {
     const [balance, setBalance] = useState<number>(0);
     const [userInfo, setUserInfo] = useState<UserInfo>({ tradescore: 0, devscore: 0 });
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
+    const [loading, setLoading] = useState<boolean>(true);
 
     // for fetching the wallet amount
     useEffect(() => {
@@ -124,12 +125,23 @@ const DashHome = () => {
                 setCreatedCoins(coins.length);
                 setCoins(holdings);
                 setUserInfo(user);
-            } catch (err: any) {
-                console.log(err)
+          } catch (err: any) {
+                console.log(err);
+            } finally {
+                setLoading(false); // Set loading to false after fetching
             }
-        };
+ };
         fetchAllCoins();
     }, []);
+    
+ if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen bg-custom-dark-blue">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+            </div>
+        );
+    }
+
 
     return (
         <div className="min-h-screen relative  bg-custom-dark-blue text-white p-6">

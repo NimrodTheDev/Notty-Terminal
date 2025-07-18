@@ -64,7 +64,7 @@ const Sidebar = () => {
             {/* Sidebar */}
             <div className={`
                 bg-custom-dark-blue text-white h-screen flex flex-col transition-transform duration-300 ease-in-out z-40 pt-16 sm:pt-0
-                ${isMobileMenuOpen ? 'fixed inset-y-0 left-0 w-64' : 'hidden lg:flex lg:w-64'}
+                ${isMobileMenuOpen ? 'fixed inset-y-0 left-0 w-4/5 max-w-xs' : 'hidden lg:flex lg:w-64'}
             `}>
                 {/* Header */}
                 <div className="p-6 border-b border-gray-700">

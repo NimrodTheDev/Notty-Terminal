@@ -48,14 +48,14 @@ function Profile() {
 
 
     return (
-        <div className='relative sm:min-h-[180vh] xl:min-h-[124vh]'>
+        <div className='relative min-h-screen sm:min-h-[180vh] xl:min-h-[124vh] overflow-x-hidden'>
 
             <div className="h-32 sm:h-48 lg:h-64 z-10 crtGradient background-container top-10 left-10">
 
 
             </div>
 
-            <div className=" h-[1200px] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
+            <div className="h-auto min-h-[900px] mx-auto bg-custom-dark-blue relative flex flex-col items-center justify-center px-2 xs:px-4">
                 <div className="flex justify-center absolute mt-10 flex-col border-gray-600 border max-w-[970px] 
                 w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded">
                     <div className="mb-8">
@@ -81,8 +81,8 @@ function Profile() {
                                 Follow
                             </button>
                         </div>
-                        <div className=" flex flex-col sm:flex-row items-center justify-between p-6">
-                            <div className=" w-full mx-auto sm:p-6 font-sans ">
+                        <div className=" flex flex-col sm:flex-row items-center justify-between p-2 sm:p-6">
+                            <div className="max-w-4xl w-full sm:flex-1 mx-auto sm:p-6 font-sans ">
                                 {/* Tabs Navigation */}
                                 <div className="flex flex-col  sm:flex-row">
                                     <button
@@ -128,7 +128,7 @@ function Profile() {
                                 </div>
 
                                 {/* Tabs Content */}
-                                <div className="py-6">
+                                <div className="py-2 sm:py-6 border-gray-800 sm:border-r">
                                     {/* Created Coins Tab */}
                                     {activeTab === 'createdCoins' && (
                                         <div className="space-y-4">
