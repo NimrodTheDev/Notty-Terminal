@@ -6,13 +6,13 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from '@solana/web3.js';
 
 type CoinItem = { // can make the coin object optional
-    amount_held : string;
-    coin : string;
-    coin_name : string;
-    coin_ticker : string;
-    current_price : number;
-    user :  string;
-    value : number;
+    amount_held: string;
+    coin: string;
+    coin_name: string;
+    coin_ticker: string;
+    current_price: number;
+    user: string;
+    value: number;
     market_cap: number;
 };
 
@@ -24,7 +24,7 @@ type UserInfo = { // can make the coin object optional
 // we have issues when working with laports note <don't> remove this.
 // connect issue
 
-function shortenAddress(address:string) {
+function shortenAddress(address: string) {
     if (!address || address.length < 10) return address;
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
@@ -83,7 +83,7 @@ const DashHome = () => {
     const wallet = useWallet();
     const { connection } = useConnection();
     const [balance, setBalance] = useState<number>(0);
-    const [userInfo, setUserInfo] = useState<UserInfo>({tradescore:0,devscore:0});
+    const [userInfo, setUserInfo] = useState<UserInfo>({ tradescore: 0, devscore: 0 });
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
 
     // for fetching the wallet amount
@@ -92,16 +92,16 @@ const DashHome = () => {
             console.log(wallet.connected)
             if (wallet.connected) {
                 const pubkey = wallet.publicKey;
-                if (pubkey instanceof PublicKey){
+                if (pubkey instanceof PublicKey) {
                     const lamports = await connection.getBalance(pubkey);
                     setWAddress(pubkey.toBase58());
-                const sol = lamports / 1e9;
-                setBalance(sol);
+                    const sol = lamports / 1e9;
+                    setBalance(sol);
                 }
             }
         };
         fetchBalance();
-      }, [wallet.connected, wallet.publicKey]);
+    }, [wallet.connected, wallet.publicKey]);
 
     useEffect(() => {
         const fetchAllCoins = async () => {
@@ -144,10 +144,10 @@ const DashHome = () => {
                         <h1 className="text-xl font-bold">Dashboard</h1>
                         <p className="text-gray-400 text-sm">{shortenAddress(wAddress)}</p>
                         <div className='flex space-x-2'>
-                            <h2 className="text-l font-bold">Dev score: {userInfo?.devscore}</h2>
-                            <h2 className="text-l font-bold">Trader score: {userInfo?.tradescore}</h2>
+                            <h2 className="text-l text-[#CCC1FA]  font-bold">Dev score: {userInfo?.devscore}</h2>
+                            <h2 className="text-l text-[#CCC1FA]  font-bold">Trader score: {userInfo?.tradescore}</h2>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>

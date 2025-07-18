@@ -9,6 +9,7 @@ import CryptoTokenDetails from "../components/coin/cryptoTokenDetail";
 import SimilarCoins from "../components/coin/similiarCoin";
 import BuyAndSell from "../components/coin/BuyAndSell";
 import { useParams } from "react-router-dom";
+import CoinHistory from "../components/coin/coinHistory";
 
 interface CoinData {
   address: string;
@@ -51,7 +52,7 @@ const CoinPage: React.FC = () => {
           `https://solana-market-place-backend.onrender.com/api/coins/${id}`
         );
         setCoinData(response.data);
-		// we can add promise all or holder info, or finish it with the backend
+        // we can add promise all or holder info, or finish it with the backend
       } catch (e) {
         setError("Failed to fetch coin data");
         console.error("Error fetching coin data:", e);
@@ -63,11 +64,11 @@ const CoinPage: React.FC = () => {
   }, [id]);
 
   if (loading) { // make better loading
-    return(
-		<div className="flex justify-center items-center h-screen bg-custom-dark-blue">
-			<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-		</div>
-	);
+    return (
+      <div className="flex justify-center items-center h-screen bg-custom-dark-blue">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
   }
 
   if (error || !coinData) {
@@ -87,6 +88,7 @@ const CoinPage: React.FC = () => {
             <BuyAndSell coinData={coinData} />
             {/* <CryptoTradingWidget coinData={coinData} /> */}
             {/* <HoldersAnalytics coinData={coinData} /> */}
+            <CoinHistory />
           </div>
         </div>
         <SimilarCoins coinData={coinData} />

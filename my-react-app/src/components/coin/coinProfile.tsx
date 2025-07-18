@@ -61,7 +61,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 
 				{/* Cat Image */}
 				<div className='mb-8'>
-				{/* aspect-[16/9] the solution to the aspect ration stuff, reomve it if its a problem */}
+					{/* aspect-[16/9] the solution to the aspect ration stuff, reomve it if its a problem */}
 					<div className='rounded-xl overflow-hidden border-2 border-gray-700 mx-auto max-w-md aspect-[16/9]'>
 						<img
 							src={coinData.image_url || img}
@@ -85,22 +85,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 					)}
 					{coinData?.discord && (
 						<a href={coinData?.discord} target="_blank" rel="noopener noreferrer" className='p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors'>
-							<svg
-								width='20'
-								height='20'
-								viewBox='0 0 24 24'
-								fill='none'
-								xmlns='http://www.w3.org/2000/svg'
-							>
-								<path
-									d='M19.73 4.27a10 10 0 0 0-14.15 0c-3.9 3.91-3.9 10.24 0 14.14 3.91 3.91 10.24 3.91 14.15 0 3.9-3.9 3.9-10.23 0-14.14zM7.89 7.89a6 6 0 0 1 8.3-.18l.12.1.13.12a6 6 0 0 1-8.51 8.51l-.04-.04a6 6 0 0 1 0-8.51z'
-									fill='currentColor'
-								/>
-								<path
-									d='M16.27 16.27a6 6 0 0 0 0-8.54 6 6 0 0 0-8.54 0 6 6 0 0 0 0 8.54 6 6 0 0 0 8.54 0zM12 10.8a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z'
-									fill='currentColor'
-								/>
-							</svg>
+							<img src="/discord-app-icon-2025-blue-controller-logo.png" alt="" className=" w-8 h-6" />
 						</a>
 					)}
 				</div>
