@@ -394,7 +394,7 @@ function CreateCoin() {
   };
 
   return (
-    <div className="w-full flex flex-col">
+    <div className="w-full flex flex-col bg-custom-dark-blue">
       <style>{styles}</style>
       <div className="h-64 z-10 crtGradient background-container top-10 left-10">
         <div className="h-40 justify-center">

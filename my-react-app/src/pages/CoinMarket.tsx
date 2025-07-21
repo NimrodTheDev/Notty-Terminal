@@ -13,7 +13,6 @@ const CoinMarket: React.FC = () => {
   const { loading, request } = useAxios();
   const [errorList, setErrorList] = useState<string | null>(null);
 
-
   // Fetch all coins once without filter params (server returns all)
   useEffect(() => {
     const fetchAllCoins = async () => {
