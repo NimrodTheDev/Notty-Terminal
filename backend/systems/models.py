@@ -43,6 +43,9 @@ class SolanaUser(AbstractUser):
     wallet_address = models.CharField(max_length=44, unique=True, primary_key=True)
     display_name = models.CharField(max_length=150, blank=True)
     bio = models.TextField(blank=True)
+    # following
+    # followers
+    # coins_created
 
     USERNAME_FIELD = "wallet_address"
     REQUIRED_FIELDS = []

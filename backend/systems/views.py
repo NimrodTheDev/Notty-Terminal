@@ -20,7 +20,7 @@ from .models import (
 )
 
 from .serializers import (
-    DeveloperScoreSerializer, TraderScoreSerializer, 
+    DeveloperScoreSerializer, 
     CoinDRCScoreSerializer, ConnectWalletSerializer,
     CoinSerializer, UserCoinHoldingsSerializer, 
     TradeSerializer, SolanaUserSerializer,
@@ -162,9 +162,6 @@ class UserDashboardView(APIView):
         user = request.user
         context = {'request': request}
 
-        # holdings = UserCoinHoldings.objects.filter(user=user)
-        # created_coins = Coin.objects.filter(creator=user)
-
         holdings = UserCoinHoldings.objects.filter(user=user).select_related("coin")
         created_coins = Coin.objects.filter(creator=user)  # add .only() if needed
 
@@ -191,6 +188,31 @@ class UserDashboardView(APIView):
             "holdings": holdings_serializer.data,
             "created_coins": coins_serializer.data
         })
+    
+    @action(detail=False, methods=['get'], url_path='profile')#, permission_classes=[permissions.IsAuthenticated])
+    def my_coins(self, request):
+        wallet_address = request.query_params.get('address')
+        user = get_object_or_404(SolanaUser, wallet_address=wallet_address)
+        context = {'request': request}
+
+        created_coins = Coin.objects.filter(creator=user)
+
+        coins_serializer = CoinSerializer(
+            created_coins,
+            many=True,
+            context=context
+        )
+
+        return Response({
+            "user": {
+                "wallet_address": user.wallet_address,
+                "display_name": user.get_display_name(),
+                "bio": user.bio,
+                "devscore": user.devscore,
+                "tradescore": user.tradescore
+            },
+            "created_coins": coins_serializer.data,
+        })
 
 class TradeViewSet(viewsets.ModelViewSet):
     """
@@ -199,17 +221,8 @@ class TradeViewSet(viewsets.ModelViewSet):
     queryset = Trade.objects.all()
     serializer_class = TradeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Will change to ReadOnly later
-    lookup_field = 'id'  # Should eventually be changed to transaction_hash
+    lookup_field = 'id' # Should eventually be changed to transaction_hash
     http_method_names = ['get', 'post', 'options']
-
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     if not serializer.is_valid():
-    #         print("❌ Validation errors:", serializer.errors)  # Log to terminal
-    #         return Response(serializer.errors, status=400)
-
-    #     self.perform_create(serializer)
-    #     return Response(serializer.data, status=201)
     
     def perform_create(self, serializer):
         """Set user to current authenticated user"""
@@ -353,57 +366,6 @@ class DeveloperScoreViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-class TraderScoreViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for viewing trader reputation scores"""
-    queryset = TraderScore.objects.all().order_by('-score')
-    serializer_class = TraderScoreSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        
-        # Filter by minimum score
-        min_score = self.request.query_params.get('min_score')
-        if min_score and min_score.isdigit():
-            queryset = queryset.filter(score__gte=int(min_score))
-        
-        # Filter by maximum score
-        max_score = self.request.query_params.get('max_score')
-        if max_score and max_score.isdigit():
-            queryset = queryset.filter(score__lte=int(max_score))
-        
-        # Filter by trader address
-        trader_address = self.request.query_params.get('trader')
-        if trader_address:
-            queryset = queryset.filter(trader__wallet_address__iexact=trader_address)
-        
-        # Filter by minimum trading activity
-        min_trades = self.request.query_params.get('min_trades')
-        if min_trades and min_trades.isdigit():
-            queryset = queryset.filter(trades_count__gte=int(min_trades))
-        
-        return queryset
-    
-    @action(detail=False, methods=['get'])
-    def top_traders(self, request):
-        """Returns top 10 traders by score"""
-        top_traders = self.get_queryset().filter(trades_count__gt=5)[:10]
-        serializer = self.get_serializer(top_traders, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'])
-    def my_score(self, request):
-        """Returns the authenticated user's trader score"""
-        try:
-            score = TraderScore.objects.get(trader=request.user)
-            serializer = self.get_serializer(score)
-            return Response(serializer.data)
-        except TraderScore.DoesNotExist:
-            return Response(
-                {"detail": "No trader score found. Make trades to establish your trader score."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
 class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
     """API endpoint for viewing coin DRC scores"""
     queryset = CoinDRCScore.objects.all().order_by('-score')
@@ -469,63 +431,6 @@ class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
         """Returns DRC scores for coins created by the authenticated user"""
         user_coins = self.get_queryset().filter(coin__creator=request.user)
         serializer = self.get_serializer(user_coins, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=True, methods=['post'])
-    def verify_contract(self, request, pk=None):
-        """Mark a coin's contract as verified"""
-        coin_drc = self.get_object()
-        
-        # Check if user is the coin creator or an admin
-        if request.user != coin_drc.coin.creator and not request.user.is_staff:
-            return Response(
-                {"detail": "You don't have permission to verify this contract"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        coin_drc.verified_contract = True
-        coin_drc.save()
-        coin_drc.recalculate_score()
-        
-        serializer = self.get_serializer(coin_drc)
-        return Response(serializer.data)
-    
-    @action(detail=True, methods=['post'])
-    def update_audit(self, request, pk=None):
-        """Update audit status and score for a coin"""
-        coin_drc = self.get_object()
-        
-        # Check if user is an admin (only admins can update audit status)
-        if not request.user.is_staff:
-            return Response(
-                {"detail": "Only admins can update audit status"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Get audit parameters from request
-        completed = request.data.get('completed', False)
-        score = request.data.get('score', 0)
-        
-        try:
-            score = int(score)
-            if score < 0 or score > 100:
-                return Response(
-                    {"detail": "Audit score must be between 0 and 100"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        except ValueError:
-            return Response(
-                {"detail": "Audit score must be an integer"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        # Update audit info
-        coin_drc.audit_completed = completed
-        coin_drc.audit_score = score
-        coin_drc.save()
-        coin_drc.recalculate_score()
-        
-        serializer = self.get_serializer(coin_drc)
         return Response(serializer.data)
 
 class TraderHistoryListView(ListAPIView):
