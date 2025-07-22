@@ -129,18 +129,6 @@ class DeveloperScoreSerializer(serializers.ModelSerializer):
             'highest_market_cap', 'created_at', 'updated_at'
         ]
 
-class TraderScoreSerializer(serializers.ModelSerializer):
-    trader_address = serializers.CharField(source='trader.wallet_address', read_only=True)
-    
-    class Meta:
-        model = TraderScore
-        fields = [
-            'trader_address', 'score', 'coins_held_count', 
-            'avg_holding_time_hours', 'trades_count', 
-            'quick_dumps_count', 'profitable_trades_percent',
-            'created_at', 'updated_at'
-        ]
-
 class CoinDRCScoreSerializer(serializers.ModelSerializer):
     coin_address = serializers.CharField(source='coin.address', read_only=True)
     coin_name = serializers.CharField(source='coin.name', read_only=True)
