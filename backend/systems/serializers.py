@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    DeveloperScore, TraderScore, 
+    DeveloperScore, 
     CoinDRCScore, SolanaUser,
     Coin,UserCoinHoldings, 
     Trade, TraderHistory
