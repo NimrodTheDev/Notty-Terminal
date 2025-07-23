@@ -10,7 +10,7 @@ import { useAxios } from "../hooks/useAxios";
 const LandingPage = () => {
 	const wallet = useWallet()
 	// uploadFile()
-	const { loading, request } = useAxios();
+	const { request } = useAxios();
 	useEffect(() => {
 		const connectWallet = async () => {
 			if (wallet.connected) {
@@ -39,13 +39,6 @@ const LandingPage = () => {
 		}
 		connectWallet()
 	}, [wallet.connected, request])
-	if (loading) {
-		return (
-			<div className="flex justify-center items-center h-screen bg-custom-dark-blue">
-				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-			</div>
-		);
-	}
 	return (
 		<div>
 			<Hero />
