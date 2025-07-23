@@ -9,7 +9,6 @@ router.register(r'coins', views.CoinViewSet)
 router.register(r'holdings', views.UserCoinHoldingsViewSet)
 router.register(r'trades', views.TradeViewSet)
 # drc stuff
-router.register(r'developer-scores', views.DeveloperScoreViewSet)
 router.register(r'coin-scores', views.CoinDRCScoreViewSet)
 
 auth_urls = [

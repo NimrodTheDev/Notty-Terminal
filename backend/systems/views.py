@@ -20,7 +20,6 @@ from .models import (
 )
 
 from .serializers import (
-    DeveloperScoreSerializer, 
     CoinDRCScoreSerializer, ConnectWalletSerializer,
     CoinSerializer, UserCoinHoldingsSerializer, 
     TradeSerializer, SolanaUserSerializer,
@@ -312,59 +311,6 @@ class MeView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-
-# ViewSets
-class DeveloperScoreViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for viewing developer reputation scores"""
-    queryset = DeveloperScore.objects.all().order_by('-score')
-    serializer_class = DeveloperScoreSerializer
-    permission_classes = []#permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        
-        # Filter by minimum score
-        min_score = self.request.query_params.get('min_score')
-        if min_score and min_score.isdigit():
-            queryset = queryset.filter(score__gte=int(min_score))
-        
-        # Filter by maximum score
-        max_score = self.request.query_params.get('max_score')
-        if max_score and max_score.isdigit():
-            queryset = queryset.filter(score__lte=int(max_score))
-        
-        # Filter by developer address
-        developer_address = self.request.query_params.get('developer')
-        if developer_address:
-            queryset = queryset.filter(developer__wallet_address__iexact=developer_address)
-        
-        # Filter to exclude rugged coins creators
-        exclude_ruggers = self.request.query_params.get('exclude_ruggers')
-        if exclude_ruggers and exclude_ruggers == 'true':
-            queryset = queryset.filter(coins_rugged_count=0)
-        
-        return queryset
-    
-    @action(detail=False, methods=['get'])
-    def top_developers(self, request):
-        """Returns top 10 developers by score"""
-        top_devs = self.get_queryset().filter(coins_created_count__gt=0)[:10]
-        
-        serializer = self.get_serializer(top_devs, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'])
-    def my_score(self, request):
-        """Returns the authenticated user's developer score"""
-        try:
-            score = DeveloperScore.objects.get(developer=request.user)
-            serializer = self.get_serializer(score)
-            return Response(serializer.data)
-        except DeveloperScore.DoesNotExist:
-            return Response(
-                {"detail": "No developer score found. Create a coin to establish your developer score."},
-                status=status.HTTP_404_NOT_FOUND
-            )
 
 class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
     """API endpoint for viewing coin DRC scores"""
