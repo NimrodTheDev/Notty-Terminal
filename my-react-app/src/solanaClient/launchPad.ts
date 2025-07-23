@@ -33,6 +33,7 @@ import {
   
   async function handelBackendSubmit(tokenData: any) {
     const token = localStorage.getItem('auth_token');
+    console.log(token)
     const newTrade = {
       transaction_hash: tokenData.tHash,
       coin_address: tokenData.address,
@@ -40,10 +41,8 @@ import {
       coin_amount: tokenData.coinAmount,
       sol_amount: tokenData.solAmount,
     };
-    console.log(newTrade);
 
     const response = await axios.post(
-      // `http://127.0.0.1:8000/api/trades/`,
       `https://solana-market-place-backend.onrender.com/api/trades/`,
       newTrade,
       {
@@ -315,6 +314,14 @@ import {
             tokenData.totalRaised - solToReceive * this.config.solPrice,
           tokensAvailable: tokenData.tokensAvailable + tokenAmount
         });
+
+        handelBackendSubmit({
+          tHash: txSignature,
+          address: mint.toString(),
+          type: 'SELL',
+          solAmount: solToReceive,
+          coinAmount: tokenAmount,
+        })
   
         // Add transaction record
         const transactionRecord: Omit<TransactionRecord, "id"> = {
