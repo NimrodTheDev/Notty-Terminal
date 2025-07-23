@@ -6,13 +6,13 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from '@solana/web3.js';
 
 type CoinItem = { // can make the coin object optional
-    amount_held : string;
-    coin : string;
-    coin_name : string;
-    coin_ticker : string;
-    current_price : number;
-    user :  string;
-    value : number;
+    amount_held: string;
+    coin: string;
+    coin_name: string;
+    coin_ticker: string;
+    current_price: number;
+    user: string;
+    value: number;
     market_cap: number;
 };
 
@@ -24,67 +24,21 @@ type UserInfo = { // can make the coin object optional
 // we have issues when working with laports note <don't> remove this.
 // connect issue
 
-function shortenAddress(address:string) {
+function shortenAddress(address: string) {
     if (!address || address.length < 10) return address;
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
 const DashHome = () => {
-    const [coins, setCoins] = useState<CoinItem[]>(
-        [
-            // {
-            //     id: 1, // there is no id
-            //     name: 'Doge Solana',
-            //     symbol: 'SD', // ticker
-            //     amount: '12,500 Tokens', // use the ticker to generate this with the amount held
-            //     category: 'Meme Coin', // no category
-            //     price: '$125M', // price
-            //     change: '+1.5%', // ??
-            //     changeType: 'positive', // ??
-            //     color: 'bg-purple-600' // generate it
-            // },
-            // {
-            //     id: 2,
-            //     name: 'Pump Fun',
-            //     symbol: 'PF',
-            //     amount: '500 Tokens',
-            //     category: 'Meme Coin',
-            //     price: '$125M',
-            //     change: '+1.7%',
-            //     changeType: 'positive',
-            //     color: 'bg-blue-600'
-            // },
-            // {
-            //     id: 3,
-            //     name: 'Doge Solana',
-            //     symbol: 'SD',
-            //     amount: '12,500 Tokens',
-            //     category: 'Meme Coin',
-            //     price: '$125M',
-            //     change: '+1.5%',
-            //     changeType: 'positive',
-            //     color: 'bg-purple-600'
-            // },
-            // {
-            //     id: 4,
-            //     name: 'Doge Solana',
-            //     symbol: 'SD',
-            //     amount: '12,500 Tokens',
-            //     category: 'Meme Coin',
-            //     price: '$125M',
-            //     change: '+1.5%',
-            //     changeType: 'positive',
-            //     color: 'bg-purple-600'
-            // }
-        ]
-    );
+    const [coins, setCoins] = useState<CoinItem[]>([]);
     const [portfolioValue, setPortfolioValue] = useState<number>(0);
     const [createdCoins, setCreatedCoins] = useState<number>(0);
     const wallet = useWallet();
     const { connection } = useConnection();
     const [balance, setBalance] = useState<number>(0);
-    const [userInfo, setUserInfo] = useState<UserInfo>({tradescore:0,devscore:0});
+    const [userInfo, setUserInfo] = useState<UserInfo>({ tradescore: 0, devscore: 0 });
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
+    const [loading, setLoading] = useState<boolean>(true);
 
     // for fetching the wallet amount
     useEffect(() => {
@@ -92,16 +46,16 @@ const DashHome = () => {
             console.log(wallet.connected)
             if (wallet.connected) {
                 const pubkey = wallet.publicKey;
-                if (pubkey instanceof PublicKey){
+                if (pubkey instanceof PublicKey) {
                     const lamports = await connection.getBalance(pubkey);
                     setWAddress(pubkey.toBase58());
-                const sol = lamports / 1e9;
-                setBalance(sol);
+                    const sol = lamports / 1e9;
+                    setBalance(sol);
                 }
             }
         };
         fetchBalance();
-      }, [wallet.connected, wallet.publicKey]);
+    }, [wallet.connected, wallet.publicKey]);
 
     useEffect(() => {
         const fetchAllCoins = async () => {
@@ -109,7 +63,6 @@ const DashHome = () => {
                 const token = localStorage.getItem('auth_token');
                 const response = await axios.get(
                     `https://solana-market-place-backend.onrender.com/api/dashboard`,
-                    // 'http://127.0.0.1:8000/api/dashboard',
                     {
                         headers: { Authorization: `Token ${token}` }
                     }
@@ -124,12 +77,23 @@ const DashHome = () => {
                 setCreatedCoins(coins.length);
                 setCoins(holdings);
                 setUserInfo(user);
-            } catch (err: any) {
-                console.log(err)
+          } catch (err: any) {
+                console.log(err);
+            } finally {
+                setLoading(false); // Set loading to false after fetching
             }
-        };
+ };
         fetchAllCoins();
     }, []);
+    
+ if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen bg-custom-dark-blue">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+            </div>
+        );
+    }
+
 
     return (
         <div className="min-h-screen relative  bg-custom-dark-blue text-white p-6">
@@ -144,10 +108,10 @@ const DashHome = () => {
                         <h1 className="text-xl font-bold">Dashboard</h1>
                         <p className="text-gray-400 text-sm">{shortenAddress(wAddress)}</p>
                         <div className='flex space-x-2'>
-                            <h2 className="text-l font-bold">Dev score: {userInfo?.devscore}</h2>
-                            <h2 className="text-l font-bold">Trader score: {userInfo?.tradescore}</h2>
+                            <h2 className="text-l text-[#CCC1FA]  font-bold">Dev score: {userInfo?.devscore}</h2>
+                            <h2 className="text-l text-[#CCC1FA]  font-bold">Trader score: {userInfo?.tradescore}</h2>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>

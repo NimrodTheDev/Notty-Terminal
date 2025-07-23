@@ -22,21 +22,21 @@ export default function Hero() {
 				</div>
 
 				{/* Headline */}
-				<h1 className='text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-200 text-transparent bg-clip-text'>
+				<h1 className='text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-200 text-transparent bg-clip-text break-words'>
 					Build Credibility as you
 					<br />
 					Launch on Web3
 				</h1>
 
 				{/* Subheading */}
-				<p className='text-gray-300 text-lg mb-10 max-w-2xl mx-auto'>
+				<p className='text-gray-300 text-base xs:text-lg mb-10 max-w-2xl mx-auto'>
 					Notty Terminal is the launchpad where every action contributes to a
 					visible reputation score, helping the community launch, hire and collaborate
 					with confidence.
 				</p>
 
 				{/* CTA Buttons */}
-				<div className='flex flex-col sm:flex-row gap-4 justify-center'>
+				<div className='flex flex-col gap-4 w-full sm:flex-row sm:gap-4 sm:justify-center'>
 
 					<Link to="coin/create">
 						<button className='px-6 py-3 sm:w-full bg-custom-light-purple hover:bg-purple-600 rounded-md text-white font-medium flex items-center justify-center w-full transition-colors'>

@@ -2,8 +2,26 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { PublicKey } from '@solana/web3.js';
+
 function Profile() {
     const [activeTab, setActiveTab] = useState('createdCoins');
+    const [userInfo, setUserInfo] = useState<UserInfo>({ tradescore: 0, devscore: 0 });
+    // const [createdCoins, setCreatedCoins] = useState<number>(0);
+    // const wallet = useWallet();
+    // const { connection } = useConnection();
+    const [wAddress, setWAddress] = useState<string>('emptyaddress');
+
+    function shortenAddress(address: string) {
+        if (!address || address.length < 10) return address;
+        return `${address.slice(0, 4)}...${address.slice(-4)}`;
+    }
+
+    type UserInfo = { // can make the coin object optional
+        devscore: number;
+        tradescore: number;
+    };
 
     const createdCoinsSample = [
         { id: 1, name: 'Coin A', drs: 100, creator: 'Tser A', marketCap: 1000 },
@@ -15,27 +33,29 @@ function Profile() {
     const followingSample = ['User 1', 'User 2', 'User 3', 'User 4'];
     const followersSample = ['Follower A', 'Follower B', 'Follower C', 'Follower D'];
 
-    const createdBy = 'Tser A';
 
-    const createdByCoins = [
-        { id: 1, name: 'Coin A', drs: 100, creator: 'Tser A', marketCap: 1000 },
-        { id: 2, name: 'Coin B', drs: 200, creator: 'User B', marketCap: 2000 },
-        { id: 3, name: 'Coin C', drs: 300, creator: 'User C', marketCap: 3000 },
-        { id: 4, name: 'Coin D', drs: 400, creator: 'User D', marketCap: 4000 },
-    ]
+
+    // const createdBy = 'Tser A';
+
+    // const createdByCoins = [
+    //     { id: 1, name: 'Coin A', drs: 100, creator: 'Tser A', marketCap: 1000 },
+    //     { id: 2, name: 'Coin B', drs: 200, creator: 'User B', marketCap: 2000 },
+    //     { id: 3, name: 'Coin C', drs: 300, creator: 'User C', marketCap: 3000 },
+    //     { id: 4, name: 'Coin D', drs: 400, creator: 'User D', marketCap: 4000 },
+    // ]
 
 
 
 
     return (
-        <div className='relative sm:min-h-[180vh] xl:min-h-[124vh]'>
+        <div className='relative min-h-screen sm:min-h-[180vh] xl:min-h-[124vh] overflow-x-hidden'>
 
             <div className="h-32 sm:h-48 lg:h-64 z-10 crtGradient background-container top-10 left-10">
 
 
             </div>
 
-            <div className=" h-[1200px] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
+            <div className="h-auto min-h-[900px] mx-auto bg-custom-dark-blue relative flex flex-col items-center justify-center px-2 xs:px-4">
                 <div className="flex justify-center absolute mt-10 flex-col border-gray-600 border max-w-[970px] 
                 w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded">
                     <div className="mb-8">
@@ -45,9 +65,15 @@ function Profile() {
                                  to-yellow-500 flex items-center justify-center">
                                     <span className="text-xl font-bold">🚀</span>
                                 </div>
-                                <div>
-                                    <h1 className="text-xl font-semibold">Username</h1>
-                                    <p className="text-gray-400 text-sm">@username</p>
+                                <div className="flex flex-col">
+                                    <div>
+                                        <h1 className="text-xl font-semibold">Username</h1>
+                                        <p className="text-gray-400 text-sm">{shortenAddress(wAddress)}</p>
+                                    </div>
+                                    <div className='flex space-x-2'>
+                                        <h2 className="text-l text-[#CCC1FA] font-bold">Dev score: {userInfo?.devscore}</h2>
+                                        <h2 className="text-l text-[#CCC1FA] font-bold">Trader score: {userInfo?.tradescore}</h2>
+                                    </div>
                                 </div>
                             </div>
                             <button className="bg-custom-light-purple hover:bg-[#9a84ff] px-4 py-2
@@ -55,12 +81,12 @@ function Profile() {
                                 Follow
                             </button>
                         </div>
-                        <div className=" flex flex-col sm:flex-row items-center justify-between p-6">
+                        <div className=" flex flex-col sm:flex-row items-center justify-between p-2 sm:p-6">
                             <div className="max-w-4xl w-full sm:flex-1 mx-auto sm:p-6 font-sans ">
                                 {/* Tabs Navigation */}
-                                <div className="flex flex-col sm:flex-row">
+                                <div className="flex flex-col  sm:flex-row">
                                     <button
-                                        className={`px-6 py-3 font-medium text-sm focus:outline-none relative ${activeTab === 'createdCoins'
+                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'createdCoins'
                                             ? 'text-[#7E6DC8] font-semibold'
                                             : 'text-gray-500 hover:text-gray-700'
                                             }`}
@@ -73,7 +99,7 @@ function Profile() {
                                     </button>
 
                                     <button
-                                        className={`px-6 py-3 font-medium text-sm focus:outline-none relative ${activeTab === 'followers'
+                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'followers'
                                             ? 'text-[#7E6DC8] font-semibold'
                                             : 'text-gray-500 hover:text-gray-700'
                                             }`}
@@ -86,7 +112,7 @@ function Profile() {
                                     </button>
 
                                     <button
-                                        className={`px-6 py-3 font-medium text-sm focus:outline-none relative ${activeTab === 'following'
+                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'following'
                                             ? 'text-[#7E6DC8] font-semibold'
                                             : 'text-gray-500 hover:text-gray-700'
                                             }`}
@@ -102,7 +128,7 @@ function Profile() {
                                 </div>
 
                                 {/* Tabs Content */}
-                                <div className="py-6 border-gray-800 sm:border-r">
+                                <div className="py-2 sm:py-6 border-gray-800 sm:border-r">
                                     {/* Created Coins Tab */}
                                     {activeTab === 'createdCoins' && (
                                         <div className="space-y-4">
@@ -180,7 +206,7 @@ function Profile() {
                                 </div>
                             </div>
 
-                            <div className="w-full sm:flex-1">
+                            {/* <div className="w-full sm:flex-1">
                                 <div className=" mb-4 flex items-center  justify-between">
                                     <h1 className=" text-sm text-white">Created by {createdBy}</h1>
                                 </div>
@@ -206,7 +232,7 @@ function Profile() {
                                     ))}
                                 </div>
 
-                            </div>
+                            </div> */}
 
                         </div>
 

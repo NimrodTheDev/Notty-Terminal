@@ -12,7 +12,9 @@
     background-color: #dbcee5;
 } */
 
-
+* {
+    box-sizing: border-box;
+  }
 .crtGradient {
     background: linear-gradient(90deg, #9a83f6, #bcacf9);
 }

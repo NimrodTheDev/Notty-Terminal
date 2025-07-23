@@ -1,15 +1,15 @@
-import { useState } from "react";
+ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Link } from "react-router-dom";
 
 
-export default function Header() {
+export default function Header({hideList = false}:{hideList?: boolean}) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<header className='bg-custom-dark-blue border-b-2 border-gray-600 text-white px-4 py-3 shadow-md'>
-			<div className='max-w-7xl mx-auto flex items-center justify-between'>
+		<header className='bg-custom-dark-blue border-b-2 border-gray-600 text-white px-2 xs:px-4 py-3 shadow-md'>
+			<div className='max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between'>
 				{/* Logo and Toggle */}
 				<div className='flex items-center justify-between w-full md:w-auto'>
 					<Link to={'/'}>
@@ -26,7 +26,7 @@ export default function Header() {
 						</span> */}
 					</Link>
 					{/* Mobile toggle */}
-					<button
+					{!hideList && <button
 						className='md:hidden text-gray-300'
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 					>
@@ -35,18 +35,18 @@ export default function Header() {
 						) : (
 							<Menu className='w-6 h-6' />
 						)}
-					</button>
+					</button>}
 				</div>
 
 				{/* Desktop Navigation links */}
-				<nav className='hidden md:flex md:items-center gap-6 text-sm text-gray-300'>
+				{!hideList && <nav className='hidden md:flex md:items-center gap-6 text-sm text-gray-300'>
 					<Link to='/' className='block md:inline hover:text-white'>
 						Home
 					</Link>
 					<Link to='/dashboard' className='block md:inline hover:text-white'>
 						Dashboard
 					</Link>
-					<Link to="./CoinMarket" className='block md:inline hover:text-white'>
+					<Link to='/CoinMarket' className='block md:inline hover:text-white'>
 						Coin Market
 					</Link>
 					<Link to='/AboutDrs' className='block md:inline hover:text-white'>
@@ -58,22 +58,22 @@ export default function Header() {
 					<Link to='/coin/create' className='block md:inline hover:text-white'>
 						Create Coin
 					</Link>
-				</nav>
+				</nav>}
 
 				{/* Right icons + button */}
-				<div className='hidden md:flex items-center gap-4'>
+				{!hideList && <div className='hidden md:flex items-center gap-4'>
 					{/* <div className='relative'>
 						<Bell className='w-5 h-5 text-gray-300 hover:text-white' />
 						<span className='absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500' />
 					</div> */}
 					{/* <MessageSquare className='w-5 h-5 text-gray-300 hover:text-white' /> */}
 					<WalletMultiButton />
-				</div>
+				</div>}
 			</div>
 
 			{/* Mobile view dropdown nav */}
-			{mobileMenuOpen && (
-				<div className='md:hidden mt-4 flex flex-col items-start w-full max-w-xs bg-custom-dark-blue rounded-lg shadow-lg px-4 py-3 space-y-3'>
+			{!hideList && mobileMenuOpen && (
+				<div className='fixed inset-0 z-50 bg-custom-dark-blue bg-opacity-95 flex flex-col items-start w-full max-w-xs min-h-screen rounded-none shadow-lg px-4 py-3 space-y-3'>
 					{/* Navigation links dropdown */}
 					<nav className='flex flex-col w-full'>
 						<Link

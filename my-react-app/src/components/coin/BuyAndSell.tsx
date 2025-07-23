@@ -1,11 +1,10 @@
-// import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useState, useEffect, useMemo } from 'react';
 import { useSolana } from '../../solanaClient';
 import { useParams } from 'react-router-dom';
 import { PublicKey } from '@solana/web3.js';
 import { Link } from 'react-router-dom';
 import { Toast, useToast } from '../general/Toast';
-import { useSolBalance } from '../hook/solanabalance';
+import { useSolBalance } from '../../hooks/solanabalance';
 import axios from "axios";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
@@ -46,7 +45,7 @@ function BuyAndSell({coinData}: BuyAndSellProps) {
     const handleTokenAction = async () => {
         if (!id) return;
 
-        // await refetchBalance();
+        // await refetchBalance(); // hget the balance of the user don't await it?
         const mintFn = (activeTab === 'buy') ? BuyTokenMint : SellTokenMint
         if (!mintFn){
             showToastMessage(`No function available to ${activeTab} tokens.`, "error");
@@ -65,20 +64,6 @@ function BuyAndSell({coinData}: BuyAndSellProps) {
         } catch (error) {
             console.error(`Error ${activeTab}ing tokens:`, error);
             showToastMessage(`Failed to ${activeTab} tokens. Please try again.`, 'error');
-        }
-    };
-
-    const handleAction = async () => {
-        try {
-            // Connect if not already
-            if (!wallet.connected) {
-                await wallet.connect(); // User might reject this
-                return
-            }
-            await handleTokenAction();
-        } catch (err) {
-            console.error("Wallet connection or action failed:", err);
-            showToastMessage("Action cancelled or failed. Please try again.", "error");
         }
     };
 
@@ -152,8 +137,7 @@ function BuyAndSell({coinData}: BuyAndSellProps) {
             }
             try {
 				const response = await axios.get(
-					// `http://127.0.0.1:8000/api/coins/${id}/holders`
-                    `https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
+            `https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
 				);
 				const holders:Array<{}> = response.data
 				setTopHolders(
@@ -173,125 +157,140 @@ function BuyAndSell({coinData}: BuyAndSellProps) {
         fetchCoinHolders(); // might want to use this differently
       }, [id]);
 
-    return (
-        <div className="bg-custom-dark-blue rounded-lg p-4  text-white md:mr-12 lg:mr-24 w-full">
-            {/* Buy/Sell Tabs */}
-            <div className="flex justify-between lg:w-64 mb-4">
-                <button
-                    onClick={() => {setActiveTab('buy')}}
-                    className={` py-2 px-4 rounded-md w-24  font-medium ${activeTab === 'buy'
-                        ? 'bg-custom-light-purple text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        }`}
-                >
-                    Buy
-                </button>
-                <button
-                    onClick={() => {setActiveTab('sell')}}
-                    className={` py-2 px-4 rounded-md w-24 font-medium ${activeTab === 'sell'
-                        ? 'bg-custom-light-purple text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        }`}
-                >
-                    Sell
-                </button>
-            </div>
-            <div className="flex justify-end text-sm text-gray-400 mt-1">
-                <span className="italic tracking-tight">
-                    ({usdFormatted}) {solFormatted}
-                </span>
-            </div>
-            {/* Amount Input */}
-            <div className="mb-0">
-                <div className="relative">
-                    <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="w-full bg-custom-dark-blue border border-gray-600 rounded-md px-3 py-2 text-white 
-                        focus:outline-none focus:border-purple-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none 
-                        [&::-webkit-inner-spin-button]:appearance-none"
-                        step="0.001"
-                        min="0"
-                    />
-                    <span className="absolute right-3 top-2 text-gray-400">{coinData?.ticker}</span>
-                </div>
-            </div>
-            {/* Token Price */}
-            <div className="flex justify-start text-sm text-gray-300 mb-2">
-                <span>${tokenPrice.toFixed(4)} per token</span>
-            </div>
-
-            {/* Balance */}
-            <div className="flex justify-end text-sm text-gray-300 mb-6">
-                <span>Balance:</span>
-                <span>{balance.toFixed(4)} SOL</span>
-            </div>            
-
-            {/* Connect Wallet Button */}
-            {/* <WalletMultiButton /> */}
-            {/* wrong */}
+      return (
+        <div className="bg-custom-dark-blue rounded-lg p-4 text-white md:mr-12 lg:mr-24 w-full">
+          {/* Buy/Sell Tabs */}
+          <div className="flex justify-between lg:w-64 mb-4">
             <button
-                onClick={handleAction}
-                className={`py-2 px-4 rounded-md w-24 w-full font-medium ${wallet.connected
-                    ? 'bg-custom-light-purple text-white hover:bg-[#9A83F6] '
-                    : 'bg-[#232842] text-gray-300 hover:bg-[#222635CC] border border-[#232842CC]'
-                    }`}
+              onClick={() => setActiveTab("buy")}
+              className={`py-2 px-4 rounded-md w-24 font-medium ${
+                activeTab === "buy"
+                  ? "bg-custom-light-purple text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
             >
-                {wallet.connected ? 'Trade' : 'Connect Wallet to trade'}
+              Buy
             </button>
-            {/* change this when possible to the correct thing */}
-            {/* add the proper spending in the controls */}
-
-            {/* Top Holders Section */}
-            <div className="mb-6">
-                <h3 className="text-white font-medium mb-3">Top Holders</h3>
-                <div className="space-y-2">
-                    {topHolders.map((holder, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
-                                    <span className="text-xs font-bold text-black">🏆</span>
-                                </div>
-                                <span className="text-custom-light-purple text-sm font-mono">
-                                    {holder.address}
-                                </span>
-                            </div>
-                            <span className="text-gray-300 text-sm">{holder.percentage}</span>
-                        </div>
-                    ))}
-                </div>
+            <button
+              onClick={() => setActiveTab("sell")}
+              className={`py-2 px-4 rounded-md w-24 font-medium ${
+                activeTab === "sell"
+                  ? "bg-custom-light-purple text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Sell
+            </button>
+          </div>
+    
+          <div className="flex justify-end text-sm text-gray-400 mt-1">
+              <span className="italic tracking-tight">
+                  {solFormatted} ({usdFormatted})
+              </span>
+          </div>
+    
+          {/* Amount Input */}
+          <div className="mb-0">
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full bg-custom-dark-blue border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:border-purple-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                step="0.001"
+                min="0"
+              />
+              <span className="absolute right-3 top-2 text-gray-400">
+                {activeTab === "buy" ? "SOL" : coinData?.ticker}
+              </span>
             </div>
-
-            {/* Holder Analytics Section */}
-            <div>
-                <h3 className="text-white font-medium mb-3">Holder Analytics</h3>
-                <div className="space-y-2">
-                    {holderAnalytics.map((analytic, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
-                                    <span className="text-xs font-bold text-black">🏆</span>
-                                </div>
-                                <span className="text-custom-light-purple text-sm">
-                                    {analytic.label}
-                                </span>
-                            </div>
-                            <span className="text-gray-300 text-sm">{analytic.value}</span>
-                        </div>
-                    ))}
-                </div>
+          </div>
+    
+          {/* Token Price and Balance Info */}
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center text-sm gap-2 sm:gap-4 mb-2">
+            <div className="text-gray-400 break-words max-w-full sm:max-w-none">
+              Balance: <span className="text-white font-medium break-all">{balance.toFixed(4)} SOL</span>
             </div>
-
-            {showToast && (
-                <Toast
-                    message={toastMessage}
-                    type={toastType}
-                    onClose={() => setShowToast(false)}
-                />
-            )}
+            <div className="text-gray-400 break-words max-w-full sm:max-w-none text-right sm:text-left">
+              <span className="text-purple-400 break-all">${tokenPrice.toLocaleString(undefined, {
+                maximumFractionDigits: 9,
+              })
+              }</span> per token
+            </div>
+          </div>
+    
+          {/* Action Button */}
+          {/* <button
+            onClick={activeTab === "buy" ? handleBuy : handleSell}
+            disabled={isProcessing || !publicKey}
+            className={`w-full py-2 px-4 rounded-md font-medium mb-4 transition-colors ${
+              isProcessing
+                ? "bg-gray-600 cursor-not-allowed"
+                : !publicKey
+                ? "bg-gray-600 cursor-not-allowed"
+                : activeTab === "buy"
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {!publicKey
+              ? "Connect Wallet"
+              : isProcessing
+              ? "Processing..."
+              : activeTab === "buy"
+              ? `Buy ${coinData?.ticker}`
+              : `Sell ${coinData?.ticker}`}
+          </button> */}
+    
+          {/* Top Holders Section */}
+          <div className="mb-6">
+            <h3 className="text-white font-medium mb-3">Top Holders</h3>
+            <div className="space-y-2">
+              {topHolders.map((holder, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
+                      <span className="text-xs font-bold text-black">🏆</span>
+                    </div>
+                    <span className="text-custom-light-purple text-sm font-mono">
+                      {holder.address}
+                    </span>
+                  </div>
+                  <span className="text-gray-300 text-sm">{holder.percentage}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+    
+          {/* Holder Analytics Section */}
+          <div>
+            <h3 className="text-white font-medium mb-3">Holder Analytics</h3>
+            <div className="space-y-2">
+              {holderAnalytics.map((analytic, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
+                      <span className="text-xs font-bold text-black">🏆</span>
+                    </div>
+                    <span className="text-custom-light-purple text-sm">
+                      {analytic.label}
+                    </span>
+                  </div>
+                  <span className="text-gray-300 text-sm">{analytic.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+    
+          {showToast && (
+            <Toast
+              message={toastMessage}
+              type={toastType}
+              onClose={() => setShowToast(false)}
+            />
+          )}
         </div>
-    );
+      );
 }
 
 export default BuyAndSell;

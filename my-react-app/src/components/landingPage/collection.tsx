@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import img from "../../assets/images/istockphoto-1409329028-612x612.jpg"
+import img from "../../assets/images/istockphoto-1409329028-612x612.jpg";
+import { getSolanaPriceUSD } from "../../hooks/solanabalance";
 
 // Define TypeScript interfaces
 interface NFT {
@@ -33,7 +34,15 @@ export default function NFTCollection() {
 		(async () => {
 			const arg = await axios.get('https://solana-market-place-backend.onrender.com/api/coins/top-coins/?limit=8')
 			if (arg.status === 200) {
-				setNft(arg.data)
+				const coins = arg.data; // ← assume this is an array
+				// Convert string fields to numbers for all coins
+				const solPrice = await getSolanaPriceUSD();
+				const parsedCoins = coins.map((coin: any) => ({
+					...coin,
+					market_cap: parseFloat(coin.current_marketcap) * solPrice,
+					// current_price: parseFloat(coin.current_price),
+				}));
+				setNft(parsedCoins)
 			}
 		})()
 	}, [])
@@ -96,7 +105,7 @@ export function NFTCard({ nft }: NFTCardProps) {
 				<div className='flex justify-between items-center mb-4'>
 					<div>
 						<p className='text-purple-400 text-xs font-medium'>MARKET CAP:</p>
-						<p className='text-purple-400 font-medium'>{nft.market_cap}</p>
+						<p className='text-purple-400 font-medium'>${nft.market_cap.toFixed(2)}</p>
 					</div>
 					<div className='text-right'>
 						<p className='text-gray-500 text-xs'>DRS:</p>
