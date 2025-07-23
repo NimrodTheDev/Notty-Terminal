@@ -67,11 +67,20 @@ const Sidebar = () => {
                 ${isMobileMenuOpen ? 'fixed inset-y-0 left-0 w-4/5 max-w-xs' : 'hidden lg:flex lg:w-64'}
             `}>
                 {/* Header */}
-                <div className="p-6 border-b border-gray-700">
+                <div className="p-6 ">
                     <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-400 uppercase tracking-wider">
-                            Main Menu
-                        </div>
+
+                        <Link
+                            to="/"
+
+                        >
+
+                            <img
+                                src='/logo.png'
+                                alt='Logo'
+                            // className='w-100 h-100  '
+                            />
+                        </Link>
                         {/* Close button for mobile */}
                         <button
                             onClick={() => setIsMobileMenuOpen(false)}
@@ -111,7 +120,7 @@ const Sidebar = () => {
                 </nav>
 
                 {/* Bottom Navigation */}
-                <div className="px-4 py-6 border-t overflow-y-hidden border-gray-700">
+                <div className="px-4 overflow-y-hidden">
                     <ul className="space-y-2">
                         {bottomItems.map((item) => {
                             const Icon = item.icon;

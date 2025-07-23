@@ -1,11 +1,16 @@
- import { useState } from "react";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-
-export default function Header({hideList = false}:{hideList?: boolean}) {
+export default function Header({ hideList = false }: { hideList?: boolean }) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const location = useLocation();
+
+	// Don't render the header at all if we're in dashboard routes
+	if (location.pathname.startsWith('/dashboard')) {
+		return null;
+	}
 
 	return (
 		<header className='bg-custom-dark-blue border-b-2 border-gray-600 text-white px-2 xs:px-4 py-3 shadow-md'>

@@ -10,6 +10,7 @@ import { getSolanaPriceUSD } from "../hooks/solanabalance"
 
 import { Buffer } from "buffer";
 import { CoinData } from "../components/coin/CoinFilter";
+import CoinHistory from "../components/coin/coinHistory";
 window.Buffer = Buffer;
 
 const CoinPage: React.FC = () => {
@@ -79,6 +80,7 @@ const CoinPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-2 w-full sm:w-auto">
             <BuyAndSell coinData={coinData} />
+            <CoinHistory />
           </div>
         </div>
         <SimilarCoins coinData={coinData} />

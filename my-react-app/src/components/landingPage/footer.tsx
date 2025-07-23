@@ -1,4 +1,13 @@
+import { useLocation } from "react-router-dom";
+
 export default function NottyTerminalFooter() {
+	const location = useLocation();
+
+	// Don't render the footer at all if we're in dashboard routes
+	if (location.pathname.startsWith('/dashboard')) {
+		return null;
+	}
+
 	return (
 		<div className='bg-custom-dark-blue border-t-2 border-gray-600 text-white py-8 px-4'>
 			<div className='container mx-auto'>
