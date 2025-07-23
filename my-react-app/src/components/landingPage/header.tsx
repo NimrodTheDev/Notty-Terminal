@@ -46,7 +46,7 @@ export default function Header({hideList = false}:{hideList?: boolean}) {
 					<Link to='/dashboard' className='block md:inline hover:text-white'>
 						Dashboard
 					</Link>
-					<Link to="./CoinMarket" className='block md:inline hover:text-white'>
+					<Link to='/CoinMarket' className='block md:inline hover:text-white'>
 						Coin Market
 					</Link>
 					<Link to='/AboutDrs' className='block md:inline hover:text-white'>
