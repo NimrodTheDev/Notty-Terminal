@@ -73,6 +73,15 @@ class SolanaUser(AbstractUser):
             return self.trader_score.recalculate_score()
         return 150  # Default base score if no score record exists
 
+class PriceApi(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+    sol_price = models.DecimalField(max_digits=20, decimal_places=8, default=150)
+
+    def save(self, *args, **kwargs):
+        self.id = 1  # Ensure singleton
+        super().save(*args, **kwargs)
+
 class Coin(models.Model): # we have to store the ath
     """Represents a coin on the platform"""
     address = models.CharField(primary_key=True, max_length=44, unique=True, editable=True)#False)

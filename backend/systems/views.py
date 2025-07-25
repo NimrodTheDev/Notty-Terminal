@@ -17,6 +17,7 @@ from .models import (
     DeveloperScore, TraderScore, 
     CoinDRCScore, TraderHistory,
     Coin, UserCoinHoldings, Trade, SolanaUser,
+    PriceApi
 )
 
 from .serializers import (
@@ -28,6 +29,14 @@ from .serializers import (
 
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+
+
+from django.utils.timezone import now
+from datetime import timedelta
+import requests
+from decimal import Decimal
+from .models import PriceApi
+
 
 User = get_user_model()
 
@@ -47,6 +56,40 @@ class RecalculateDailyScoresView(APIView):
         for trds in TraderScore.objects.select_related('trader').all():
             trds.recalculate_score()
         return HttpResponse("OK")
+
+class UpdateSolPriceView(APIView): # cron job
+    permission_classes = [IsCronjobRequest]
+
+    def post(self, request):
+        instance, _ = PriceApi.objects.get_or_create(id=1)
+
+        if instance.updated_at > now() - timedelta(minutes=4):
+            return Response({"detail": "Price already fresh."})
+
+        try:
+            response = requests.get(
+                "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
+                timeout=2
+            )
+            response.raise_for_status()
+            instance.sol_price = Decimal(response.json()["solana"]["usd"])
+            instance.save()
+            return Response({"detail": "Updated", "sol_price": str(instance.sol_price)})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+class GetSolPriceView(APIView):
+    def get(self, request):
+        price = cache.get("sol_price")
+        if price is not None:
+            return Response({"sol_price": price})
+
+        try:
+            instance = PriceApi.objects.only("sol_price").get(id=1)
+            cache.set("sol_price", str(instance.sol_price), timeout=300)
+            return Response({"sol_price": str(instance.sol_price)})
+        except PriceApi.DoesNotExist:
+            return Response({"error": "No price yet."}, status=404)
 
 class RestrictedViewset(viewsets.ModelViewSet):
     """
