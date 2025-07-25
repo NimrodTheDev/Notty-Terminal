@@ -31,52 +31,7 @@ function shortenAddress(address:string) {
 
 const DashHome = () => {
     const [coins, setCoins] = useState<CoinItem[]>(
-        [
-            // {
-            //     id: 1, // there is no id
-            //     name: 'Doge Solana',
-            //     symbol: 'SD', // ticker
-            //     amount: '12,500 Tokens', // use the ticker to generate this with the amount held
-            //     category: 'Meme Coin', // no category
-            //     price: '$125M', // price
-            //     change: '+1.5%', // ??
-            //     changeType: 'positive', // ??
-            //     color: 'bg-purple-600' // generate it
-            // },
-            // {
-            //     id: 2,
-            //     name: 'Pump Fun',
-            //     symbol: 'PF',
-            //     amount: '500 Tokens',
-            //     category: 'Meme Coin',
-            //     price: '$125M',
-            //     change: '+1.7%',
-            //     changeType: 'positive',
-            //     color: 'bg-blue-600'
-            // },
-            // {
-            //     id: 3,
-            //     name: 'Doge Solana',
-            //     symbol: 'SD',
-            //     amount: '12,500 Tokens',
-            //     category: 'Meme Coin',
-            //     price: '$125M',
-            //     change: '+1.5%',
-            //     changeType: 'positive',
-            //     color: 'bg-purple-600'
-            // },
-            // {
-            //     id: 4,
-            //     name: 'Doge Solana',
-            //     symbol: 'SD',
-            //     amount: '12,500 Tokens',
-            //     category: 'Meme Coin',
-            //     price: '$125M',
-            //     change: '+1.5%',
-            //     changeType: 'positive',
-            //     color: 'bg-purple-600'
-            // }
-        ]
+        []
     );
     const [portfolioValue, setPortfolioValue] = useState<number>(0);
     const [createdCoins, setCreatedCoins] = useState<number>(0);
