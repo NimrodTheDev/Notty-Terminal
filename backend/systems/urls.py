@@ -18,10 +18,12 @@ auth_urls = [
     path('trader-history/', views.TraderHistoryListView.as_view(), name='trader-history-list'),
     path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
     path('dashboard/profile/', views.PublicProfileCoinsView.as_view(), name='user-profile-coins'),
+    path('sol-price/',views.GetSolPriceView.as_view()),
 ]
 
 urlpatterns = [
     path("api/", include(auth_urls)),
     path("api/", include(router.urls)),
     path('alive-api/', lambda request: HttpResponse("OK")),
+    path('update-sol-price/', views.UpdateSolPriceView.as_view()),
 ]
