@@ -244,7 +244,16 @@ class PublicProfileCoinsView(APIView):
         created_coins = Coin.objects.filter(creator=user)
 
         serializer = CoinSerializer(created_coins, many=True, context=context)
-        return Response(serializer.data)
+        return Response({
+            "user": {
+                "wallet_address": user.wallet_address,
+                "display_name": user.get_display_name(),
+                "bio": user.bio,
+                "devscore": user.devscore,
+                "tradescore": user.tradescore
+            },
+            "created_coins": serializer.data,
+        })
 
 class TradeViewSet(viewsets.ModelViewSet):
     """
