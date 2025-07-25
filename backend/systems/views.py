@@ -230,31 +230,21 @@ class UserDashboardView(APIView):
             "holdings": holdings_serializer.data,
             "created_coins": coins_serializer.data
         })
-    
-    @action(detail=False, methods=['get'], url_path='profile')#, permission_classes=[permissions.IsAuthenticated])
-    def my_coins(self, request):
+
+class PublicProfileCoinsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
         wallet_address = request.query_params.get('address')
+        if not wallet_address:
+            return Response({"detail": "Missing wallet address."}, status=400)
+
         user = get_object_or_404(SolanaUser, wallet_address=wallet_address)
         context = {'request': request}
-
         created_coins = Coin.objects.filter(creator=user)
 
-        coins_serializer = CoinSerializer(
-            created_coins,
-            many=True,
-            context=context
-        )
-
-        return Response({
-            "user": {
-                "wallet_address": user.wallet_address,
-                "display_name": user.get_display_name(),
-                "bio": user.bio,
-                "devscore": user.devscore,
-                "tradescore": user.tradescore
-            },
-            "created_coins": coins_serializer.data,
-        })
+        serializer = CoinSerializer(created_coins, many=True, context=context)
+        return Response(serializer.data)
 
 class TradeViewSet(viewsets.ModelViewSet):
     """
