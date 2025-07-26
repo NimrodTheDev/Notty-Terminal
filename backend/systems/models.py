@@ -60,7 +60,7 @@ class SolanaUser(AbstractUser):
         return self.wallet_address
     
     @property
-    def devscore(self):
+    def devscore(self): # corrrect it later
         """Dynamically retrieve and recalculate the developer score."""
         if hasattr(self, 'developer_score'):
             return self.developer_score.recalculate_score()
@@ -723,7 +723,7 @@ class DeveloperScore(DRCScore): # the system will eventually have to leave here
         # (this is wrong) the recalculation instead it should be, optmized 
         self.rug_pull_or_sell_off_count = self.developer.coins.filter(drc_score__team_abandonment=True).count() *100
         # self.no_rugs_count = self.developer.coins.filter(drc_score__team_abandonment=False).count() *100 # add when discussed
-        self.successful_launch_count = self.developer.coins.filter(drc_score__successful_token=True).count() * 100
+        self.successful_launch_count = self.developer.coins.filter(drc_score__successful_token=True).count() * 200
 
         # Calculate final score with clamping
         total_score = base_score + self.successful_launch_count -(self.abandoned_count+self.rug_pull_or_sell_off_count)
