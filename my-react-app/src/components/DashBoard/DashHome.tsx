@@ -41,7 +41,7 @@ const DashHome = () => {
     const [balance, setBalance] = useState<number>(0);
     const [userInfo, setUserInfo] = useState<UserInfo>({tradescore:0,devscore:0});
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
-    const solPrice = useSolanaPrice()
+    const solPrice = useSolanaPrice();
 
     // for fetching the wallet amount
     useEffect(() => {
