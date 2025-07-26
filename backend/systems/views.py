@@ -37,7 +37,6 @@ import requests
 from decimal import Decimal
 from .models import PriceApi
 
-
 User = get_user_model()
 
 class TraderHistoryPagination(PageNumberPagination):
@@ -71,6 +70,7 @@ class UpdateSolPriceView(APIView): # cron job
                 "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
                 timeout=2
             )
+            print(response)
             response.raise_for_status()
             instance.sol_price = Decimal(response.json()["solana"]["usd"])
             instance.save()
@@ -79,6 +79,7 @@ class UpdateSolPriceView(APIView): # cron job
             return Response({"error": str(e)}, status=500)
 
 class GetSolPriceView(APIView):
+
     def get(self, request):
         price = cache.get("sol_price")
         if price is not None:
@@ -166,7 +167,6 @@ class CoinViewSet(RestrictedViewset):
         return Response(serializer.data)
 
 class UserCoinHoldingsViewSet(RestrictedViewset): 
-    # we want to create a way to get all the held coins of a user it has to be the person sending the request
     """
     API endpoint for User Coin Holdings
     """
@@ -208,15 +208,10 @@ class UserDashboardView(APIView):
         created_coins = Coin.objects.filter(creator=user)  # add .only() if needed
 
         holdings_serializer = UserCoinHoldingsSerializer(
-            holdings,
-            many=True,
-            context=context,
-            include_market_cap=True
+            holdings, many=True, context=context, include_market_cap=True
         )
         coins_serializer = CoinSerializer(
-            created_coins,
-            many=True,
-            context=context
+            created_coins, many=True, context=context
         )
 
         return Response({
