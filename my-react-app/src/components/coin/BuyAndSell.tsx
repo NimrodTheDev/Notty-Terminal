@@ -18,6 +18,7 @@ interface BuyAndSellProps {
 function shortenAddress(address: string) {
   if (!address || address.length < 10) return address;
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
+<<<<<<< Updated upstream
 }
 
 <<<<<<< Updated upstream
@@ -62,6 +63,35 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
   const handleTokenAction = async () => {
     if (!id) return;
 
+=======
+}
+
+async function getSolanaPriceUSD() {
+  const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
+  const data = await response.json();
+  const price = data.solana.usd;
+  return price;
+}
+
+function BuyAndSell({ coinData }: BuyAndSellProps) {
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
+  const [amount, setAmount] = useState('0.001');
+  const { BuyTokenMint, SellTokenMint } = useSolana()
+  const { id } = useParams();
+  const wallet = useWallet();
+  const { connection } = useConnection();
+  const { showToast, toastMessage, toastType, showToastMessage, setShowToast } = useToast();
+  const [solPrice, setSolPrice] = useState<number>(1);
+  const tokenPrice = useMemo(() => {
+    const coinPriceInSol = parseFloat(coinData?.current_price || '0');
+    return coinPriceInSol * solPrice;
+  }, [coinData?.current_price, solPrice]);
+  const { balance, refetchBalance } = useSolBalance(connection);
+
+  const handleTokenAction = async () => {
+    if (!id) return;
+
+>>>>>>> Stashed changes
     // await refetchBalance(); // hget the balance of the user don't await it?
     const mintFn = (activeTab === 'buy') ? BuyTokenMint : SellTokenMint
     if (!mintFn) {
