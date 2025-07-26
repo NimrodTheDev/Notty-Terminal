@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from "axios";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from '@solana/web3.js';
+import { useSolanaPrice } from '../../hooks/solanabalance';
 
 type CoinItem = { // can make the coin object optional
     amount_held: string;
@@ -39,6 +40,7 @@ const DashHome = () => {
     const [userInfo, setUserInfo] = useState<UserInfo>({ tradescore: 0, devscore: 0 });
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
     const [loading, setLoading] = useState<boolean>(true);
+    const solPrice = useSolanaPrice();
 
     // for fetching the wallet amount
     useEffect(() => {
@@ -172,7 +174,7 @@ const DashHome = () => {
                             <div className="text-right">
                                 <div className="text-gray-400 text-xs mb-1">{coin.coin_ticker}</div>
                                 <div className="text-white font-semibold">
-                                    ${(coin.value).toLocaleString()} ({(coin.value / 153.98).toFixed(2)} SOL)
+                                    ${(coin.value * solPrice).toLocaleString()} ({(coin.value).toLocaleString()} SOL)
                                 </div>
                                 <div className='flex space-x-1 justify-end items-center'>
                                     <div className="text-white font-semibold">${(coin.market_cap).toLocaleString()}</div>

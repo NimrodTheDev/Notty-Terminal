@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { PublicKey } from '@solana/web3.js';
 import { Link } from 'react-router-dom';
 import { Toast, useToast } from '../general/Toast';
-import { useSolBalance } from '../../hooks/solanabalance';
+import { useSolBalance, getSolanaPriceUSD } from '../../hooks/solanabalance';
 import axios from "axios";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
@@ -18,13 +18,6 @@ interface BuyAndSellProps {
 function shortenAddress(address:string) {
     if (!address || address.length < 10) return address;
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
-}
-
-async function getSolanaPriceUSD() {
-    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
-    const data = await response.json();
-    const price = data.solana.usd;
-    return price;
 }
 
 function BuyAndSell({coinData}: BuyAndSellProps) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PublicKey, Connection } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
+import axios from "axios";
 
 export function useSolBalance(connection: Connection) {
     const wallet = useWallet();
@@ -26,9 +27,36 @@ export function useSolBalance(connection: Connection) {
     return { balance, refetchBalance: fetchBalance };
 }
 
-export async function getSolanaPriceUSD() { // 150 for now but we have to use it fro backend for find a better way
-    // const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
-    // const data = await response.json();
-    const price = 150;//data.solana.usd;
+export async function getSolanaPriceUSD() {
+    const token = localStorage.getItem('auth_token');
+    let price = 150;
+    try{
+        if (!token){
+            throw new TypeError("Missing auth token")
+        }
+        const response = await axios.get(
+            `https://solana-market-place-backend.onrender.com/api/sol-price`,
+            {headers: { Authorization: `Token ${token}` }}
+        )
+        price = parseFloat(response.data.sol_price);
+    } catch (error) {
+        console.error("Failed to fetch SOL price:", error);
+    }
+    return price;
+}
+
+export function useSolanaPrice(defaultPrice = 150) {
+    const [price, setPrice] = useState(defaultPrice);
+
+    useEffect(() => {
+        let isMounted = true;
+        getSolanaPriceUSD().then((fetched) => {
+            if (isMounted) setPrice(fetched);
+        });
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return price;
 }
