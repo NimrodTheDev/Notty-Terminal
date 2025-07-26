@@ -56,7 +56,7 @@ class CoinSerializer(serializers.ModelSerializer):
     def get_creator_display_name(self, obj):
         return obj.creator.get_display_name()
 
-class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we  need images
+class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need images
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
     coin_name = serializers.ReadOnlyField(source='coin.name')
     current_price = serializers.ReadOnlyField(source='coin.current_price')

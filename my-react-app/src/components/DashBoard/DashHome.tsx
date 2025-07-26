@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from "axios";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from '@solana/web3.js';
+import { useSolanaPrice } from '../hook/solanabalance';
 
 type CoinItem = { // can make the coin object optional
     amount_held : string;
@@ -40,6 +41,7 @@ const DashHome = () => {
     const [balance, setBalance] = useState<number>(0);
     const [userInfo, setUserInfo] = useState<UserInfo>({tradescore:0,devscore:0});
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
+    const solPrice = useSolanaPrice()
 
     // for fetching the wallet amount
     useEffect(() => {
@@ -64,11 +66,9 @@ const DashHome = () => {
                 const token = localStorage.getItem('auth_token');
                 const response = await axios.get(
                     `https://solana-market-place-backend.onrender.com/api/dashboard`,
-                    // 'http://127.0.0.1:8000/api/dashboard',
                     {
                         headers: { Authorization: `Token ${token}` }
                     }
-
                 )
                 const { user, holdings, created_coins: coins } = response.data;
                 console.log(wallet.publicKey?.toBase58())
@@ -163,7 +163,7 @@ const DashHome = () => {
                             <div className="text-right">
                                 <div className="text-gray-400 text-xs mb-1">{coin.coin_ticker}</div>
                                 <div className="text-white font-semibold">
-                                    ${(coin.value).toLocaleString()} ({(coin.value / 153.98).toFixed(2)} SOL)
+                                    ${(coin.value * solPrice).toLocaleString()} ({(coin.value).toLocaleString()} SOL)
                                 </div>
                                 <div className='flex space-x-1 justify-end items-center'>
                                     <div className="text-white font-semibold">${(coin.market_cap).toLocaleString()}</div>
