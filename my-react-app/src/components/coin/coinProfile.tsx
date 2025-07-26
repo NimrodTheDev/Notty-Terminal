@@ -69,6 +69,14 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 						/>
 					</div>
 				</div>
+				<div className="justify-self-center">
+					<div className="text-center text-gray-300 space-x-2 mb-4"
+						onClick={handleFireClick}
+					>
+						<span className="text-2xl font-semibold">DRS</span>
+						<span className="text-2xl">{fireCount}</span>
+					</div>
+				</div>
 
 				{/* Social Links */}
 				<div className="flex justify-center gap-4 mb-8">
@@ -77,7 +85,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 							href={"https://x.com/" + coinData?.twitter || ""}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"
+							className="p-2 rounded-full  transition-colors"
 						>
 							<Twitter size={20} />
 						</a>
@@ -87,7 +95,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 							href={coinData?.website}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"
+							className="p-2 rounded-full  transition-colors"
 						>
 							<Globe size={20} />
 						</a>
@@ -97,24 +105,13 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 							href={coinData?.discord}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"
+							className="p-2 rounded-full  transition-colors"
 						>
-							<svg
-								width="20"
-								height="20"
-								viewBox="0 0 24 24"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M19.73 4.27a10 10 0 0 0-14.15 0c-3.9 3.91-3.9 10.24 0 14.14 3.91 3.91 10.24 3.91 14.15 0 3.9-3.9 3.9-10.23 0-14.14zM7.89 7.89a6 6 0 0 1 8.3-.18l.12.1.13.12a6 6 0 0 1-8.51 8.51l-.04-.04a6 6 0 0 1 0-8.51z"
-									fill="currentColor"
-								/>
-								<path
-									d="M16.27 16.27a6 6 0 0 0 0-8.54 6 6 0 0 0-8.54 0 6 6 0 0 0 0 8.54 6 6 0 0 0 8.54 0zM12 10.8a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"
-									fill="currentColor"
-								/>
-							</svg>
+							<img
+								src="/discord-app-icon.png"
+								alt="Discord"
+								className=" w-8 h-6"
+							/>
 						</a>
 					)}
 				</div>
@@ -126,15 +123,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 					</p>
 				</div>
 			</div>
-			<div className="justify-self-center">
-				<button
-					onClick={handleFireClick}
-					className="flex items-center gap-2 text-orange-500 hover:text-orange-400 transition-colors shadow-md shadow-indigo-700 rounded-lg"
-				>
-					<span className="text-2xl">🔥</span>
-					<span>{fireCount}</span>
-				</button>
-			</div>
+
 		</div>
 	);
 }

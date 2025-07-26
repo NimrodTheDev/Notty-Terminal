@@ -9,7 +9,8 @@ import {
     Settings,
     HelpCircle,
     Menu,
-    X
+    X,
+    User2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -30,6 +31,7 @@ const Sidebar = () => {
     const bottomItems = [
         { name: 'Settings', icon: Settings, link: "settings" },
         { name: 'Help & Support', icon: HelpCircle, link: "help" },
+
     ];
 
     const handleItemClick = (itemName: string) => {

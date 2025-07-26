@@ -58,6 +58,10 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 					<div className="text-purple-200">Creator</div>
 					<Link to={`https://explorer.solana.com/address/${coinData.creator}?cluster=devnet`} className="font-medium underline text-xs whitespace-wrap">{coinData.creator_display_name || "Smart Contract Owner"}</Link>
 				</div>
+				<div className="flex sm:flex-col justify-between">
+					<div className="text-purple-200">Profile</div>
+					<Link to={`/dashboard/profile/${coinData.creator}`} className="font-medium underline text-xs whitespace-wrap">{coinData.creator_display_name || "Smart Contract Owner"}</Link>
+				</div>
 				<div className="flex justify-between">
 					<div className="text-purple-200">Time Launched:</div>
 					<div className="text-right">{timeLaunched}</div>

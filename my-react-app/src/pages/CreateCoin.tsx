@@ -38,150 +38,150 @@ const DEFAULT_CONFIG = {
 }
 
 interface ValidationErrors {
-    tokenName?: string;
-    tokenSymbol?: string;
-    tokenDescription?: string;
-    tokenWebsite?: string;
-    tokenTwitter?: string;
-    tokenDiscord?: string;
-    tokenImage?: string;
+  tokenName?: string;
+  tokenSymbol?: string;
+  tokenDescription?: string;
+  tokenWebsite?: string;
+  tokenTwitter?: string;
+  tokenDiscord?: string;
+  tokenImage?: string;
 }
 
 
 
 function CreateCoin() {
-    const [tokenName, settTokenName] = useState("");
-    const [tokenSymbol, settTokenSymbol] = useState("");
-    const [loading, setLoading] = useState({
-        bool: false,
-        msg: ""
-    });
-    const [tokenDescription, setTokenDescription] = useState("");
-    const [tokenImage, setTokenImage] = useState<File | null>(null);
-    const [tokenWebsite, setTokenWebsite] = useState("");
-    const [tokenTwitter, setTokenTwitter] = useState("");
-    const [tokenDiscord, setTokenDiscord] = useState("");
-    const { CreateAndInitToken } = useSolana();
-    const [error] = useState<string | null>(null);
-    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-    const [result, setResult] = useState<string | null>(null);
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState<ReactNode>('');
-    const [toastType, setToastType] = useState<'success' | 'error'>('success');
-    const { publicKey, connected, connect } = useWallet();
-    const [showBondingCurveInfo, setShowBondingCurveInfo] = useState(false);
+  const [tokenName, settTokenName] = useState("");
+  const [tokenSymbol, settTokenSymbol] = useState("");
+  const [loading, setLoading] = useState({
+    bool: false,
+    msg: ""
+  });
+  const [tokenDescription, setTokenDescription] = useState("");
+  const [tokenImage, setTokenImage] = useState<File | null>(null);
+  const [tokenWebsite, setTokenWebsite] = useState("");
+  const [tokenTwitter, setTokenTwitter] = useState("");
+  const [tokenDiscord, setTokenDiscord] = useState("");
+  const { CreateAndInitToken } = useSolana();
+  const [error] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [result, setResult] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState<ReactNode>('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const { publicKey, connected, connect } = useWallet();
+  const [showBondingCurveInfo, setShowBondingCurveInfo] = useState(false);
 
-    const validate = (): boolean => {
-        const errors: ValidationErrors = {};
+  const validate = (): boolean => {
+    const errors: ValidationErrors = {};
 
-        if (!tokenName.trim()) {
-            errors.tokenName = "Token name is required";
-        } else if (tokenName.length > 50) {
-            errors.tokenName = "Token name must be less than 50 characters";
+    if (!tokenName.trim()) {
+      errors.tokenName = "Token name is required";
+    } else if (tokenName.length > 50) {
+      errors.tokenName = "Token name must be less than 50 characters";
+    }
+
+    if (!tokenSymbol.trim()) {
+      errors.tokenSymbol = "Token symbol is required";
+    } else if (!/^[A-Z0-9]{2,10}$/.test(tokenSymbol)) {
+      errors.tokenSymbol = "Token symbol must be 2-10 uppercase letters or numbers";
+    }
+
+    if (!tokenDescription.trim()) {
+      errors.tokenDescription = "Description is required";
+    } else if (tokenDescription.length > 1000) {
+      errors.tokenDescription = "Description must be less than 1000 characters";
+    }
+
+    if (!tokenWebsite.trim()) {
+      errors.tokenWebsite = "Website is required";
+    } else if (!/^https?:\/\/.+/.test(tokenWebsite)) {
+      errors.tokenWebsite = "Please enter a valid URL starting with http:// or https://";
+    }
+
+    if (!tokenTwitter.trim()) {
+      errors.tokenTwitter = "Twitter handle is required";
+    } else if (!/^@?[A-Za-z0-9_]{1,15}$/.test(tokenTwitter)) {
+      errors.tokenTwitter = "Please enter a valid Twitter handle";
+    }
+
+    if (!tokenDiscord.trim()) {
+      errors.tokenDiscord = "Discord channel is required";
+    } else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
+      errors.tokenDiscord = "Please enter a valid Discord invite link";
+    }
+
+    if (!tokenImage) {
+      errors.tokenImage = "Project image is required";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const showToastMessage = (message: ReactNode, type: 'success' | 'error') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 5000);
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) {
+      return;
+    }
+    try {
+      if (!tokenImage) {
+        setLoading({ bool: false, msg: '' });
+        return;
+      }
+
+      const metadataUrl = await uploadFile(tokenImage, {
+        name: tokenName,
+        symbol: tokenSymbol,
+        description: tokenDescription,
+        website: tokenWebsite,
+        twitter: tokenTwitter,
+        discord: tokenDiscord
+      });
+
+      if (metadataUrl.length === 0) {
+        setLoading({ bool: false, msg: '' });
+        showToastMessage("Failed to upload token", "error");
+        return;
+      }
+
+      setLoading({ bool: true, msg: "Creating token" });
+
+      if (CreateAndInitToken) {
+        const txHash = await CreateAndInitToken(tokenName, tokenSymbol, metadataUrl, 0, 0, false);
+
+        if (txHash) {
+          setResult(txHash.tx);
+          showToastMessage(
+            <Link to={`https://explorer.solana.com/tx/${txHash.tx}?cluster=devnet`} target='_blank' className='underline'>
+              Token created successfully! View on Explorer
+            </Link>,
+            "success"
+          );
+        } else {
+          showToastMessage("Please ensure you have Phantom extension installed", "error");
         }
+      }
+    } catch (e: any) {
+      console.error(e);
+      showToastMessage(e.message, "error");
+    } finally {
+      setLoading({ bool: false, msg: '' });
+    }
+  };
 
-        if (!tokenSymbol.trim()) {
-            errors.tokenSymbol = "Token symbol is required";
-        } else if (!/^[A-Z0-9]{2,10}$/.test(tokenSymbol)) {
-            errors.tokenSymbol = "Token symbol must be 2-10 uppercase letters or numbers";
-        }
+  const formatMarketCap = (mc: number): string => {
+    if (mc >= 1000000) return `$${(mc / 1000000).toFixed(2)}M`;
+    if (mc >= 1000) return `$${(mc / 1000).toFixed(1)}K`;
+    return `$${mc?.toFixed(0) || 0}`;
+  };
 
-        if (!tokenDescription.trim()) {
-            errors.tokenDescription = "Description is required";
-        } else if (tokenDescription.length > 1000) {
-            errors.tokenDescription = "Description must be less than 1000 characters";
-        }
 
-        if (!tokenWebsite.trim()) {
-            errors.tokenWebsite = "Website is required";
-        } else if (!/^https?:\/\/.+/.test(tokenWebsite)) {
-            errors.tokenWebsite = "Please enter a valid URL starting with http:// or https://";
-        }
-
-        if (!tokenTwitter.trim()) {
-            errors.tokenTwitter = "Twitter handle is required";
-        } else if (!/^@?[A-Za-z0-9_]{1,15}$/.test(tokenTwitter)) {
-            errors.tokenTwitter = "Please enter a valid Twitter handle";
-        }
-
-        if (!tokenDiscord.trim()) {
-            errors.tokenDiscord = "Discord channel is required";
-        } else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
-            errors.tokenDiscord = "Please enter a valid Discord invite link";
-        }
-
-        if (!tokenImage) {
-            errors.tokenImage = "Project image is required";
-        }
-
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
-
-    const showToastMessage = (message: ReactNode, type: 'success' | 'error') => {
-        setToastMessage(message);
-        setToastType(type);
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 5000);
-    };
-
-    const handleSubmit = async () => {
-        if (!validate()) {
-            return;
-        }
-        try {
-            if (!tokenImage) {
-                setLoading({ bool: false, msg: '' });
-                return;
-            }
-
-            const metadataUrl = await uploadFile(tokenImage, {
-                name: tokenName,
-                symbol: tokenSymbol,
-                description: tokenDescription,
-                website: tokenWebsite,
-                twitter: tokenTwitter,
-                discord: tokenDiscord
-            });
-
-            if (metadataUrl.length === 0) {
-                setLoading({ bool: false, msg: '' });
-                showToastMessage("Failed to upload token", "error");
-                return;
-            }
-
-            setLoading({ bool: true, msg: "Creating token" });
-
-            if (CreateAndInitToken) {
-                const txHash = await CreateAndInitToken(tokenName, tokenSymbol, metadataUrl, 0, 0, false);
-
-                if (txHash) {
-                    setResult(txHash.tx);
-                    showToastMessage(
-                        <Link to={`https://explorer.solana.com/tx/${txHash.tx}?cluster=devnet`} target='_blank' className='underline'>
-                            Token created successfully! View on Explorer
-                        </Link>,
-                        "success"
-                    );
-                } else {
-                    showToastMessage("Please ensure you have Phantom extension installed", "error");
-                }
-            }
-        } catch (e: any) {
-            console.error(e);
-            showToastMessage(e.message, "error");
-        } finally {
-            setLoading({ bool: false, msg: '' });
-        }
-    };
-
-    const formatMarketCap = (mc: number): string => {
-      if (mc >= 1000000) return `$${(mc / 1000000).toFixed(2)}M`;
-      if (mc >= 1000) return `$${(mc / 1000).toFixed(1)}K`;
-      return `$${mc?.toFixed(0) || 0}`;
-    };
-
-    
   const BondingCurveInfo = ({ tokenData }: { tokenData: any }) => {
     if (!tokenData) return null;
 
@@ -193,7 +193,7 @@ function CreateCoin() {
         0,
         ((currentMarketCap - DEFAULT_CONFIG.startMarketCap) /
           (DEFAULT_CONFIG.endMarketCap - DEFAULT_CONFIG.startMarketCap)) *
-          100
+        100
       )
     );
 
@@ -256,7 +256,9 @@ function CreateCoin() {
             <li>
               • Tokens are available for purchase through the bonding curve
             </li>
-            <li>• Price increases as more tokens are bought</li>
+            <li>
+              • Price increases as more tokens are bought
+            </li>
             <li>
               • When market cap reaches{" "}
               {formatMarketCap(DEFAULT_CONFIG.endMarketCap)}, liquidity migrates
@@ -301,10 +303,10 @@ function CreateCoin() {
         </div>
       </div>
 
-      <div className="max-[400px] h-[100%] mx-auto bg-custom-dark-blue relative flex items-center justify-center">
+      <div className="max-[400px] h-[100%] bg-custom-dark-blue relative flex items-center justify-center">
         <div
           className="flex justify-center items-center mt-[-100px] mb-[50px] flex-col border-gray-600 border max-w-[600px] 
-                w-full  mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded"
+                w-full bg-custom-dark-blue z-10 p-4 text-white rounded"
         >
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-center mb-2">
@@ -386,11 +388,10 @@ function CreateCoin() {
                   <input
                     type="text"
                     id="projectName"
-                    className={`w-full bg-gray-800 border ${
-                      validationErrors.tokenName
-                        ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded px-4 py-2 text-white no-background`}
+                    className={`w-full bg-gray-800 border ${validationErrors.tokenName
+                      ? "border-red-500"
+                      : "border-gray-700"
+                      } rounded px-4 py-2 text-white no-background`}
                     placeholder="Enter your project name"
                     onChange={(e) => settTokenName(e.target.value)}
                   />
@@ -410,11 +411,10 @@ function CreateCoin() {
                   </label>
                   <textarea
                     id="projectDesc"
-                    className={`w-full h-[200px] bg-gray-800 border ${
-                      validationErrors.tokenDescription
-                        ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded px-4 py-2 text-white no-background resize-none`}
+                    className={`w-full h-[200px] bg-gray-800 border ${validationErrors.tokenDescription
+                      ? "border-red-500"
+                      : "border-gray-700"
+                      } rounded px-4 py-2 text-white no-background resize-none`}
                     placeholder="Describe your projects"
                     onChange={(e) => setTokenDescription(e.target.value)}
                   />
@@ -435,11 +435,10 @@ function CreateCoin() {
                   <input
                     type="text"
                     id="projectSymb"
-                    className={`w-full bg-gray-800 border ${
-                      validationErrors.tokenSymbol
-                        ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded px-4 py-2 text-white no-background`}
+                    className={`w-full bg-gray-800 border ${validationErrors.tokenSymbol
+                      ? "border-red-500"
+                      : "border-gray-700"
+                      } rounded px-4 py-2 text-white no-background`}
                     placeholder="Set token symbol"
                     onChange={(e) =>
                       settTokenSymbol(e.target.value.toUpperCase())
@@ -483,11 +482,10 @@ function CreateCoin() {
                   <input
                     type="url"
                     id="webAddress"
-                    className={`w-full bg-gray-800 border ${
-                      validationErrors.tokenWebsite
-                        ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded px-4 py-2 text-white no-background`}
+                    className={`w-full bg-gray-800 border ${validationErrors.tokenWebsite
+                      ? "border-red-500"
+                      : "border-gray-700"
+                      } rounded px-4 py-2 text-white no-background`}
                     placeholder="https://your-website.com"
                     onChange={(e) => setTokenWebsite(e.target.value)}
                   />
@@ -508,11 +506,10 @@ function CreateCoin() {
                   <input
                     type="text"
                     id="twithand"
-                    className={`w-full bg-gray-800 border ${
-                      validationErrors.tokenTwitter
-                        ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded px-4 py-2 text-white no-background`}
+                    className={`w-full bg-gray-800 border ${validationErrors.tokenTwitter
+                      ? "border-red-500"
+                      : "border-gray-700"
+                      } rounded px-4 py-2 text-white no-background`}
                     placeholder="@yourhandle"
                     onChange={(e) => setTokenTwitter(e.target.value)}
                   />
@@ -533,11 +530,10 @@ function CreateCoin() {
                   <input
                     type="url"
                     id="discord"
-                    className={`w-full bg-gray-800 border ${
-                      validationErrors.tokenDiscord
-                        ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded px-4 py-2 text-white no-background`}
+                    className={`w-full bg-gray-800 border ${validationErrors.tokenDiscord
+                      ? "border-red-500"
+                      : "border-gray-700"
+                      } rounded px-4 py-2 text-white no-background`}
                     placeholder="https://discord.gg/your-channel"
                     onChange={(e) => setTokenDiscord(e.target.value)}
                   />
@@ -552,19 +548,18 @@ function CreateCoin() {
               <div className="flex justify-end mt-8">
                 <button
                   type="button"
-                  className={`flex items-center justify-center ${
-                    connected && publicKey
-                      ? "bg-custom-light-purple hover:bg-indigo-600 text-white"
-                      : "bg-gray-600 text-gray-300 cursor-not-allowed"
-                  } px-6 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`flex items-center justify-center ${connected && publicKey
+                    ? "bg-custom-light-purple hover:bg-indigo-600 text-white"
+                    : "bg-gray-600 text-gray-300 cursor-not-allowed"
+                    } px-6 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                   onClick={handleSubmit}
                   disabled={loading.bool || !connected || !publicKey}
                 >
                   {loading.bool
                     ? loading.msg + "..."
                     : !connected || !publicKey
-                    ? "Connect Wallet to Launch"
-                    : "Launch Token with Bonding Curve"}
+                      ? "Connect Wallet to Launch"
+                      : "Launch Token with Bonding Curve"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </button>
               </div>

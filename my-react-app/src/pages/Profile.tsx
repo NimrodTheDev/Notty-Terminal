@@ -1,9 +1,14 @@
 // import { Users, Heart, Star, ArrowDownRightFromCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey } from '@solana/web3.js';
+
+import { useParams } from 'react-router-dom';
+
+import axios from "axios"
+
+
+
 
 function Profile() {
     const [activeTab, setActiveTab] = useState('createdCoins');
@@ -12,6 +17,7 @@ function Profile() {
     // const wallet = useWallet();
     // const { connection } = useConnection();
     const [wAddress, setWAddress] = useState<string>('emptyaddress');
+    const { address } = useParams();
 
     function shortenAddress(address: string) {
         if (!address || address.length < 10) return address;
@@ -22,6 +28,8 @@ function Profile() {
         devscore: number;
         tradescore: number;
     };
+
+
 
     const createdCoinsSample = [
         { id: 1, name: 'Coin A', drs: 100, creator: 'Tser A', marketCap: 1000 },
@@ -44,6 +52,49 @@ function Profile() {
     //     { id: 4, name: 'Coin D', drs: 400, creator: 'User D', marketCap: 4000 },
     // ]
 
+
+
+    useEffect(() => {
+        const loadHistory = async () => {
+            try {
+                //   setLoading(true);
+                const token = localStorage.getItem('auth_token');
+
+                if (!token) {
+                    return;
+                }
+
+                //dashboard/profile/?address=YOUR_WALLET_ADDRESS
+
+                const response = await axios.get(
+                    'https://solana-market-place-backend.onrender.com/api/dashboard/profile',
+                    // 'http://127.0.0.1:8000/api/trader-history',
+                    {
+                        params: {
+                            address: address, // Use the connected wallet address
+                        },
+                        headers: { Authorization: `Token ${token}` } // Bearer
+                    }
+                );
+                // GET /trader-history/?year=2025&month=7&page=1, for the queries page size, page, month, year, 
+                // and user for diferent users if necessary
+
+                const data = response.data;
+                console.log('User Info:', data);
+                setUserInfo(data);
+
+
+
+            } catch (err) {
+                console.error('Error fetching user info:', err);
+            }
+            //  finally {
+            //     setLoading(false);
+            // }
+
+        };
+        loadHistory();
+    }, [address]);
 
 
 
