@@ -12,6 +12,7 @@ interface BuyAndSellProps {
     ticker?: string;
     current_price?: string;
   };
+<<<<<<< Updated upstream
 }
 <<<<<<< Updated upstream
 
@@ -85,6 +86,10 @@ const BuyAndSell = ({ coinData }: BuyAndSellProps) => {
   // Fetch SOL price
 =======
 
+=======
+}
+
+>>>>>>> Stashed changes
 function shortenAddress(address: string) {
   if (!address || address.length < 10) return address;
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -137,6 +142,9 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
     }
   };
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   useEffect(() => {
     let isMounted = true;
@@ -144,10 +152,16 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
     const fetchSolPrice = async () => {
       try {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
         const data = await response.json();
         if (isMounted && data?.solana?.usd) {
           setSolPrice(data.solana.usd);
+=======
+        const price = await getSolanaPriceUSD();
+        if (isMounted && price) {
+          setSolPrice(price);
+>>>>>>> Stashed changes
 =======
         const price = await getSolanaPriceUSD();
         if (isMounted && price) {
@@ -159,6 +173,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
       }
     };
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     fetchSolPrice();
     const interval = setInterval(fetchSolPrice, 300000); // every 5 mins
@@ -267,6 +282,36 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
     // { label: 'Holders with 500K-49M', value: '25%' },
   ]);
 
+=======
+    fetchSolPrice(); // Fetch immediately on mount
+    const interval = setInterval(fetchSolPrice, 60000 * 5); // Then every 60s*5
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval); // Clean up on unmount
+    };
+  }, []);
+
+  // can still be improved
+  // restricting the entry to this view if not verified
+  // For top holders
+  const [topHolders, setTopHolders] = useState<{ address: string; percentage: string }[]>([
+    { address: '8rqb2fJrj...', percentage: '92%' },
+    { address: '8rqb2fJrj...', percentage: '0.97%' },
+    { address: '8rqb2fJrj...', percentage: '0.97%' },
+    { address: '8rqb2fJrj...', percentage: '0.97%' },
+    { address: '8rqb2fJrj...', percentage: '0.97%' },
+  ]);
+
+  // For analytics summary
+  const [holderAnalytics, setHolderAnalytics] = useState<{ label: string; value: string }[]>([
+    { label: 'Total Holders', value: '200,000' },
+    // { label: 'T2 Holders', value: '99' },
+    // { label: 'Holders with 500K-500K', value: '25%' },
+    // { label: 'Holders with 500K-49M', value: '25%' },
+  ]);
+
+>>>>>>> Stashed changes
   const getFormattedValues = (amount: string, price: number) => {
     const parsedAmount = parseFloat(amount || '0');
     const solVaue = parsedAmount * price
@@ -399,6 +444,9 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
           </button> */}
 
       {/* Top Holders Section */}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       <div className="mb-6">
         <h3 className="text-white font-medium mb-3">Top Holders</h3>
@@ -407,11 +455,14 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
             <p>No holders found</p>
           ) : (
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             topHolders.map((holder, i) => (
               <div key={i} className="flex justify-between text-sm">
                 <span className="text-custom-light-purple font-mono">{holder.address}</span>
                 <span className="text-gray-300">{holder.percentage}</span>
 =======
+=======
+>>>>>>> Stashed changes
             topHolders.map((holder, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -423,14 +474,55 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
                   </span>
                 </div>
                 <span className="text-gray-300 text-sm">{holder.percentage}</span>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
               </div>
             ))
           )}
         </div>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       </div>
 =======
+=======
+
+      </div>
+
+
+
+      {/* Holder Analytics Section */}
+      <div>
+        <h3 className="text-white font-medium mb-3">Holder Analytics</h3>
+        <div className="space-y-2">
+          {holderAnalytics.map((analytic, index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
+                  <span className="text-xs font-bold text-black">🏆</span>
+                </div>
+                <span className="text-custom-light-purple text-sm">
+                  {analytic.label}
+                </span>
+              </div>
+              <span className="text-gray-300 text-sm">{analytic.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+    </div>
+  );
+}
+>>>>>>> Stashed changes
 
       </div>
 
