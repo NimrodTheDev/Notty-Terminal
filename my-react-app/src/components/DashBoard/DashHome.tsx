@@ -79,16 +79,16 @@ const DashHome = () => {
                 setCreatedCoins(coins.length);
                 setCoins(holdings);
                 setUserInfo(user);
-          } catch (err: any) {
+            } catch (err: any) {
                 console.log(err);
             } finally {
                 setLoading(false); // Set loading to false after fetching
             }
- };
+        };
         fetchAllCoins();
     }, []);
-    
- if (loading) {
+
+    if (loading) {
         return (
             <div className="flex justify-center items-center h-screen bg-custom-dark-blue">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>

@@ -242,8 +242,8 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 
       {/* Top Holders Section */}
       <div className="mb-6">
-        <h3 className="text-white font-medium mb-3">Top Holders</h3>
-        <div className="space-y-2">
+        <h3 className=" text-[#CCC1FA] font-medium my-8">Top Holders</h3>
+        <div className="space-y-2 mb-12">
           {topHolders.length === 0 ? (
             <p>No holders found</p>
           ) : (
@@ -269,8 +269,8 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 
       {/* Holder Analytics Section */}
       <div>
-        <h3 className="text-white font-medium mb-3">Holder Analytics</h3>
-        <div className="space-y-2">
+        <h3 className="text-[#CCC1FA] font-medium my-8">Holder Analytics</h3>
+        <div className="space-y-2 mb-12">
           {holderAnalytics.map((analytic, index) => (
             <div key={index} className="flex items-center justify-between">
               <div className="flex items-center">
