@@ -46,7 +46,6 @@ const DashHome = () => {
 	const [wAddress, setWAddress] = useState<string>("emptyaddress");
 	const [loading, setLoading] = useState<boolean>(true);
 	const solPrice = useSolanaPrice();
-
 	// for fetching the wallet amount
 	useEffect(() => {
 		const fetchBalance = async () => {
@@ -188,7 +187,6 @@ const DashHome = () => {
 									{/* <p className="text-gray-500 text-xs">{coin.category}</p> */}
 								</div>
 							</div>
-
 							<div className='text-right'>
 								<div className='text-gray-400 text-xs mb-1'>
 									{coin.coin_ticker}
