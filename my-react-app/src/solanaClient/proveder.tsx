@@ -1,33 +1,31 @@
-import { Connection, clusterApiUrl } from "@solana/web3.js";
-import { AnchorProvider } from "@project-serum/anchor";
-import {WalletContextState } from "@solana/wallet-adapter-react";
-// const programId = new PublicKey("A7sBBSngzEZTsCPCffHDbeXDJ54uJWkwdEsskmn2YBGo");
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
+import { Connection, PublicKey } from "@solana/web3.js";
+import drc_token_json from "./drc_token.json";
+import { NottyTerminal } from "./drc_token_type";
 
-const network = clusterApiUrl("devnet");
-const connection = new Connection(network, "processed");
+const programId = new PublicKey(drc_token_json.address);
 
-// Use Phantom or any wallet adapter
-export const getProvider = (arg: WalletContextState | null) => {
-  
-  let arg2 = arg
-console.log(arg2)
-  
-  // @ts-ignore
-  if (!window.solana) {
-    return
-    // throw new Error("Wallet not found");
-  }
+export const getProvider = () => {
+	const connection = new Connection(
+		"https://api.devnet.solana.com",
+		"confirmed"
+	);
 
-  const provider = new AnchorProvider(
-    connection,
+	//@ts-ignore
+	if (!window.solana) throw new Error("Solana wallet not found");
+	//@ts-ignore
+	const wallet = window.solana;
+	if (!wallet) throw new Error("Solana wallet not found");
 
-    // @ts-ignore
-    window.solana,
-    // {...arg, signTransaction: arg?.signTransaction}, 
-    //  this is injected by Phantom
-    {
-      preflightCommitment: "processed",
-    }
-  );
-  return provider;
+	//   const wallet = window.solana as Wallet
+	return new AnchorProvider(connection, wallet, {
+		preflightCommitment: "processed",
+	});
 };
+
+export const getProgram = () => {
+	const provider = getProvider();
+	return new Program<NottyTerminal>(drc_token_json as any, provider);
+};
+
+export { programId };

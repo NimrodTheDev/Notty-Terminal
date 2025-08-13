@@ -1,205 +1,272 @@
 // import { Users, Heart, Star, ArrowDownRightFromCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 
 interface UserInfo {
-    display_name: string;
-    wallet_address: string;
-    devscore: number;
-    tradescore: number;
+	display_name: string;
+	wallet_address: string;
+	devscore: number;
+	tradescore: number;
 }
 
 function Profile() {
-    const [activeTab, setActiveTab] = useState('createdCoins');
-    const [coins, setCoins] = useState<any[]>([]);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [wAddress, setWAddress] = useState<string>('emptyaddress');
-    const { address } = useParams();
+	const [activeTab, setActiveTab] = useState("createdCoins");
+	const [coins, setCoins] = useState<any[]>([]);
+	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+	// const [wAddress, setWAddress] = useState<string>('emptyaddress');
+	const { address } = useParams();
 
-    function shortenAddress(address: string) {
-        if (!address || address.length < 10) return address;
-        return `${address.slice(0, 4)}...${address.slice(-4)}`;
-    }
+	function shortenAddress(address: string) {
+		if (!address || address.length < 10) return address;
+		return `${address.slice(0, 4)}...${address.slice(-4)}`;
+	}
 
-    const followingSample = ['User 1', 'User 2', 'User 3', 'User 4'];
-    const followersSample = ['Follower A', 'Follower B', 'Follower C', 'Follower D'];
+	const followingSample = ["User 1", "User 2", "User 3", "User 4"];
+	const followersSample = [
+		"Follower A",
+		"Follower B",
+		"Follower C",
+		"Follower D",
+	];
 
-    useEffect(() => {
-        const loadHistory = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                if (!token) return;
+	useEffect(() => {
+		const loadHistory = async () => {
+			try {
+				const token = localStorage.getItem("auth_token");
+				if (!token) return;
 
-                const response = await axios.get(
-                    'https://solana-market-place-backend.onrender.com/api/dashboard/profile',
-                    {
-                        params: { address },
-                        headers: { Authorization: `Token ${token}` }
-                    }
-                );
+				const response = await axios.get(
+					"https://solana-market-place-backend.onrender.com/api/dashboard/profile",
+					{
+						params: { address },
+						headers: { Authorization: `Token ${token}` },
+					}
+				);
 
-                const { user, created_coins } = response.data;
-                setUserInfo(user);
-                setCoins(created_coins);
-            } catch (err) {
-                console.error('Error fetching user info:', err);
-            }
-        };
-        loadHistory();
-    }, [address]);
+				const { user, created_coins } = response.data;
+				setUserInfo(user);
+				setCoins(created_coins);
+			} catch (err) {
+				console.error("Error fetching user info:", err);
+			}
+		};
+		loadHistory();
+	}, [address]);
 
-    if (!userInfo) {
-        return <div className="text-white text-center p-10">Loading user profile...</div>;
-    }
+	if (!userInfo) {
+		return (
+			<div className='text-white text-center p-10'>Loading user profile...</div>
+		);
+	}
 
-    return (
-        <div className='relative min-h-screen sm:min-h-[180vh] xl:min-h-[124vh] overflow-x-hidden'>
-            <div className="h-32 sm:h-48 lg:h-64 z-10 crtGradient background-container top-10 left-10"></div>
+	return (
+		<div className='relative min-h-screen sm:min-h-[180vh] xl:min-h-[124vh] overflow-x-hidden'>
+			<div className='h-32 sm:h-48 lg:h-64 z-10 crtGradient background-container top-10 left-10'></div>
 
-            <div className="h-auto min-h-[900px] mx-auto bg-custom-dark-blue relative flex flex-col items-center justify-center px-2 xs:px-4">
-                <div className="flex justify-center absolute mt-10 flex-col border-gray-600 border max-w-[970px] w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded">
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between sm:p-6 border-b border-gray-800">
-                            <div className="flex items-center space-x-4">
-                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-yellow-500 flex items-center justify-center">
-                                    <span className="text-xl font-bold">🚀</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <div>
-                                        <h1 className="text-xl font-semibold max-w-md text-ellipsis truncate">{userInfo.display_name}</h1>
-                                        <p className="text-gray-400 text-sm">{shortenAddress(userInfo.wallet_address)}</p>
-                                    </div>
-                                    <div className='flex space-x-2'>
-                                        <h2 className="text-l text-[#CCC1FA] font-bold">Dev score: {userInfo.devscore}</h2>
-                                        <h2 className="text-l text-[#CCC1FA] font-bold">Trader score: {userInfo.tradescore}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <button className="bg-custom-light-purple hover:bg-[#9a84ff] px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                                Follow
-                            </button>
-                        </div>
+			<div className='h-auto min-h-[900px] mx-auto bg-custom-dark-blue relative flex flex-col items-center justify-center px-2 xs:px-4'>
+				<div className='flex justify-center absolute mt-10 flex-col border-gray-600 border max-w-[970px] w-full top-[-150px] mx-auto bg-custom-dark-blue z-10 p-4 text-white rounded'>
+					<div className='mb-8'>
+						<div className='flex items-center justify-between sm:p-6 border-b border-gray-800'>
+							<div className='flex items-center space-x-4'>
+								<div className='w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-yellow-500 flex items-center justify-center'>
+									<span className='text-xl font-bold'>🚀</span>
+								</div>
+								<div className='flex flex-col'>
+									<div>
+										<h1 className='text-xl font-semibold max-w-md text-ellipsis truncate'>
+											{userInfo.display_name}
+										</h1>
+										<p className='text-gray-400 text-sm'>
+											{shortenAddress(userInfo.wallet_address)}
+										</p>
+									</div>
+									<div className='flex space-x-2'>
+										<h2 className='text-l text-[#CCC1FA] font-bold'>
+											Dev score: {userInfo.devscore}
+										</h2>
+										<h2 className='text-l text-[#CCC1FA] font-bold'>
+											Trader score: {userInfo.tradescore}
+										</h2>
+									</div>
+								</div>
+							</div>
+							<button className='bg-custom-light-purple hover:bg-[#9a84ff] px-4 py-2 rounded-md text-sm font-medium transition-colors'>
+								Follow
+							</button>
+						</div>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-between p-2 sm:p-6">
-                            <div className="max-w-4xl w-full sm:flex-1 mx-auto sm:p-6 font-sans">
-                                <div className="flex flex-col sm:flex-row">
-                                    <button
-                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'createdCoins' ? 'text-[#7E6DC8] font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
-                                        onClick={() => setActiveTab('createdCoins')}
-                                    >
-                                        <span className="text-[#b5a7f3] w-8 h-8">{coins.length}</span> Created Coins
-                                        {activeTab === 'createdCoins' && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]"></span>
-                                        )}
-                                    </button>
-                                    <button
-                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'heldCoins' ? 'text-[#7E6DC8] font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
-                                        onClick={() => setActiveTab('heldCoins')}
-                                    >
-                                        <span className="text-[#b5a7f3] w-8 h-8">{coins.length}</span> Held Coins
-                                        {activeTab === 'heldCoins' && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]"></span>
-                                        )}
-                                    </button>
+						<div className='flex flex-col sm:flex-row items-center justify-between p-2 sm:p-6'>
+							<div className='max-w-4xl w-full sm:flex-1 mx-auto sm:p-6 font-sans'>
+								<div className='flex flex-col sm:flex-row'>
+									<button
+										className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${
+											activeTab === "createdCoins"
+												? "text-[#7E6DC8] font-semibold"
+												: "text-gray-500 hover:text-gray-700"
+										}`}
+										onClick={() => setActiveTab("createdCoins")}
+									>
+										<span className='text-[#b5a7f3] w-8 h-8'>
+											{coins.length}
+										</span>{" "}
+										Created Coins
+										{activeTab === "createdCoins" && (
+											<span className='absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]'></span>
+										)}
+									</button>
+									<button
+										className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${
+											activeTab === "heldCoins"
+												? "text-[#7E6DC8] font-semibold"
+												: "text-gray-500 hover:text-gray-700"
+										}`}
+										onClick={() => setActiveTab("heldCoins")}
+									>
+										<span className='text-[#b5a7f3] w-8 h-8'>
+											{coins.length}
+										</span>{" "}
+										Held Coins
+										{activeTab === "heldCoins" && (
+											<span className='absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]'></span>
+										)}
+									</button>
 
-                                    <button
-                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'followers' ? 'text-[#7E6DC8] font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
-                                        onClick={() => setActiveTab('followers')}
-                                    >
-                                        <span className="text-[#b5a7f3] w-8 h-8 pr-1">{followersSample.length}</span>Followers
-                                        {activeTab === 'followers' && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]"></span>
-                                        )}
-                                    </button>
+									<button
+										className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${
+											activeTab === "followers"
+												? "text-[#7E6DC8] font-semibold"
+												: "text-gray-500 hover:text-gray-700"
+										}`}
+										onClick={() => setActiveTab("followers")}
+									>
+										<span className='text-[#b5a7f3] w-8 h-8 pr-1'>
+											{followersSample.length}
+										</span>
+										Followers
+										{activeTab === "followers" && (
+											<span className='absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]'></span>
+										)}
+									</button>
 
-                                    <button
-                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'following' ? 'text-[#7E6DC8] font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
-                                        onClick={() => setActiveTab('following')}
-                                    >
-                                        <span className="text-[#b5a7f3] w-8 h-8 pr-1">{followingSample.length}</span>Following
-                                        {activeTab === 'following' && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]"></span>
-                                        )}
-                                    </button>
-                                </div>
+									<button
+										className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${
+											activeTab === "following"
+												? "text-[#7E6DC8] font-semibold"
+												: "text-gray-500 hover:text-gray-700"
+										}`}
+										onClick={() => setActiveTab("following")}
+									>
+										<span className='text-[#b5a7f3] w-8 h-8 pr-1'>
+											{followingSample.length}
+										</span>
+										Following
+										{activeTab === "following" && (
+											<span className='absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]'></span>
+										)}
+									</button>
+								</div>
 
-                                <div className="py-2 sm:py-6">
-                                    {activeTab === 'createdCoins' && (
-                                        <div className="space-y-4">
-                                            <div className="overflow-x-auto">
-                                                <ul>
-                                                    {(coins || []).map((coin, index) => (
-                                                        <Link to={`/coin/${coin.address}`} key={index} className="no-underline">
-                                                            <li className="py-4 flex hover:bg-[#181b29] transition-colors p-4 rounded-md justify-between items-center">
-                                                                <div className="flex items-center">
-                                                                    <div className="h-10 w-10 rounded-full bg-[#4d427b] flex items-center justify-center mr-4"></div>
-                                                                    <div>
-                                                                        <p className="font-medium">{coin.name}</p>
-                                                                        <p className="text-xs text-gray-500">Market Cap</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex items-center justify-center space-y-1 flex-col">
-                                                                    <p className="text-xs text-gray-500">{coin.ticker}</p>
-                                                                    <p className="text-xs text-gray-500">$ {coin.market_cap}</p>
-                                                                </div>
-                                                            </li>
-                                                        </Link>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    )}
+								<div className='py-2 sm:py-6'>
+									{activeTab === "createdCoins" && (
+										<div className='space-y-4'>
+											<div className='overflow-x-auto'>
+												<ul>
+													{(coins || []).map((coin, index) => (
+														<Link
+															to={`/coin/${coin.address}`}
+															key={index}
+															className='no-underline'
+														>
+															<li className='py-4 flex hover:bg-[#181b29] transition-colors p-4 rounded-md justify-between items-center'>
+																<div className='flex items-center'>
+																	<div className='h-10 w-10 rounded-full bg-[#4d427b] flex items-center justify-center mr-4'></div>
+																	<div>
+																		<p className='font-medium'>{coin.name}</p>
+																		<p className='text-xs text-gray-500'>
+																			Market Cap
+																		</p>
+																	</div>
+																</div>
+																<div className='flex items-center justify-center space-y-1 flex-col'>
+																	<p className='text-xs text-gray-500'>
+																		{coin.ticker}
+																	</p>
+																	<p className='text-xs text-gray-500'>
+																		$ {coin.market_cap}
+																	</p>
+																</div>
+															</li>
+														</Link>
+													))}
+												</ul>
+											</div>
+										</div>
+									)}
 
-                                    {activeTab === 'followers' && (
-                                        <div className="space-y-4">
-                                            <ul>
-                                                {followersSample.map((user, index) => (
-                                                    <li key={index} className="flex hover:bg-[#181b29] transition-colors p-4 rounded-md items-center">
-                                                        <div className="h-10 w-10 rounded-full bg-[#4d427b] flex items-center justify-center mr-4">
-                                                            <span className="text-white">{user.charAt(0)}</span>
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium">{user}</p>
-                                                            <p className="text-sm text-gray-500">@{user.toLowerCase().replace(' ', '')}</p>
-                                                        </div>
-                                                        <button className="ml-auto px-4 py-2 bg-[#7E6DC8] rounded-md text-sm font-medium text-white hover:bg-[#ab9af8]">
-                                                            Follow Back
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
+									{activeTab === "followers" && (
+										<div className='space-y-4'>
+											<ul>
+												{followersSample.map((user, index) => (
+													<li
+														key={index}
+														className='flex hover:bg-[#181b29] transition-colors p-4 rounded-md items-center'
+													>
+														<div className='h-10 w-10 rounded-full bg-[#4d427b] flex items-center justify-center mr-4'>
+															<span className='text-white'>
+																{user.charAt(0)}
+															</span>
+														</div>
+														<div>
+															<p className='font-medium'>{user}</p>
+															<p className='text-sm text-gray-500'>
+																@{user.toLowerCase().replace(" ", "")}
+															</p>
+														</div>
+														<button className='ml-auto px-4 py-2 bg-[#7E6DC8] rounded-md text-sm font-medium text-white hover:bg-[#ab9af8]'>
+															Follow Back
+														</button>
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
 
-                                    {activeTab === 'following' && (
-                                        <div className="space-y-4">
-                                            <ul>
-                                                {followingSample.map((user, index) => (
-                                                    <li key={index} className="py-4 flex hover:bg-[#181b29] transition-colors p-4 rounded-md items-center">
-                                                        <div className="h-10 w-10 rounded-full bg-[#4d427b] flex items-center justify-center mr-4">
-                                                            <span className="text-white">{user.charAt(0)}</span>
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium">{user}</p>
-                                                            <p className="text-sm text-gray-500">@{user.toLowerCase().replace(' ', '')}</p>
-                                                        </div>
-                                                        <button className="ml-auto px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4d427b] hover:bg-[#9a84ff] hover:text-white transition-colors">
-                                                            Unfollow
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+									{activeTab === "following" && (
+										<div className='space-y-4'>
+											<ul>
+												{followingSample.map((user, index) => (
+													<li
+														key={index}
+														className='py-4 flex hover:bg-[#181b29] transition-colors p-4 rounded-md items-center'
+													>
+														<div className='h-10 w-10 rounded-full bg-[#4d427b] flex items-center justify-center mr-4'>
+															<span className='text-white'>
+																{user.charAt(0)}
+															</span>
+														</div>
+														<div>
+															<p className='font-medium'>{user}</p>
+															<p className='text-sm text-gray-500'>
+																@{user.toLowerCase().replace(" ", "")}
+															</p>
+														</div>
+														<button className='ml-auto px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4d427b] hover:bg-[#9a84ff] hover:text-white transition-colors'>
+															Unfollow
+														</button>
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }
 
 export default Profile;
