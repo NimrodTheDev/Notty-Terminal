@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect, useMemo } from "react";
 // import { useSolana } from "../../solanaClient";
 import { useParams } from "react-router-dom";
@@ -5,6 +6,16 @@ import { useParams } from "react-router-dom";
 // import { Link } from "react-router-dom";
 import { Toast, useToast } from "../general/Toast";
 import { useSolBalance } from "../../hooks/solanabalance";
+=======
+// import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useState, useEffect, useMemo } from 'react';
+import { useSolana } from '../../solanaClient';
+import { useParams } from 'react-router-dom';
+import { PublicKey } from '@solana/web3.js';
+import { Link } from 'react-router-dom';
+import { Toast, useToast } from '../general/Toast';
+import { useSolBalance, getSolanaPriceUSD } from '../hook/solanabalance';
+>>>>>>> 11146d9 (update)
 import axios from "axios";
 import { useConnection } from "@solana/wallet-adapter-react";
 
@@ -20,6 +31,7 @@ function shortenAddress(address: string) {
 	return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
+<<<<<<< HEAD
 function BuyAndSell({ coinData }: BuyAndSellProps) {
 	const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
 	const [amount, setAmount] = useState("0.001");
@@ -46,6 +58,22 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 
 	// const handleTokenAction = async () => {
 	// 	if (!id) return;
+=======
+function BuyAndSell({coinData}: BuyAndSellProps) {
+    const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
+    const [amount, setAmount] = useState('0.001');
+    const {BuyTokenMint, SellTokenMint} = useSolana()
+    const { id } = useParams();
+    const wallet = useWallet();
+    const { connection } = useConnection();
+    const { showToast, toastMessage, toastType, showToastMessage, setShowToast } = useToast();
+    const [solPrice, setSolPrice] = useState<number>(1);
+    const tokenPrice = useMemo(() => {
+        const coinPriceInSol = parseFloat(coinData?.current_price || '0');
+        return coinPriceInSol * solPrice;
+    }, [coinData?.current_price, solPrice]);
+    const {balance, refetchBalance} = useSolBalance(connection);
+>>>>>>> 11146d9 (update)
 
 	// 	// await refetchBalance(); // hget the balance of the user don't await it?
 	// 	const mintFn = (arg: any, arg2: any) =>  console.log(arg, arg2);
@@ -158,7 +186,11 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 			}
 			try {
 				const response = await axios.get(
+<<<<<<< HEAD
 					`https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
+=======
+                    `https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
+>>>>>>> 11146d9 (update)
 				);
 				const holders: Array<{}> = response.data;
 				setTopHolders(

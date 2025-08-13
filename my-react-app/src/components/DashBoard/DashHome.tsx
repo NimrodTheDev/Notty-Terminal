@@ -3,8 +3,13 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+<<<<<<< HEAD
 import { PublicKey } from "@solana/web3.js";
 import { useSolanaPrice } from "../../hooks/solanabalance";
+=======
+import { PublicKey } from '@solana/web3.js';
+import { useSolanaPrice } from '../hook/solanabalance';
+>>>>>>> 11146d9 (update)
 
 type CoinItem = {
 	// can make the coin object optional
@@ -33,6 +38,7 @@ function shortenAddress(address: string) {
 }
 
 const DashHome = () => {
+<<<<<<< HEAD
 	const [coins, setCoins] = useState<CoinItem[]>([]);
 	const [portfolioValue, setPortfolioValue] = useState<number>(0);
 	const [createdCoins, setCreatedCoins] = useState<number>(0);
@@ -46,6 +52,19 @@ const DashHome = () => {
 	const [wAddress, setWAddress] = useState<string>("emptyaddress");
 	const [loading, setLoading] = useState<boolean>(true);
 	const solPrice = useSolanaPrice();
+=======
+    const [coins, setCoins] = useState<CoinItem[]>(
+        []
+    );
+    const [portfolioValue, setPortfolioValue] = useState<number>(0);
+    const [createdCoins, setCreatedCoins] = useState<number>(0);
+    const wallet = useWallet();
+    const { connection } = useConnection();
+    const [balance, setBalance] = useState<number>(0);
+    const [userInfo, setUserInfo] = useState<UserInfo>({tradescore:0,devscore:0});
+    const [wAddress, setWAddress] = useState<string>('emptyaddress');
+    const solPrice = useSolanaPrice()
+>>>>>>> 11146d9 (update)
 
 	// for fetching the wallet amount
 	useEffect(() => {
@@ -64,6 +83,7 @@ const DashHome = () => {
 		fetchBalance();
 	}, [wallet.connected, wallet.publicKey]);
 
+<<<<<<< HEAD
 	useEffect(() => {
 		const fetchAllCoins = async () => {
 			try {
@@ -102,6 +122,33 @@ const DashHome = () => {
 			</div>
 		);
 	}
+=======
+    useEffect(() => {
+        const fetchAllCoins = async () => {
+            try {
+                const token = localStorage.getItem('auth_token');
+                const response = await axios.get(
+                    `https://solana-market-place-backend.onrender.com/api/dashboard`,
+                    {
+                        headers: { Authorization: `Token ${token}` }
+                    }
+                )
+                const { user, holdings, created_coins: coins } = response.data;
+                console.log(wallet.publicKey?.toBase58())
+                console.log("Holdings:", holdings);
+                // move to work calculations to the backend incase of pagification
+                const netWorth = holdings.reduce((sum: number, item: { value: number; }) => sum + (item.value || 0), 0);
+                setPortfolioValue(netWorth);
+                setCreatedCoins(coins.length);
+                setCoins(holdings);
+                setUserInfo(user);
+            } catch (err: any) {
+                console.log(err)
+            }
+        };
+        fetchAllCoins();
+    }, []);
+>>>>>>> 11146d9 (update)
 
 	return (
 		<div className='min-h-screen relative  bg-custom-dark-blue text-white p-6'>
@@ -189,6 +236,7 @@ const DashHome = () => {
 								</div>
 							</div>
 
+<<<<<<< HEAD
 							<div className='text-right'>
 								<div className='text-gray-400 text-xs mb-1'>
 									{coin.coin_ticker}
@@ -212,6 +260,26 @@ const DashHome = () => {
 			</div>
 		</div>
 	);
+=======
+                            <div className="text-right">
+                                <div className="text-gray-400 text-xs mb-1">{coin.coin_ticker}</div>
+                                <div className="text-white font-semibold">
+                                    ${(coin.value * solPrice).toLocaleString()} ({(coin.value).toLocaleString()} SOL)
+                                </div>
+                                <div className='flex space-x-1 justify-end items-center'>
+                                    <div className="text-white font-semibold">${(coin.market_cap).toLocaleString()}</div>
+                                    <div className="text-green-400 text-sm">+1.90</div>
+                                </div>
+                                {/* <div className="text-green-400 text-sm">{coin.change}</div> */}
+                                {/* it should show red, green, gray */}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+>>>>>>> 11146d9 (update)
 };
 
 export default DashHome;
