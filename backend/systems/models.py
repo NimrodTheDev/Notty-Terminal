@@ -85,14 +85,17 @@ class Coin(models.Model): # we have to store the ath
     twitter = models.CharField(max_length=255, blank=True, null=True)
     score = models.IntegerField(default=150)
     decimals = models.SmallIntegerField(default= 9)
-    price_per_token = models.BigIntegerField(default= 25) # will be eventually removed
+    # price_per_token = models.BigIntegerField(default= 25) # will be eventually removed
     current_marketcap = models.DecimalField(max_digits=32, decimal_places=9)
     start_marketcap = models.DecimalField(max_digits=32, decimal_places=9)
     end_marketcap = models.DecimalField(max_digits=32, decimal_places=9)
     change = models.DecimalField(max_digits=16, decimal_places=4, default=0)
-
+    migrated = models.BooleanField(default= False)
+    raydium_pool = models.CharField(max_length=44, null= True)
+    migration_timestamp = models.DateTimeField(null=True)
     current_price = models.DecimalField(max_digits=24, decimal_places=10, default=0)  # Added price field # start calculating
     ath = models.DecimalField(max_digits=20, decimal_places=8, default=0) # will work like coin to store the highest
+    updated = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.name} ({self.ticker})"
@@ -149,7 +152,7 @@ class Trade(models.Model): # change to transaction hash
     trade_type = models.CharField(max_length=14, choices=TRADE_TYPES)
     coin_amount = models.DecimalField(max_digits=20, decimal_places=10)
     sol_amount = models.DecimalField(max_digits=20, decimal_places=10)
-    created_at = models.DateTimeField(auto_now_add=True)#default=timezone.now)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.get_trade_type_display()} Trade by {self.user.get_display_name()} on {self.coin.ticker}, created_at {self.created_at}"
