@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import img from "../../assets/images/istockphoto-1409329028-612x612.jpg"
+import img from "../../assets/images/istockphoto-1409329028-612x612.jpg";
+import { getSolanaPriceUSD } from "../../hooks/solanabalance";
 
 // Define TypeScript interfaces
 interface NFT {
@@ -33,7 +34,15 @@ export default function NFTCollection() {
 		(async () => {
 			const arg = await axios.get('https://solana-market-place-backend.onrender.com/api/coins/top-coins/?limit=8')
 			if (arg.status === 200) {
-				setNft(arg.data)
+				const coins = arg.data; // ← assume this is an array
+				// Convert string fields to numbers for all coins
+				const solPrice = await getSolanaPriceUSD();
+				const parsedCoins = coins.map((coin: any) => ({
+					...coin,
+					market_cap: parseFloat(coin.current_marketcap) * solPrice,
+					// current_price: parseFloat(coin.current_price),
+				}));
+				setNft(parsedCoins)
 			}
 		})()
 	}, [])
@@ -46,22 +55,22 @@ export default function NFTCollection() {
 					))}
 				</div>
 				<div className='flex justify-center mt-6'>
-				<Link to="/CoinMarket"> {/* link to show all coins page */}
-					<button className='text-white'>
-						<svg
-							className='w-8 h-8'
-							fill='none'
-							stroke='currentColor'
-							viewBox='0 0 24 24'
-						>
-							<path
-								strokeLinecap='round'
-								strokeLinejoin='round'
-								strokeWidth='2'
-								d='M19 9l-7 7-7-7'
-							/>
-						</svg>
-					</button>
+					<Link to="/CoinMarket"> {/* link to show all coins page */}
+						<button className='text-white'>
+							<svg
+								className='w-8 h-8'
+								fill='none'
+								stroke='currentColor'
+								viewBox='0 0 24 24'
+							>
+								<path
+									strokeLinecap='round'
+									strokeLinejoin='round'
+									strokeWidth='2'
+									d='M19 9l-7 7-7-7'
+								/>
+							</svg>
+						</button>
 					</Link>
 				</div>
 			</div>
@@ -93,17 +102,16 @@ export function NFTCard({ nft }: NFTCardProps) {
 				<h3 className='text-white text-xl font-bold mb-2'>{nft.name}</h3>
 				<p className='text-gray-400 text-sm mb-4'>{nft.description}</p>
 
-				<div className='flex justify-between items-center mb-4'>
-					<div>
-						<p className='text-purple-400 text-xs font-medium'>MARKET CAP:</p>
-						<p className='text-purple-400 font-medium'>{nft.market_cap}</p>
+				<div className=' justify-between text-sm gap-y-4 items-center mb-4'>
+					<div className="flex flex-col mb-4 sm:flex-row justify-between">
+						<p className='text-[#9a83f6] '>MARKET CAP:</p>
+						<p className=' text-gray-400'>${nft.market_cap.toFixed(2)}</p>
 					</div>
-					<div className='text-right'>
-						<p className='text-gray-500 text-xs'>DRS:</p>
+					<div className=' flex flex-col mb-4 sm:flex-row justify-between'>
+						<p className='text-[#9a83f6] '>DRS:</p>
 						<p className='text-gray-400'>{nft.score}</p>
 					</div>
 				</div>
-
 				<Link
 					to={`/coin/${nft.address}`}
 					className='w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded flex items-center justify-center gap-1 transition-colors'

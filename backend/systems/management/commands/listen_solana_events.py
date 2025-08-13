@@ -21,7 +21,7 @@ class Command(BaseCommand):
     async def run_listener(self):
         # Setup your event listener similar to the consumer code
         rpc_ws_url = "wss://api.devnet.solana.com"
-        program_id = "A7sBBSngzEZTsCPCffHDbeXDJ54uJWkwdEsskmn2YBGo"#"443aQT61EYaeiqqdqGth95LYgfQkZF1BQbaJLZJ6i29w"
+        program_id = "3Jy5qUaaAQMKVUehh4cLncAAYVgf1XELnt1RhNJGe8ZD"
         
         listener = SolanaEventListener(
             rpc_ws_url=rpc_ws_url,
@@ -32,30 +32,52 @@ class Command(BaseCommand):
             auto_restart=True
         )
         self.decoders = {}
-        self.decoders["CreateTokenWithVault"] = TokenEventDecoder(
-            "TokenWithVaultCreatedEvent", {
-                "token_name": "string",
-                "token_symbol": "string",
-                "token_uri": "string",
-                "mint_address": "pubkey",
+        self.decoders["CreateToken"] = TokenEventDecoder(
+            "TokenCreated", {
+                "mint": "pubkey",
+                "initial_price_per_token": "u64", # 
+                "migrated": "bool", # opt
+                "total_supply": "u64", 
+                "tokens_sold": "u64", # opt
+                "sol_raised": "u64", # opt
+                "start_mcap": "u64", # sol
+                "target_sol": "u64", # graduation sol
                 "creator": "pubkey",
-                "decimals": "u8",
-                "initial_supply": "u64",
-                "price_per_token": "u64",
+                "raydium_pool": "option<pubkey>",
+                "migration_timestamp": "i64",
+                "uri": "string",
             }
         )
-        trade_decoder = TokenEventDecoder(
-            "TokenTransferEvent", {
-                "transfer_type": "u8",
-                "mint_address": "pubkey",
-                "user": "pubkey",
-                "sol_amount": "u64",
-                "coin_amount": "u64",
+        # amount purchased is token amount 
+        # cost is sol used
+        self.decoders["PurchaseToken"] = TokenEventDecoder(
+            "PurchasedToken", {
+                "mint": "pubkey",
+                "amount_purchased": "u64",
+                "migrated": "bool",
+                "total_supply": "u64",
+                "tokens_sold": "u64",
+                "sol_raised": "u64",
+                "cost": "u64", 
+                "current_price": "u64",
+                "buyer": "pubkey",
+                "timestamp": "i64",
             }
         )
-        self.decoders["BuyToken"] = trade_decoder
-        self.decoders["SellToken"] = trade_decoder
-        
+        self.decoders["SellToken"] = TokenEventDecoder(
+            "SoldToken", {
+                "mint": "pubkey",
+                "cost": "u64", 
+                "amount_sold": "u64",
+                "migrated": "bool",
+                "total_supply": "u64",
+                "tokens_sold": "u64",
+                "sol_raised": "u64",
+                "current_price": "u64",
+                "seller": "pubkey",
+                "timestamp": "i64",
+            }
+        )
         try:
             # Start the listener with auto-restart enabled
             await listener.listen()
@@ -73,7 +95,7 @@ class Command(BaseCommand):
         # print(logs)
         event_type, currect_log = self.get_function_id(logs)
         if event_type and signature:
-            if event_type == "CreateTokenWithVault":
+            if event_type == "CreateToken":
                 if event_type in self.decoders:
                     for log in logs[currect_log:]:
                         event = self.decoders[event_type].decode(log)
@@ -81,7 +103,7 @@ class Command(BaseCommand):
                             event = await self.get_metadata(event)
                             await self.handle_coin_creation(signature, event)
                             break
-            if event_type in ["SellToken", "BuyToken"]:
+            if event_type in ["SellToken", "PurchaseToken"]:
                 if event_type in self.decoders:
                     for log in logs[currect_log:]:
                         event = self.decoders[event_type].decode(log)
@@ -91,7 +113,7 @@ class Command(BaseCommand):
 
     async def get_metadata(self, log: dict) -> dict:
         try:
-            ipfuri: str = log.get("token_uri", "")
+            ipfuri: str = log.get("uri", "")
             ipfs_hash = self.extract_ipfs_hash(ipfuri)
 
             if not ipfs_hash:
@@ -139,61 +161,73 @@ class Command(BaseCommand):
 
         try:
             self.ensure_connection()
-            if not Coin.objects.filter(address=logs["mint_address"]).exists() and creator:
+            if not Coin.objects.filter(address=logs["mint"]).exists() and creator:
+                print(logs)
                 attributes = logs.get('attributes') or {}
                 new_coin = Coin(
-                    address=logs["mint_address"],
-                    name=logs["token_name"],
-                    ticker=logs["token_symbol"],
+                    address=logs["mint"],
+                    name=logs["name"],
+                    ticker=logs["symbol"],
                     creator=creator,
-                    total_supply=self.bigint_to_float(logs["initial_supply"], logs["decimals"]),#Decimal("1000000.0"),
+                    total_supply=Decimal(str(logs["total_supply"])),
                     image_url=logs.get("image", ""),
-                    current_price=Decimal("1.0"),
+                    current_price=Decimal(str(logs["initial_price_per_token"])),
                     description=logs.get("description", None),
                     discord=attributes.get("discord"),
                     website=attributes.get("website"),
                     twitter=attributes.get("twitter"),
-                    decimals = logs["decimals"],
-                    price_per_token = logs["price_per_token"]
+                    decimals = 9,
+                    current_marketcap=self.bigint_to_float(logs["start_mcap"], 9), # amount of sol raised
+                    start_marketcap=self.bigint_to_float(logs["start_mcap"], 9),
+                    end_marketcap=self.bigint_to_float(logs["target_sol"], 9),
+                    raydium_pool = logs["raydium_pool"],
                 )
+                
                 new_coin.save()
-                print(f"Created new coin with address: {logs['mint_address']}")
+                print(f"Created new coin with address: {logs['mint']}")
         except Exception as e:
             print(f"Error while saving coin: {e}")
     
     @sync_to_async(thread_sensitive=True)
     def handle_trade(self, signature, logs):
         """Handle coin creation event"""
+        wallet = logs.get("buyer") or logs.get("seller")
+        transfer_type = '0' if logs.get("buyer") else '1'
         tradeuser = self.custom_check(
-            lambda: SolanaUser.objects.get(wallet_address=logs["user"]),
+            lambda: SolanaUser.objects.get(wallet_address=wallet),
             not_found_exception=SolanaUser.DoesNotExist
         )
 
         coin:Coin = self.custom_check(
-            lambda: Coin.objects.get(address=logs["mint_address"]),
+            lambda: Coin.objects.get(address=logs["mint"]),
             not_found_exception=Coin.DoesNotExist
         )
 
-        coin_amount = self.bigint_to_float(logs["coin_amount"], coin.decimals)
-        sol_amount = self.bigint_to_float(logs["sol_amount"], coin.decimals)
+        amount = logs.get("amount_purchased") or logs.get("amount_sold")
+        coin_amount = self.bigint_to_float(amount, coin.decimals)
+        sol_amount = logs["cost"]#self.bigint_to_float(logs["cost"], 9)
         print(logs)
         try:
             self.ensure_connection()
+            # if coin.updated < (logs['timestamp'])#convert unix int to datetime for comparism
+            # coin.current_price = logs['current_price']
+            # coin.save(update_fields=['current_price'])
             if not Trade.objects.filter(transaction_hash=signature).exists() and tradeuser != None and coin != None:
                 new_trade = Trade(
                     transaction_hash=signature,
                     user= tradeuser,
                     coin=coin,
-                    trade_type=self.get_transaction_type(logs["transfer_type"]),
+                    trade_type=self.get_transaction_type(transfer_type),
                     coin_amount=coin_amount,
                     sol_amount=sol_amount,
+                    created_at=logs['timestamp'],
                 )
                 new_trade.save()
                 print(f"Created new trade with transaction_hash: {signature}")
         except Exception as e:
             print(f"Error while saving trade: {e}")
 
-    def bigint_to_float(self, value: int, power:int=9) -> float:
+    def bigint_to_float(self, value: int, power:int=9) -> Decimal:
         result = Decimal(value).scaleb(-power).quantize(Decimal(f'0.{"0"*(power-1)}1'))  # for 9 decimals
         return result
 

@@ -48,7 +48,7 @@ class CoinSerializer(serializers.ModelSerializer):
             'created_at', 'total_supply', 'image_url',
             'description', 'discord', 'website', 'twitter',
             'current_price', 'total_held', 'market_cap', 'score',
-            'price_per_token', 'decimals',
+            'decimals',
             'current_marketcap', 'start_marketcap', 'end_marketcap',
         ]
         read_only_fields = ['creator', 'creator_display_name', 'created_at']

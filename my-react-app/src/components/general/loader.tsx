@@ -1,17 +1,17 @@
-import React from 'react';
-
-interface LoaderProps {
-  children?: React.ReactNode;
-}
-
-const Loader: React.FC<LoaderProps> = ({ children }) => {
+const Loader = () => {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="relative w-32 h-20">
-        <span className="absolute top-0 text-purple-600 text-lg tracking-wide animate-loader-text">loading</span>
-        <span className="absolute bottom-0 block h-6 w-6 bg-purple-700 rounded-full transform translate-x-20 animate-loader" />
+    <div className="flex justify-center items-center h-screen">
+      <div className="relative inline-block h-9 w-9 animate-spin">
+        <div className="absolute h-full w-1/3 bottom-1 left-0 transform rotate-60 origin-bottom">
+          <div className="h-0 w-full pb-full bg-purple-800 rounded-full animate-wobble1" />
+        </div>
+        <div className="absolute h-full w-1/3 bottom-1 right-0 transform -rotate-60 origin-bottom">
+          <div className="h-0 w-full pb-full bg-purple-800 rounded-full animate-wobble2" />
+        </div>
+        <div className="absolute h-full w-1/3 bottom-[-5%] left-0 translate-x-[116.666%]">
+          <div className="h-0 w-full pb-full bg-purple-800 rounded-full animate-wobble3" />
+        </div>
       </div>
-      {children} {/* Safely renders children (if any) */}
     </div>
   );
 };

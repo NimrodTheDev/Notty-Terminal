@@ -10,9 +10,9 @@ import Talentpool from "./pages/Talentpool";
 import Wallet from "./pages/Wallet";
 //import OnChainNews from "./pages/OnChainNews";
 import {
-	ConnectionProvider,
-	// useWallet,
-	WalletProvider,
+  ConnectionProvider,
+  // useWallet,
+  WalletProvider
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
@@ -32,79 +32,94 @@ import DashBoard from "./pages/DashBoard";
 import Profile from "./pages/Profile";
 import HistoryPage from "./pages/History";
 
-
 function App() {
-	const endpoint = clusterApiUrl("devnet");
-	const wallets = [
-		new PhantomWalletAdapter(),
-		new SolflareWalletAdapter(),
-		new BackpackWalletAdapter(),
-		new WalletConnectWalletAdapter({
-			network: WalletAdapterNetwork.Devnet,
-			options: {
-				relayUrl: "wss://relay.walletconnect.com",
-				projectId: "YOUR_PROJECT_ID", // Get this from WalletConnect
-				metadata: {
-					name: "Your App Name",
-					description: "Your App Description",
-					url: "https://your-app-url.com",
-					icons: ["https://your-app-url.com/icon.png"]
-				}
-			}
-		})
-	];
+  const endpoint = clusterApiUrl("devnet");
+  const wallets = [
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter(),
+    new BackpackWalletAdapter(),
+    new WalletConnectWalletAdapter({
+      network: WalletAdapterNetwork.Devnet,
+      options: {
+        relayUrl: "wss://relay.walletconnect.com",
+        projectId: "YOUR_PROJECT_ID", // Get this from WalletConnect
+        metadata: {
+          name: "Your App Name",
+          description: "Your App Description",
+          url: "https://your-app-url.com",
+          icons: ["https://your-app-url.com/icon.png"]
+        }
+      }
+    })
+  ];
 
-	return (
-		<ConnectionProvider endpoint={endpoint}>
-			<WalletProvider wallets={wallets} localStorageKey="key" autoConnect={false}>
-				<SolanaProvider>
-					<WalletModalProvider>
-						<Router>
-							<Header />
-							<Routes>
-								<Route path="/" element={<LandingPage />} />
-								<Route path="/coin/:id" element={<CoinPage />} />
-								<Route path="/login" element={<Loginconnect />} />
-								<Route path="/wallet" element={<Wallet />} />
-								<Route path="/coinmarket" element={<CoinMarket />} />
-								<Route path="/talentpool" element={<Talentpool />} />
-								<Route path="/aboutdrs" element={<AboutDrs />} />
-								<Route path="coin/create" element={
-									<PhantomError>
-										<CreateCoin />
-									</PhantomError>
-								} />
-								{/* We can change it to redirect to the dashboard coin create page */}
-								{/* Dashboard routes */}
-								<Route path="/dashboard" element={<DashBoard />}>
-									<Route index element={<DashHome />} />
-									<Route path="home" element={<DashHome />} />
-									<Route path="coin/:id" element={<CoinPage />} />
-									<Route path="coin/create" element={
-										<PhantomError>
-											<CreateCoin />
-										</PhantomError>
-									} />
-									<Route path="wallet" element={<Wallet />} />
-									<Route path="coinmarket" element={<CoinMarket />} />
-									<Route path="ownerCard" element={<ComingSoon />} />
-									<Route path="aboutdrs" element={<AboutDrs />} />
-									<Route path="history" element={<HistoryPage />} />
-									<Route path="chatRooms" element={<ComingSoon />} />
-									<Route path="profile" element={<Profile />} />
-									<Route path="settings" element={<ComingSoon />} />
-									<Route path="help" element={<ComingSoon />} />
-								</Route>
+  return (
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider
+        wallets={wallets}
+        localStorageKey="key"
+        autoConnect={false}
+      >
+        <SolanaProvider>
+          <WalletModalProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<>
+                  <Header />
+                  <LandingPage />
+                </>} />
+                <Route path="/coin/:id" element={
+                  <><Header />
+                    <CoinPage /></>} />
+                <Route path="/login" element={<><Header />
+                  <Loginconnect /></>} />
+                <Route path="/wallet" element={<><Header /><Wallet /></>} />
+                <Route path="/coinmarket" element={<><Header /><CoinMarket /></>} />
+                <Route path="/talentpool" element={<><Header /><Talentpool /></>} />
+                <Route path="/aboutdrs" element={<><Header /><AboutDrs /></>} />
+                <Route
+                  path="coin/create"
+                  element={
+                    <PhantomError>
+                      <Header />
+                      <CreateCoin />
+                    </PhantomError>
+                  }
+                />
+                {/* We can change it to redirect to the dashboard coin create page */}
+                {/* Dashboard routes */}
+                <Route path="/dashboard" element={<DashBoard />}>
+                  <Route index element={<DashHome />} />
+                  <Route path="home" element={<DashHome />} />
+                  <Route path="coin/:id" element={<CoinPage />} />
+                  <Route
+                    path="coin/create"
+                    element={
+                      <PhantomError>
+                        <CreateCoin />
+                      </PhantomError>
+                    }
+                  />
+                  <Route path="wallet" element={<Wallet />} />
+                  <Route path="coinmarket" element={<CoinMarket />} />
+                  <Route path="ownerCard" element={<ComingSoon />} />
+                  <Route path="aboutdrs" element={<AboutDrs />} />
+                  <Route path="history" element={<HistoryPage />} />
+                  <Route path="chatRooms" element={<ComingSoon />} />
+                  <Route path="profile/:address" element={<Profile />} />
+                  <Route path="settings" element={<ComingSoon />} />
+                  <Route path="help" element={<ComingSoon />} />
+                </Route>
 
-								<Route path="*" element={<div>Not found</div>} />
-							</Routes>
-							<NottyTerminalFooter />
-						</Router>
-					</WalletModalProvider>
-				</SolanaProvider>
-			</WalletProvider>
-		</ConnectionProvider>
-	);
+                <Route path="*" element={<div>Not found</div>} />
+              </Routes>
+              <NottyTerminalFooter />
+            </Router>
+          </WalletModalProvider>
+        </SolanaProvider>
+      </WalletProvider>
+    </ConnectionProvider>
+  );
 }
 
 export default App;

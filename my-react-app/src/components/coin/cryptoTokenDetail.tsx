@@ -18,10 +18,14 @@ interface CoinData {
 	telegram: string | null;
 	ticker: string;
 	total_held: number;
-	score: number
+	score: number;
 	total_supply: string;
 	twitter: string | null;
 	website: string | null;
+	marketcap: number;
+	current_marketcap: number;
+	start_marketcap: number;
+	end_marketcap: number;
 }
 
 interface CryptoTokenDetailsProps {
@@ -50,9 +54,13 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 	return (
 		<div className="bg-custom-dark-blue text-white p-8 w-full rounded-lg flex flex-col  ">
 			<div className="flex flex-col gap-2">
-				<div className="flex sm:flex-col justify-between">
+				<div className="flex flex-col sm:flex-row justify-between">
 					<div className="text-purple-200">Creator</div>
 					<Link to={`https://explorer.solana.com/address/${coinData.creator}?cluster=devnet`} className="font-medium underline text-xs whitespace-wrap">{coinData.creator_display_name || "Smart Contract Owner"}</Link>
+				</div>
+				<div className="flex flex-col sm:flex-row justify-between">
+					<div className="text-purple-200">Profile</div>
+					<Link to={`/dashboard/profile/${coinData.creator}`} className="font-medium underline text-xs whitespace-wrap">{coinData.creator_display_name || "Smart Contract Owner"}</Link>
 				</div>
 				<div className="flex justify-between">
 					<div className="text-purple-200">Time Launched:</div>
@@ -61,7 +69,7 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 
 				<div className="flex justify-between">
 					<div className="text-purple-200">Marketcap:</div>
-					<div className="text-right">${coinData.market_cap.toLocaleString()}</div>
+					<div className="text-right">${coinData.marketcap.toLocaleString()}</div>
 				</div>
 
 				<div className="flex justify-between">

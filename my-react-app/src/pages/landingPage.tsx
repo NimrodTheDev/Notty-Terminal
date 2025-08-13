@@ -5,38 +5,40 @@ import Hero from "../components/landingPage/hero";
 import HowItWorks from "../components/landingPage/howItWorks";
 import OnboardingCard from "../components/landingPage/onboardingCard";
 import { useEffect } from "react";
-import axios from "axios";
+import { useAxios } from "../hooks/useAxios";
 
 const LandingPage = () => {
 	const wallet = useWallet()
 	// uploadFile()
+	const { request } = useAxios();
 	useEffect(() => {
 		const connectWallet = async () => {
 			if (wallet.connected) {
-				await wallet.connect().then(() => {
+				await wallet.connect().then(async () => {
 					console.log(wallet.publicKey)
-					axios.post(`https://solana-market-place-backend.onrender.com/api/connect_wallet/`, {
-						wallet_address: wallet.publicKey?.toBase58()
-					}, {
-						headers: {
-							"Content-Type": "application/json",
-						}
-					})
-					// we arent saving the authentication
-						.then((res) => {
-							localStorage.setItem('auth_token', res.data.token);
-							console.log(res.data)
-						})
-						.catch((err) => {
-							console.log(err)
-						})
+					try {
+						const res = await request({
+							method: 'post',
+							url: `/connect_wallet/`,
+							data: {
+								wallet_address: wallet.publicKey?.toBase58()
+							},
+							headers: {
+								"Content-Type": "application/json",
+							}
+						});
+						localStorage.setItem('auth_token', res.data.token);
+						console.log(res.data)
+					} catch (err) {
+						console.log(err)
+					}
 				})
 			} else {
 				wallet.connect()
 			}
 		}
 		connectWallet()
-	}, [wallet.connected])
+	}, [wallet.connected, request])
 	return (
 		<div>
 			<Hero />

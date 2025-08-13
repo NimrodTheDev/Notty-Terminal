@@ -1,8 +1,17 @@
+import { useLocation } from "react-router-dom";
+
 export default function NottyTerminalFooter() {
+	const location = useLocation();
+
+	// Don't render the footer at all if we're in dashboard routes
+	if (location.pathname.startsWith('/dashboard')) {
+		return null;
+	}
+
 	return (
 		<div className='bg-custom-dark-blue border-t-2 border-gray-600 text-white py-8 px-4'>
 			<div className='container mx-auto'>
-				<div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-16 pl-24 pr-24'>
+				<div className='flex flex-col gap-8 md:flex-row justify-between items-start md:items-center mb-8 md:mb-16 px-2 md:px-24'>
 					<div className='mb-4 md:mb-0'>
 						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#a4b9fa] to-[#1ce8fd] bg-clip-text text-transparent'>
 							Notty Terminal
@@ -10,7 +19,7 @@ export default function NottyTerminalFooter() {
 						<p className='text-gray-300 mt-1'>The future of Web3 is here.</p>
 					</div>
 
-					<nav className='flex flex-wrap gap-4 md:gap-8 text-sm'>
+					<nav className='flex flex-col gap-2 md:flex-row md:gap-8 text-sm'>
 						<a href='#' className='text-gray-400 hover:text-white transition'>
 							Terms
 						</a>

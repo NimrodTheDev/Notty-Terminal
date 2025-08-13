@@ -8,7 +8,6 @@ from .models import (
     DeveloperScore, TraderScore, CoinDRCScore
 )
 from .utils.broadcast import broadcast_coin_created, broadcast_trade_created
-from .utils.logger import calculate_token_price
 
 # Create scores when users/coins are created
 @receiver(post_save, sender=SolanaUser)
@@ -30,15 +29,14 @@ def update_holdings_and_scores_on_trade(sender, instance:Trade, created, **kwarg
     if not created:
         # If this is an update to an existing trade, we don't want to process it again
         return
-    
     with transaction.atomic():
         user = instance.user
         coin = instance.coin
 
-        calculate_token_price(
-            instance.sol_amount *(-1 if instance.trade_type == 'SELL' else 1), 
-            instance.coin
-        )
+        sol_price = instance.sol_amount *(-1 if instance.trade_type == 'SELL' else 1) 
+        coin.current_marketcap = F('current_marketcap') + sol_price
+        coin.save(update_fields=['current_marketcap'])
+        coin.refresh_from_db(fields=['current_marketcap'])
         
         # Get or create the user's holdings for this coin
         holdings, _ = UserCoinHoldings.objects.get_or_create(
@@ -46,20 +44,14 @@ def update_holdings_and_scores_on_trade(sender, instance:Trade, created, **kwarg
             coin=coin,
             defaults={'amount_held': 0}
         )
-        
-        if instance.trade_type == 'BUY':
-            # Increase the amount held
-            holdings.amount_held = F('amount_held') + instance.coin_amount
-            holdings.save(update_fields=['amount_held'])
-            
-        elif instance.trade_type == 'SELL':
-            # Decrease the amount held
-            holdings.amount_held = F('amount_held') - instance.coin_amount
-            holdings.save(update_fields=['amount_held'])
-            
-        elif instance.trade_type == 'COIN_CREATE':
-            # Creator gets the initial supply minus any that might be in circulation
-            holdings.amount_held = F('amount_held') + instance.coin_amount
+                
+        if instance.trade_type in ('BUY', 'COIN_CREATE'):
+            delta = instance.coin_amount
+        else:
+            delta = -instance.coin_amount
+
+        if delta != 0:
+            holdings.amount_held = F('amount_held') + delta
             holdings.save(update_fields=['amount_held'])
         
         # Refresh from database to get the updated value
