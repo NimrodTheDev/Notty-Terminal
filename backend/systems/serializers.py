@@ -48,7 +48,7 @@ class CoinSerializer(serializers.ModelSerializer):
             'created_at', 'total_supply', 'image_url',
             'description', 'discord', 'website', 'twitter',
             'current_price', 'total_held', 'market_cap', 'score',
-            'price_per_token', 'decimals',
+            'decimals',
             'current_marketcap', 'start_marketcap', 'end_marketcap',
         ]
         read_only_fields = ['creator', 'creator_display_name', 'created_at']
@@ -56,7 +56,7 @@ class CoinSerializer(serializers.ModelSerializer):
     def get_creator_display_name(self, obj):
         return obj.creator.get_display_name()
 
-class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we  need images
+class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need images
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
     coin_name = serializers.ReadOnlyField(source='coin.name')
     current_price = serializers.ReadOnlyField(source='coin.current_price')
