@@ -93,6 +93,15 @@ function Profile() {
                                             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]"></span>
                                         )}
                                     </button>
+                                    <button
+                                        className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'heldCoins' ? 'text-[#7E6DC8] font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
+                                        onClick={() => setActiveTab('heldCoins')}
+                                    >
+                                        <span className="text-[#b5a7f3] w-8 h-8">{coins.length}</span> Held Coins
+                                        {activeTab === 'heldCoins' && (
+                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]"></span>
+                                        )}
+                                    </button>
 
                                     <button
                                         className={`px-6 py-3 flex-1 font-medium text-sm focus:outline-none relative ${activeTab === 'followers' ? 'text-[#7E6DC8] font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
