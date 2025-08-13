@@ -64,5 +64,3 @@ export function useSolanaPrice(defaultPrice = 150) {
 
     return price;
 }
-
-
