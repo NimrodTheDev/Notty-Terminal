@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    DeveloperScore, TraderScore, 
+    DeveloperScore, 
     CoinDRCScore, SolanaUser,
     Coin,UserCoinHoldings, 
     Trade, TraderHistory
@@ -127,18 +127,6 @@ class DeveloperScoreSerializer(serializers.ModelSerializer):
             'developer_address', 'score', 'coins_created_count', 
             'coins_active_24h_plus', 'coins_rugged_count', 
             'highest_market_cap', 'created_at', 'updated_at'
-        ]
-
-class TraderScoreSerializer(serializers.ModelSerializer):
-    trader_address = serializers.CharField(source='trader.wallet_address', read_only=True)
-    
-    class Meta:
-        model = TraderScore
-        fields = [
-            'trader_address', 'score', 'coins_held_count', 
-            'avg_holding_time_hours', 'trades_count', 
-            'quick_dumps_count', 'profitable_trades_percent',
-            'created_at', 'updated_at'
         ]
 
 class CoinDRCScoreSerializer(serializers.ModelSerializer):

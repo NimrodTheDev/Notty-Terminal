@@ -45,21 +45,19 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 	// }, [])
 	return (
 		//
-		<div className="bg-custom-dark-blue w-full overflow-x-hidden text-white grid grid-cols-custom-3-1 p-4">
-			<div className=" mx-auto ">
+		<div className="bg-custom-dark-blue w-full overflow-x-hidden text-white p-4">
+			<div className="max-w-2xl mx-auto flex flex-col items-center">
 				{/* Header */}
-				<div className="flex justify-between items-center mb-6">
-					<div className="">
-						<h1 className="text-4xl font-bold text-center flex-grow">
-							{coinData.name} ({coinData.ticker})
-						</h1>
-					</div>
+				<div className="mb-6 text-center">
+					<h1 className="text-4xl font-bold">
+						{coinData.name} ({coinData.ticker})
+					</h1>
 				</div>
 
 				{/* Cat Image */}
 				<div className="mb-8">
 					{/* aspect-[16/9] the solution to the aspect ration stuff, reomve it if its a problem */}
-					<div className="rounded-xl overflow-hidden border-2 border-gray-700 mx-auto max-w-md aspect-[16/9]">
+					<div className="rounded-xl overflow-hidden border-2 border-gray-700 max-w-md aspect-[16/9]">
 						<img
 							src={
 								coinData.image_url || img
@@ -69,8 +67,9 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 						/>
 					</div>
 				</div>
-				<div className="justify-self-center">
-					<div className="text-center text-gray-300 space-x-2 mb-4"
+
+				<div className="mb-4">
+					<div className="text-center text-gray-300 space-x-2"
 						onClick={handleFireClick}
 					>
 						<span className="text-2xl font-semibold">DRS</span>
@@ -115,15 +114,15 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 						</a>
 					)}
 				</div>
+
 				{/* About Section */}
-				<div className="mb-6">
+				<div className="w-full text-center">
 					<h2 className="text-2xl font-bold mb-4">About {coinData.name}</h2>
-					<p className="text-gray-300 leading-relaxed">
+					<p className="text-gray-300 leading-relaxed max-w-lg mx-auto">
 						{coinData?.description || "No description available"}
 					</p>
 				</div>
 			</div>
-
 		</div>
 	);
 }

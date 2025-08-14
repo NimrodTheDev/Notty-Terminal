@@ -43,6 +43,9 @@ class SolanaUser(AbstractUser):
     wallet_address = models.CharField(max_length=44, unique=True, primary_key=True)
     display_name = models.CharField(max_length=150, blank=True)
     bio = models.TextField(blank=True)
+    # following
+    # followers
+    # coins_created
 
     USERNAME_FIELD = "wallet_address"
     REQUIRED_FIELDS = []
@@ -57,7 +60,7 @@ class SolanaUser(AbstractUser):
         return self.wallet_address
     
     @property
-    def devscore(self):
+    def devscore(self): # corrrect it later
         """Dynamically retrieve and recalculate the developer score."""
         if hasattr(self, 'developer_score'):
             return self.developer_score.recalculate_score()
@@ -69,6 +72,15 @@ class SolanaUser(AbstractUser):
         if hasattr(self, 'trader_score'):
             return self.trader_score.recalculate_score()
         return 150  # Default base score if no score record exists
+
+class PriceApi(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+    sol_price = models.DecimalField(max_digits=20, decimal_places=8, default=150)
+
+    def save(self, *args, **kwargs):
+        self.id = 1  # Ensure singleton
+        super().save(*args, **kwargs)
 
 class Coin(models.Model): # we have to store the ath
     """Represents a coin on the platform"""
@@ -711,7 +723,7 @@ class DeveloperScore(DRCScore): # the system will eventually have to leave here
         # (this is wrong) the recalculation instead it should be, optmized 
         self.rug_pull_or_sell_off_count = self.developer.coins.filter(drc_score__team_abandonment=True).count() *100
         # self.no_rugs_count = self.developer.coins.filter(drc_score__team_abandonment=False).count() *100 # add when discussed
-        self.successful_launch_count = self.developer.coins.filter(drc_score__successful_token=True).count() * 100
+        self.successful_launch_count = self.developer.coins.filter(drc_score__successful_token=True).count() * 200
 
         # Calculate final score with clamping
         total_score = base_score + self.successful_launch_count -(self.abandoned_count+self.rug_pull_or_sell_off_count)
