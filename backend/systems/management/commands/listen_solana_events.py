@@ -6,10 +6,12 @@ from decimal import Decimal
 from systems.parser import TokenEventDecoder
 from django.db import OperationalError
 from asgiref.sync import sync_to_async
-import requests
 import aiohttp
 import time
 from django.db import connection, close_old_connections
+from django.utils import timezone
+from datetime import datetime
+from django.forms.models import model_to_dict
 
 class Command(BaseCommand):
     help = 'Listen for Solana program events'
@@ -162,7 +164,6 @@ class Command(BaseCommand):
         try:
             self.ensure_connection()
             if not Coin.objects.filter(address=logs["mint"]).exists() and creator:
-                print(logs)
                 attributes = logs.get('attributes') or {}
                 new_coin = Coin(
                     address=logs["mint"],
@@ -182,8 +183,8 @@ class Command(BaseCommand):
                     end_marketcap=self.bigint_to_float(logs["target_sol"], 9),
                     raydium_pool = logs["raydium_pool"],
                 )
-                
                 new_coin.save()
+                print(model_to_dict(new_coin))
                 print(f"Created new coin with address: {logs['mint']}")
         except Exception as e:
             print(f"Error while saving coin: {e}")
@@ -193,7 +194,7 @@ class Command(BaseCommand):
         """Handle coin creation event"""
         wallet = logs.get("buyer") or logs.get("seller")
         transfer_type = '0' if logs.get("buyer") else '1'
-        tradeuser = self.custom_check(
+        tradeuser:SolanaUser = self.custom_check(
             lambda: SolanaUser.objects.get(wallet_address=wallet),
             not_found_exception=SolanaUser.DoesNotExist
         )
@@ -206,22 +207,23 @@ class Command(BaseCommand):
         amount = logs.get("amount_purchased") or logs.get("amount_sold")
         coin_amount = self.bigint_to_float(amount, coin.decimals)
         sol_amount = logs["cost"]#self.bigint_to_float(logs["cost"], 9)
-        print(logs)
         try:
             self.ensure_connection()
-            # if coin.updated < (logs['timestamp'])#convert unix int to datetime for comparism
-            # coin.current_price = logs['current_price']
-            # coin.save(update_fields=['current_price'])
+            timestamp = datetime.fromtimestamp(logs['timestamp'], tz=timezone.utc)
+            if coin.updated < timestamp:
+                coin.current_price = logs['current_price']
+                coin.updated = timestamp
+                coin.save(update_fields=['current_price', 'updated'])
             if not Trade.objects.filter(transaction_hash=signature).exists() and tradeuser != None and coin != None:
                 new_trade = Trade(
                     transaction_hash=signature,
-                    user= tradeuser,
+                    user=tradeuser,
                     coin=coin,
                     trade_type=self.get_transaction_type(transfer_type),
                     coin_amount=coin_amount,
                     sol_amount=sol_amount,
-                    created_at=logs['timestamp'],
-                )
+                    created_at=timestamp,
+                ) 
                 new_trade.save()
                 print(f"Created new trade with transaction_hash: {signature}")
         except Exception as e:
