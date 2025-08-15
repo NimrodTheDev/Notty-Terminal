@@ -104,10 +104,11 @@ class Coin(models.Model): # we have to store the ath
     migrated = models.BooleanField(default= False)
     raydium_pool = models.CharField(max_length=44, null= True)
     migration_timestamp = models.DateTimeField(null=True)
-    current_price = models.DecimalField(max_digits=24, decimal_places=10, default=0)  # Added price field # start calculating
-    ath = models.DecimalField(max_digits=20, decimal_places=8, default=0) # will work like coin to store the highest
+    current_price = models.DecimalField(max_digits=24, decimal_places=10, default=0)
+    ath = models.DecimalField(max_digits=20, decimal_places=8, default=0)
     updated = models.DateTimeField(default=timezone.now)
     total_held = models.DecimalField(max_digits=32, decimal_places=9, default=0)
+    # figure out trade volume
 
     def __str__(self):
         return f"{self.name} ({self.ticker})"

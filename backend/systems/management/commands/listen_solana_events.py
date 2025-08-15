@@ -113,47 +113,6 @@ class Command(BaseCommand):
                             await self.handle_trade(signature, event)
                             break
 
-    async def get_metadata(self, log: dict) -> dict:
-        try:
-            ipfuri: str = log.get("uri", "")
-            ipfs_hash = self.extract_ipfs_hash(ipfuri)
-
-            if not ipfs_hash:
-                print(f"Invalid IPFS URI: {ipfuri}")
-                return log
-
-            gateways = [
-                "https://ipfs.io/ipfs/",
-                "https://cloudflare-ipfs.com/ipfs/",
-                "https://gateway.pinata.cloud/ipfs/"
-            ]
-
-            timeout = aiohttp.ClientTimeout(total=10)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                for gateway in gateways:
-                    url = f"{gateway}{ipfs_hash}"
-                    try:
-                        # print(f"Trying: {url}")
-                        async with session.get(url) as response:
-                            if response.status == 200:
-                                content = await response.json()
-                                log.update(content)
-                                return log  # Success
-                            else:
-                                print(f"Failed to fetch: {response.status}")
-                    except Exception as e:
-                        print(f"Error on {url}: {e}")
-
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-        return log
-
-    def extract_ipfs_hash(self, uri: str) -> str:
-        parts = uri.rstrip("/").split("/")
-        if parts:
-            return parts[-1]
-        return ""
-    
     @sync_to_async(thread_sensitive=True)
     def handle_coin_creation(self, signature: str, logs: dict):
         creator = self.custom_check(
@@ -229,10 +188,7 @@ class Command(BaseCommand):
         except Exception as e:
             print(f"Error while saving trade: {e}")
 
-    def bigint_to_float(self, value: int, power:int=9) -> Decimal:
-        result = Decimal(value).scaleb(-power).quantize(Decimal(f'0.{"0"*(power-1)}1'))  # for 9 decimals
-        return result
-
+    # listener helper functions
     def custom_check(self, info: callable, not_found_exception: type[Exception]):
         return_value = None
         for attempt in range(3):
@@ -256,6 +212,16 @@ class Command(BaseCommand):
         if not connection.is_usable():
             connection.connect()
 
+    # helper functions
+    def get_function_id(self, logs:list) -> tuple:
+        for num, log in enumerate(logs): # get the function id
+            if "Program log: Instruction:" in log:
+                return log.split(": ")[-1], num
+
+    def bigint_to_float(self, value: int, power:int=9) -> Decimal:
+        result = Decimal(value).scaleb(-power).quantize(Decimal(f'0.{"0"*(power-1)}1'))  # for 9 decimals
+        return result
+
     def get_transaction_type(self, ttype):
         ttype = str(ttype)
         if ttype == "1":
@@ -266,7 +232,44 @@ class Command(BaseCommand):
             return "BUY"
         raise(ValueError("Type not Registered"))
 
-    def get_function_id(self, logs:list) -> tuple:
-        for num, log in enumerate(logs): # get the function id
-            if "Program log: Instruction:" in log:
-                return log.split(": ")[-1], num
+    def extract_ipfs_hash(self, uri: str) -> str:
+        parts = uri.rstrip("/").split("/")
+        if parts:
+            return parts[-1]
+        return ""
+    
+    # get the metadata
+    async def get_metadata(self, log: dict) -> dict:
+        try:
+            ipfuri: str = log.get("uri", "")
+            ipfs_hash = self.extract_ipfs_hash(ipfuri)
+
+            if not ipfs_hash:
+                print(f"Invalid IPFS URI: {ipfuri}")
+                return log
+
+            gateways = [
+                "https://ipfs.io/ipfs/",
+                "https://cloudflare-ipfs.com/ipfs/",
+                "https://gateway.pinata.cloud/ipfs/"
+            ]
+
+            timeout = aiohttp.ClientTimeout(total=10)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                for gateway in gateways:
+                    url = f"{gateway}{ipfs_hash}"
+                    try:
+                        # print(f"Trying: {url}")
+                        async with session.get(url) as response:
+                            if response.status == 200:
+                                content = await response.json()
+                                log.update(content)
+                                return log  # Success
+                            else:
+                                print(f"Failed to fetch: {response.status}")
+                    except Exception as e:
+                        print(f"Error on {url}: {e}")
+
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+        return log
