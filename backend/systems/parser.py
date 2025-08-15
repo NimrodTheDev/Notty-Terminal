@@ -79,33 +79,20 @@ class TokenEventDecoder:
         return output
 
 if __name__ == "__main__":
-    # my_dict = {
-    #     "token_name": "string",
-    #     "token_symbol": "string",
-    #     "token_uri": "string",
-    #     "mint_address": "pubkey",
-    #     "metadata_address": "pubkey",
-    #     "authority": "pubkey",
-    #     "decimals": "u8",
-    # }
     my_dict = {
-        "mint": "pubkey",
-        "cost": "u64", 
-        "amount_sold": "u64",
-        "migrated": "bool",
-        "total_supply": "u64",
-        "tokens_sold": "u64",
-        "sol_raised": "u64",
-        "current_price": "u64",
-        "seller": "pubkey",
-        "timestamp": "i64",
+        "token_name": "string",
+        "token_symbol": "string",
+        "token_uri": "string",
+        "mint_address": "pubkey",
+        "metadata_address": "pubkey",
+        "authority": "pubkey",
+        "decimals": "u8",
     }
 
-    log_line = "Program data: NwJpTA5vXgRKByzDDNZGKPpNC2Z6twDm5SH+ulRqLmFPO/GSI/XfQS8AAAAAAAAAAOQLVAIAAAAAAMqaOwAAAAAAAAAAAAAAABF4fQEAAAAAAAAAAAAAAABOdQgk+i6uMOB07IiPogErJKU9YMhkWMCFyROux8o8POROnGgAAAAA"#"Program data: YHpxijLjlTkEAAAAT1RYWwQAAABya2tFBAAAAGdlcmXC/sKDZhL9WAglOAoGvMmCyhG8jVL3YSJo0JgMhNfHIxFxSi0yRsbzff3VW2I+0zipxim6KdmtuY9xFCiCfHka6WbAL72J1laWy4AVoH/xMcMVfCdfht60iQunUEMRTSMJ"
+    log_line = "Program data: YHpxijLjlTkEAAAAT1RYWwQAAABya2tFBAAAAGdlcmXC/sKDZhL9WAglOAoGvMmCyhG8jVL3YSJo0JgMhNfHIxFxSi0yRsbzff3VW2I+0zipxim6KdmtuY9xFCiCfHka6WbAL72J1laWy4AVoH/xMcMVfCdfht60iQunUEMRTSMJ"
 
     decoder = TokenEventDecoder(
-        # "TokenCreatedEvent",
-        "SoldToken", 
+        "TokenCreatedEvent", 
         my_dict
     )
     event = decoder.decode(log_line)

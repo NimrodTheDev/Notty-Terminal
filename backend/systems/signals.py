@@ -1,7 +1,8 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Value
+from django.db.models.functions import Greatest
 from django.utils import timezone
 from .models import (
     SolanaUser, Coin, Trade, UserCoinHoldings,
@@ -25,8 +26,14 @@ def update_total_held_on_save(delta, coin):
     Adjust total_held_cached based on the change in this Holding's amount.
     Atomic and race-condition safe.
     """
+    update_data = {}
     if delta != 0:
-        Coin.objects.filter(pk=coin.pk).update(total_held_cached=F('total_held_cached') + delta)
+        update_data['total_held_cached'] = F('total_held_cached') + delta
+
+    # Use DB's GREATEST function for atomic ATH update
+    update_data['ath'] = Greatest(F('ath'), Value(coin.current_price))
+
+    Coin.objects.filter(pk=coin.pk).update(**update_data)
 
 @receiver(post_save, sender=Trade)
 def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwargs):
@@ -102,6 +109,20 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         coin_score.update_holders_count()
         trader_score.calculate_daily_score()
         broadcast_trade_created(instance)
+
+@receiver(pre_save, sender=Coin)
+def update_coin_ath(sender, instance, **kwargs):
+    # If it's a new record, no need to check
+    if not instance.pk:
+        instance.ath = instance.current_price
+        return
+    
+    # Get old record
+    old_coin = Coin.objects.get(pk=instance.pk)
+
+    # Update ATH if the new price is higher
+    if instance.current_price > old_coin.ath:
+        instance.ath = instance.current_price
 
 @receiver(post_save, sender=Coin)
 def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
