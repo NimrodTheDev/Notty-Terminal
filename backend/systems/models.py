@@ -117,13 +117,6 @@ class Coin(models.Model): # we have to store the ath
             self.ticker = self.ticker.upper()  # Ensure it's always uppercase
         super().save(*args, **kwargs)
 
-    # @property
-    # def total_held(self): # to calculate altime high we have to be updating a total held, claculating this all the time is expensive a better solution with signals
-    #     """Returns the total amount of this coin held by all users."""
-    #     from django.db.models import Sum
-    #     total = self.holders.aggregate(total=Sum('amount_held'))['total']
-    #     return total or 0  # Return 0 if no holdings exist
-
     @property
     def bonding_curve(self):
         """Calculates bonding curve: (Current Marketcap - Start Marketcap) / (End Marketcap - Start Marketcap) * 100"""

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     DeveloperScore, 
-    CoinDRCScore, SolanaUser,
+    SolanaUser,
     Coin,UserCoinHoldings, 
     Trade, TraderHistory
 )
@@ -55,7 +55,6 @@ class CoinSerializer(serializers.ModelSerializer):
     
     def get_creator_display_name(self, obj):
         return obj.creator.get_display_name()
-    
 
 class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need images
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
@@ -129,39 +128,6 @@ class DeveloperScoreSerializer(serializers.ModelSerializer):
             'coins_active_24h_plus', 'coins_rugged_count', 
             'highest_market_cap', 'created_at', 'updated_at'
         ]
-
-class CoinDRCScoreSerializer(serializers.ModelSerializer):
-    coin_address = serializers.CharField(source='coin.address', read_only=True)
-    coin_name = serializers.CharField(source='coin.name', read_only=True)
-    coin_symbol = serializers.CharField(source='coin.ticker', read_only=True)
-    developer_score = serializers.SerializerMethodField()
-    score_breakdown = serializers.SerializerMethodField()
-    is_rugged = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = CoinDRCScore
-        fields = [
-            'coin_address', 'coin_name', 'coin_symbol', 'score', 
-            'holders_count', 'age_in_hours', 'trade_volume_24h',
-            'price_stability_score', 'verified_contract', 
-            'audit_completed', 'audit_score', 'developer_score',
-            'score_breakdown', 'is_rugged', 'created_at', 'updated_at'
-        ]
-    
-    def get_developer_score(self, obj):
-        try:
-            return obj.coin.creator.developer_score.score
-        except Exception:
-            return 200  # Default score
-    
-    def get_score_breakdown(self, obj):
-        return obj.score_breakdown
-    
-    def get_is_rugged(self, obj):
-        try:
-            return obj.coin.rug_flag.is_rugged
-        except Exception:
-            return False
 
 # history
 class TraderHistorySerializer(serializers.ModelSerializer):
