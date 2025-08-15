@@ -409,6 +409,12 @@ class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(top_coins, many=True)
         return Response(serializer.data)
     
+    # @action(detail=False, methods=['get'], permission_classes=[permissions.IsAdminUser])
+    # def total_held(self, request):
+    #     """updates total_held"""
+    #     Coin.objects. # the aimwas to update the coins total held
+    #     return Response(serializer.data)
+    
     @action(detail=False, methods=['get'])
     def my_coins(self, request):
         """Returns DRC scores for coins created by the authenticated user"""
