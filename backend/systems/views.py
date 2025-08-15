@@ -1,15 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from .permissions import IsCronjobRequest
+from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
+from django.core.cache import cache
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
-from django.db.models import Q
-from django.core.cache import cache
-
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
 
@@ -21,28 +21,18 @@ from .models import (
 )
 
 from .serializers import (
-    CoinDRCScoreSerializer, ConnectWalletSerializer,
+    ConnectWalletSerializer,
     CoinSerializer, UserCoinHoldingsSerializer, 
     TradeSerializer, SolanaUserSerializer,
     TraderHistorySerializer, CoinHolderSerializer
 )
 
-from rest_framework.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
-
-
-from django.utils.timezone import now
 from datetime import timedelta
 import requests
 from decimal import Decimal
-from .models import PriceApi
 
 User = get_user_model()
 
-class TraderHistoryPagination(PageNumberPagination):
-    page_size = 20  # default items per page
-    page_size_query_param = 'page_size'  # allow clients to override
-    max_page_size = 100
 
 class RecalculateDailyScoresView(APIView):
     permission_classes = [IsCronjobRequest]
@@ -78,8 +68,8 @@ class UpdateSolPriceView(APIView): # cron job
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-class GetSolPriceView(APIView):
-
+class GetSolPriceView(APIView): # add a rate limit? per user auth
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         price = cache.get("sol_price")
         if price is not None:
@@ -107,11 +97,6 @@ class CoinViewSet(RestrictedViewset):
     serializer_class = CoinSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'address'
-    http_method_names = ['get', 'post', 'options']
-
-    def perform_create(self, serializer):
-        """Set user to current authenticated user"""
-        serializer.save(creator=self.request.user)
     
     @action(detail=False, methods=['get'], url_path='top-coins')
     def top_coins(self, request):
@@ -250,7 +235,7 @@ class PublicProfileCoinsView(APIView):
             "created_coins": serializer.data,
         })
 
-class TradeViewSet(viewsets.ModelViewSet):
+class TradeViewSet(RestrictedViewset):
     """
     API endpoint for Trades
     """
@@ -258,19 +243,7 @@ class TradeViewSet(viewsets.ModelViewSet):
     serializer_class = TradeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Will change to ReadOnly later
     lookup_field = 'id' # Should eventually be changed to transaction_hash
-    http_method_names = ['get', 'post', 'options']
-    
-    def perform_create(self, serializer):
-        """Set user to current authenticated user"""
-        coin_address = self.request.data.get("coin_address")
-        if not coin_address:
-            raise ValidationError("Missing coin_address")
-
-        # Fetch coin from DB
-        coin = get_object_or_404(Coin, address=coin_address)
-
-        # Save the trade instance with coin and user
-        serializer.save(user=self.request.user, coin=coin)
+    http_method_names = ['get', 'options']
 
 class UserViewSet(RestrictedViewset): # check later
     """
@@ -320,7 +293,7 @@ class UserViewSet(RestrictedViewset): # check later
         serializer = CoinSerializer(coins, many=True)
         return Response(serializer.data)
 
-class ConnectWalletView(APIView):
+class ConnectWalletView(APIView): # edit
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -342,79 +315,10 @@ class ConnectWalletView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class MeView(RetrieveUpdateAPIView):
-    serializer_class = SolanaUserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
-class CoinDRCScoreViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for viewing coin DRC scores"""
-    queryset = CoinDRCScore.objects.all().order_by('-score')
-    serializer_class = CoinDRCScoreSerializer
-    permission_classes = [permissions.AllowAny]#permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        
-        # Filter by minimum score
-        min_score = self.request.query_params.get('min_score')
-        if min_score and min_score.isdigit():
-            queryset = queryset.filter(score__gte=int(min_score))
-        
-        # Filter by maximum score
-        max_score = self.request.query_params.get('max_score')
-        if max_score and max_score.isdigit():
-            queryset = queryset.filter(score__lte=int(max_score))
-        
-        # Filter by coin address
-        coin_address = self.request.query_params.get('coin')
-        if coin_address:
-            queryset = queryset.filter(coin__address__iexact=coin_address)
-        
-        # Filter by coin symbol
-        coin_symbol = self.request.query_params.get('symbol')
-        if coin_symbol:
-            queryset = queryset.filter(coin__ticker__iexact=coin_symbol)
-            
-        # Filter by developer address
-        developer = self.request.query_params.get('developer')
-        if developer:
-            queryset = queryset.filter(coin__creator__wallet_address__iexact=developer)
-        
-        # Filter by minimum age
-        min_age = self.request.query_params.get('min_age_hours')
-        if min_age and min_age.isdigit():
-            queryset = queryset.filter(age_in_hours__gte=int(min_age))
-        
-        # Filter non-rugged coins only
-        exclude_rugged = self.request.query_params.get('exclude_rugged')
-        if exclude_rugged and exclude_rugged == 'true':
-            queryset = queryset.filter(
-                ~Q(coin__rug_flag__is_rugged=True)
-            )
-        
-        return queryset
-    
-    @action(detail=False, methods=['get'])
-    def top_coins(self, request):
-        """Returns top 10 coins by DRC score"""
-        top_coins = self.get_queryset().filter(
-            holders_count__gt=0
-        ).exclude(
-            coin__rug_flag__is_rugged=True
-        )[:10]  # Assuming there's a drc_score field
-
-        serializer = self.get_serializer(top_coins, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'])
-    def my_coins(self, request):
-        """Returns DRC scores for coins created by the authenticated user"""
-        user_coins = self.get_queryset().filter(coin__creator=request.user)
-        serializer = self.get_serializer(user_coins, many=True)
-        return Response(serializer.data)
+class TraderHistoryPagination(PageNumberPagination):
+    page_size = 20  # default items per page
+    page_size_query_param = 'page_size'  # allow clients to override
+    max_page_size = 100
 
 class TraderHistoryListView(ListAPIView):
     serializer_class = TraderHistorySerializer

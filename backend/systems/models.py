@@ -97,7 +97,6 @@ class Coin(models.Model): # we have to store the ath
     twitter = models.CharField(max_length=255, blank=True, null=True)
     score = models.IntegerField(default=150)
     decimals = models.SmallIntegerField(default= 9)
-    # price_per_token = models.BigIntegerField(default= 25) # will be eventually removed
     current_marketcap = models.DecimalField(max_digits=32, decimal_places=9)
     start_marketcap = models.DecimalField(max_digits=32, decimal_places=9)
     end_marketcap = models.DecimalField(max_digits=32, decimal_places=9)
@@ -105,9 +104,11 @@ class Coin(models.Model): # we have to store the ath
     migrated = models.BooleanField(default= False)
     raydium_pool = models.CharField(max_length=44, null= True)
     migration_timestamp = models.DateTimeField(null=True)
-    current_price = models.DecimalField(max_digits=24, decimal_places=10, default=0)  # Added price field # start calculating
-    ath = models.DecimalField(max_digits=20, decimal_places=8, default=0) # will work like coin to store the highest
+    current_price = models.DecimalField(max_digits=24, decimal_places=10, default=0)
+    ath = models.DecimalField(max_digits=20, decimal_places=8, default=0)
     updated = models.DateTimeField(default=timezone.now)
+    total_held = models.DecimalField(max_digits=32, decimal_places=9, default=0)
+    # figure out trade volume
 
     def __str__(self):
         return f"{self.name} ({self.ticker})"
@@ -118,16 +119,10 @@ class Coin(models.Model): # we have to store the ath
         super().save(*args, **kwargs)
 
     @property
-    def total_held(self):
-        """Returns the total amount of this coin held by all users."""
-        from django.db.models import Sum
-        total = self.holders.aggregate(total=Sum('amount_held'))['total']
-        return total or 0  # Return 0 if no holdings exist
-
-    @property
-    def market_cap(self):
-        """Calculates market cap: (Total Supply - Total Held) * Current Price"""
-        return self.total_held * self.current_price#(self.total_supply - self.total_held) * self.current_price
+    def bonding_curve(self):
+        """Calculates bonding curve: (Current Marketcap - Start Marketcap) / (End Marketcap - Start Marketcap) * 100"""
+        return (float(self.current_marketcap - self.start_marketcap) / 
+            float(self.end_marketcap - self.start_marketcap)) * 100
     
     @property
     def liquidity(self):

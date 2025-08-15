@@ -1,7 +1,8 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Value
+from django.db.models.functions import Greatest
 from django.utils import timezone
 from .models import (
     SolanaUser, Coin, Trade, UserCoinHoldings,
@@ -9,7 +10,6 @@ from .models import (
 )
 from .utils.broadcast import broadcast_coin_created, broadcast_trade_created
 
-# Create scores when users/coins are created
 @receiver(post_save, sender=SolanaUser)
 def create_user_scores(sender, instance, created, **kwargs):
     """Create DRC scores when a new user is created"""
@@ -21,42 +21,56 @@ def create_user_scores(sender, instance, created, **kwargs):
         if instance.coins.exists():
             DeveloperScore.objects.get_or_create(developer=instance)
 
-@receiver(post_save, sender=Trade)
-def update_holdings_and_scores_on_trade(sender, instance:Trade, created, **kwargs):
+def update_total_held_on_save(delta, coin):
     """
-    Update user holdings and all related scores when a trade is created
+    Adjust total_held_cached based on the change in this Holding's amount.
+    Atomic and race-condition safe.
+    """
+    update_data = {}
+    if delta != 0:
+        update_data['total_held_cached'] = F('total_held_cached') + delta
+
+    # Use DB's GREATEST function for atomic ATH update
+    update_data['ath'] = Greatest(F('ath'), Value(coin.current_price))
+
+    Coin.objects.filter(pk=coin.pk).update(**update_data)
+
+@receiver(post_save, sender=Trade)
+def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwargs):
+    """
+    Update user holdings and all related scores when a trade is created.
     """
     if not created:
-        # If this is an update to an existing trade, we don't want to process it again
-        return
+        return  # Avoid reprocessing
+
     with transaction.atomic():
         user = instance.user
         coin = instance.coin
 
-        sol_price = instance.sol_amount *(-1 if instance.trade_type == 'SELL' else 1) 
-        coin.current_marketcap = F('current_marketcap') + sol_price
-        coin.save(update_fields=['current_marketcap'])
+        # Update market cap (atomic)
+        sol_price = instance.sol_amount * (-1 if instance.trade_type == 'SELL' else 1)
+        Coin.objects.filter(pk=coin.pk).update(current_marketcap=F('current_marketcap') + sol_price)
         coin.refresh_from_db(fields=['current_marketcap'])
-        
-        # Get or create the user's holdings for this coin
+
+        # Get or create user's holdings for this coin
         holdings, _ = UserCoinHoldings.objects.get_or_create(
             user=user,
             coin=coin,
             defaults={'amount_held': 0}
         )
-                
-        if instance.trade_type in ('BUY', 'COIN_CREATE'):
-            delta = instance.coin_amount
-        else:
-            delta = -instance.coin_amount
+
+        # Determine delta for holdings
+        delta = instance.coin_amount if instance.trade_type in ('BUY', 'COIN_CREATE') else -instance.coin_amount
 
         if delta != 0:
-            holdings.amount_held = F('amount_held') + delta
-            holdings.save(update_fields=['amount_held'])
-        
-        # Refresh from database to get the updated value
+            UserCoinHoldings.objects.filter(pk=holdings.pk).update(amount_held=F('amount_held') + delta)
+
+        # Increment total_held_cached atomically
+        update_total_held_on_save(delta, coin)
+
+        # Refresh holdings from DB
         holdings.refresh_from_db()
-        
+
         delete_holdings = False
         # If holdings amount is zero or negative, mark for deletion
         if holdings.amount_held <= 0:
@@ -96,6 +110,20 @@ def update_holdings_and_scores_on_trade(sender, instance:Trade, created, **kwarg
         trader_score.calculate_daily_score()
         broadcast_trade_created(instance)
 
+@receiver(pre_save, sender=Coin)
+def update_coin_ath(sender, instance, **kwargs):
+    # If it's a new record, no need to check
+    if not instance.pk:
+        instance.ath = instance.current_price
+        return
+    
+    # Get old record
+    old_coin = Coin.objects.get(pk=instance.pk)
+
+    # Update ATH if the new price is higher
+    if instance.current_price > old_coin.ath:
+        instance.ath = instance.current_price
+
 @receiver(post_save, sender=Coin)
 def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
     """
@@ -116,7 +144,9 @@ def create_coin_drc_score(sender, instance, created, **kwargs): # making the sco
 def update_on_holdings_delete(sender, instance, **kwargs):
     """Update scores when holdings are deleted (e.g. when amount becomes zero)"""
     # This handles cases where holdings might be deleted outside of trade context
-    
+    coin = instance.coin
+    coin.total_held_cached -= instance.amount_held
+    coin.save(update_fields=['total_held_cached'])
     # Update coin score holders count
     try:
         coin_score:CoinDRCScore = instance.coin.drc_score
@@ -132,7 +162,6 @@ def update_on_holdings_delete(sender, instance, **kwargs):
     except TraderScore.DoesNotExist:
         pass
 
-# Update price stability on price changes
 def update_price_stability(coin, new_price):
     """Update price stability score when price changes"""
     coin_score, _ = CoinDRCScore.objects.get_or_create(coin=coin)
