@@ -13,6 +13,7 @@ auth_urls = [
     path("connect_wallet/", views.ConnectWalletView.as_view(), name="connect_wallet"),
     path("recalculate-scores/", views.RecalculateDailyScoresView.as_view(), name="recalculate-scores"),
     path('trader-history/', views.TraderHistoryListView.as_view(), name='trader-history-list'),
+    path('coin-history/', views.CoinHistoryListView.as_view(), name='coin-history-list'),
     path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
     path('dashboard/profile/', views.PublicProfileCoinsView.as_view(), name='user-profile-coins'),
     path('sol-price/',views.GetSolPriceView.as_view()),
