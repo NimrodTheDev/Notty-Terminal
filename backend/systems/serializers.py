@@ -3,7 +3,7 @@ from .models import (
     DeveloperScore, 
     SolanaUser,
     Coin,UserCoinHoldings, 
-    Trade, TraderHistory
+    Trade, TraderHistory, CoinHistory
 )
 
 class SolanaUserSerializer(serializers.ModelSerializer):
@@ -134,6 +134,11 @@ class TraderHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = TraderHistory
         fields = ['id', 'key', 'score', 'created_at', 'description', 'user']
+
+class CoinHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoinHistory
+        fields = ['id', 'key', 'score', 'created_at', 'description', 'coin']
 
 class CoinHolderSerializer(serializers.ModelSerializer):
     user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
