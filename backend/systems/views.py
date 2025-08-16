@@ -12,16 +12,17 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.exceptions import ValidationError
 
 from .models import (
     DeveloperScore, TraderScore, 
     CoinDRCScore, TraderHistory,
     Coin, UserCoinHoldings, Trade, SolanaUser,
-    PriceApi
+    PriceApi, CoinHistory
 )
 
 from .serializers import (
-    ConnectWalletSerializer,
+    ConnectWalletSerializer, CoinHistorySerializer,
     CoinSerializer, UserCoinHoldingsSerializer, 
     TradeSerializer, SolanaUserSerializer,
     TraderHistorySerializer, CoinHolderSerializer
@@ -315,14 +316,14 @@ class ConnectWalletView(APIView): # edit
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class TraderHistoryPagination(PageNumberPagination):
+class HistoryPagination(PageNumberPagination):
     page_size = 20  # default items per page
     page_size_query_param = 'page_size'  # allow clients to override
     max_page_size = 100
 
 class TraderHistoryListView(ListAPIView):
     serializer_class = TraderHistorySerializer
-    pagination_class = TraderHistoryPagination
+    pagination_class = HistoryPagination
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -336,6 +337,32 @@ class TraderHistoryListView(ListAPIView):
             qs = qs.filter(user__wallet_address=wallet)
         else:
             qs = qs.filter(user=self.request.user)
+        
+        if year and month:
+            qs = qs.filter(created_at__year=year, created_at__month=month)
+        elif year:
+            qs = qs.filter(created_at__year=year)
+        elif month:
+            qs = qs.filter(created_at__month=month)
+        
+        return qs
+
+class CoinHistoryListView(ListAPIView):
+    serializer_class = CoinHistorySerializer
+    pagination_class = HistoryPagination
+    permission_classes = [permissions.AllowAny]#IsAuthenticated]
+
+    def get_queryset(self):
+        qs = CoinHistory.objects.all().order_by('-created_at')
+
+        coin = self.request.query_params.get('coin')
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+
+        if not coin:
+            raise ValidationError({"coin": "This query parameter is required."})
+        
+        qs = qs.filter(user__wallet_address=coin)
         
         if year and month:
             qs = qs.filter(created_at__year=year, created_at__month=month)
