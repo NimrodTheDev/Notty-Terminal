@@ -3,27 +3,32 @@ import * as web3 from "@solana/web3.js";
 import BN from "bn.js";
 import { getProgram } from "./proveder";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 
+import { Buffer } from "buffer";
+
+// make Buffer available globally
+window.Buffer = Buffer;
 interface SolanaContextType {
 	CreateTokenMint?: (
 		tokenName: string,
 		tokenSymbol: string,
 		tokenUri: string
 	) => Promise<{ mintAccount: web3.Keypair; tx: string } | undefined>;
-	// BuyTokenMint?: (
-	// 	mintAccount: web3.PublicKey,
-	// 	amount: number
-	// ) => Promise<{
-	// 	tx: any;
-	// 	buyerTokenAccount: web3.PublicKey;
-	// }>;
-	// SellTokenMint?: (
-	// 	mintAccount: web3.PublicKey,
-	// 	amount: number
-	// ) => Promise<{
-	// 	tx: any;
-	// 	sellerTokenAccount: web3.PublicKey;
-	// }>;
+	BuyTokenMint?: (
+		mintAccount: web3.PublicKey,
+		amount: number
+	) => Promise<{
+		tx: any;
+		buyerTokenAccount: web3.PublicKey;
+	}>;
+	SellTokenMint?: (
+		mintAccount: web3.PublicKey,
+		amount: number
+	) => Promise<{
+		tx: string;
+		buyerTokenAccount: web3.PublicKey;
+	}>;
 }
 
 const SolanaContext = createContext<SolanaContextType>({});
@@ -37,6 +42,11 @@ interface SolanaProviderProps {
 export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 	const TOKEN_PROGRAM_ID = new web3.PublicKey(
 		"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+	);
+
+	const connection = new web3.Connection(
+		"https://api.devnet.solana.com",
+		"confirmed"
 	);
 
 	const wallet = useWallet();
@@ -69,10 +79,61 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 		return { tx, mintAccount };
 	};
 
-	// const BuyTokenMint = async (mintAccount: web3.PublicKey, amount: number) => {
+	const BuyTokenMint = async (mintAccount: web3.PublicKey, amount: number) => {
+		let [token_state, _] = web3.PublicKey.findProgramAddressSync(
+			[Buffer.from("token_state"), mintAccount.toBytes()],
+			program.programId
+		);
+		let token_vault = await getOrCreateAssociatedTokenAccount(
+			connection,
+			//@ts-ignore
+			wallet,
+			mintAccount,
+			token_state,
+			true
+		);
+		let tx = await program.methods
+			.purchaseToken({
+				amount: new BN(amount),
+				minAmountOut: new BN(0),
+			})
+			.accounts({
+				user: wallet.publicKey?.toBase58(),
+				creatorMint: mintAccount.toBase58(),
+				tokenProgram: TOKEN_PROGRAM_ID,
+				tokenVault: token_vault.address,
+			})
+			.rpc();
+		return { tx, buyerTokenAccount: mintAccount };
+	};
 
-	// 	return { tx, buyerTokenAccount: buyerTokenAccount };
-	// };
+	const SellTokenMint = async (mintAccount: web3.PublicKey, amount: number) => {
+		let [token_state, _] = web3.PublicKey.findProgramAddressSync(
+			[Buffer.from("token_state"), mintAccount.toBytes()],
+			program.programId
+		);
+		let token_vault = await getOrCreateAssociatedTokenAccount(
+			connection,
+			//@ts-ignore
+			wallet,
+			mintAccount,
+			token_state,
+			true
+		);
+		let tx = await program.methods
+			.sellToken({
+				amount: new BN(amount),
+				minProceeds: new BN(0),
+			})
+			.accounts({
+				user: wallet.publicKey?.toBase58(),
+				creatorMint: mintAccount.toBase58(),
+				tokenProgram: TOKEN_PROGRAM_ID,
+				tokenVault: token_vault.address,
+			})
+			.rpc();
+		return { tx, buyerTokenAccount: mintAccount };
+	};
 
 	// const SellTokenMint = async (mintAccount: web3.PublicKey, amount: number) => {
 	// 	const encoder = new TextEncoder();
@@ -139,8 +200,8 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 		<SolanaContext.Provider
 			value={{
 				CreateTokenMint,
-				// BuyTokenMint,
-				// SellTokenMint,
+				BuyTokenMint,
+				SellTokenMint,
 			}}
 		>
 			{children}
