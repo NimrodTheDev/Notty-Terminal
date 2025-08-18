@@ -49,8 +49,11 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
 
         # Update market cap (atomic)
         sol_price = instance.sol_amount * (-1 if instance.trade_type == 'SELL' else 1)
-        Coin.objects.filter(pk=coin.pk).update(current_marketcap=F('current_marketcap') + sol_price)
-        coin.refresh_from_db(fields=['current_marketcap'])
+        Coin.objects.filter(pk=coin.pk).update(
+            current_marketcap=F('current_marketcap') + sol_price, 
+            change=F('change')+instance.sol_amount
+        )
+        coin.refresh_from_db(fields=['current_marketcap', 'change']) # test 
 
         # Get or create user's holdings for this coin
         holdings, _ = UserCoinHoldings.objects.get_or_create(
@@ -82,19 +85,8 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         # Update coin score - track 24h volume
         coin_score, _ = CoinDRCScore.objects.get_or_create(coin=coin)
         
-        # Add this trade's volume to 24h volume if it's a buy or sell
-        if instance.trade_type in ['BUY', 'SELL']:
-            # Get trades from last 24 hours
-            one_day_ago = timezone.now() - timezone.timedelta(hours=24)
-            recent_trades = Trade.objects.filter(
-                coin=coin,
-                created_at__gte=one_day_ago
-            )
-            
-            # Calculate volume
-            # volume = sum(t.sol_amount for t in recent_trades)
-            # coin_score.trade_volume_24h = volume
-            # coin_score.save(update_fields=['trade_volume_24h', 'updated_at'])
+        
+        
         
         # If this is a coin creation, update developer score
         if instance.trade_type == 'COIN_CREATE':

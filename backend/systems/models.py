@@ -1039,3 +1039,8 @@ class TraderScore(DRCScore):
         if now.day < created.day:
             months -= 1
         return max(months, 0)
+
+# Calculate volume
+# volume = sum(t.sol_amount for t in recent_trades)
+# coin_score.trade_volume_24h = volume
+# coin_score.save(update_fields=['trade_volume_24h', 'updated_at'])
