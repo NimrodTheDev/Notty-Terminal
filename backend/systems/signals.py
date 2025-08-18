@@ -110,20 +110,6 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         trader_score.calculate_daily_score()
         broadcast_trade_created(instance)
 
-@receiver(pre_save, sender=Coin)
-def update_coin_ath(sender, instance, **kwargs):
-    # If it's a new record, no need to check
-    if not instance.pk:
-        instance.ath = instance.current_price
-        return
-    
-    # Get old record
-    old_coin = Coin.objects.get(pk=instance.pk)
-
-    # Update ATH if the new price is higher
-    if instance.current_price > old_coin.ath:
-        instance.ath = instance.current_price
-
 @receiver(post_save, sender=Coin)
 def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
     """

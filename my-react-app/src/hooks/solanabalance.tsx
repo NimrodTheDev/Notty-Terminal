@@ -31,9 +31,11 @@ export async function getSolanaPriceUSD() {
     const token = localStorage.getItem('auth_token');
     let price = 150;
     try{
+        console.log(token, 3);
         if (!token){
             throw new TypeError("Missing auth token")
         }
+        console.log(token, 4);
         const response = await axios.get(
             `https://solana-market-place-backend.onrender.com/api/sol-price`,
             {headers: { Authorization: `Token ${token}` }}
