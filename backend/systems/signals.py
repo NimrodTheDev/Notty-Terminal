@@ -85,9 +85,6 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         # Update coin score - track 24h volume
         coin_score, _ = CoinDRCScore.objects.get_or_create(coin=coin)
         
-        
-        
-        
         # If this is a coin creation, update developer score
         if instance.trade_type == 'COIN_CREATE':
             dev_score, _ = DeveloperScore.objects.get_or_create(developer=coin.creator)

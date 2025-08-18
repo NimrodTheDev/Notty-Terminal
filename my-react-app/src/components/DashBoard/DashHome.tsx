@@ -15,7 +15,7 @@ type CoinItem = {
 	current_price: number;
 	user: string;
 	value: number;
-	market_cap: number;
+	current_marketcap: number;
 };
 
 type UserInfo = {
@@ -197,7 +197,7 @@ const DashHome = () => {
 								</div>
 								<div className='flex space-x-1 justify-end items-center'>
 									<div className='text-white font-semibold'>
-										${coin.market_cap.toLocaleString()}
+										${coin.current_marketcap.toLocaleString()}
 									</div>
 									<div className='text-green-400 text-sm'>+1.90</div>
 								</div>
