@@ -23,12 +23,12 @@ def create_user_scores(sender, instance, created, **kwargs):
 
 def update_total_held_on_save(delta, coin):
     """
-    Adjust total_held_cached based on the change in this Holding's amount.
+    Adjust total_held based on the change in this Holding's amount.
     Atomic and race-condition safe.
     """
     update_data = {}
     if delta != 0:
-        update_data['total_held_cached'] = F('total_held_cached') + delta
+        update_data['total_held'] = F('total_held') + delta
 
     # Use DB's GREATEST function for atomic ATH update
     update_data['ath'] = Greatest(F('ath'), Value(coin.current_price))
@@ -65,7 +65,7 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         if delta != 0:
             UserCoinHoldings.objects.filter(pk=holdings.pk).update(amount_held=F('amount_held') + delta)
 
-        # Increment total_held_cached atomically
+        # Increment total_held atomically
         update_total_held_on_save(delta, coin)
 
         # Refresh holdings from DB
@@ -145,8 +145,8 @@ def update_on_holdings_delete(sender, instance, **kwargs):
     """Update scores when holdings are deleted (e.g. when amount becomes zero)"""
     # This handles cases where holdings might be deleted outside of trade context
     coin = instance.coin
-    coin.total_held_cached -= instance.amount_held
-    coin.save(update_fields=['total_held_cached'])
+    coin.total_held -= instance.amount_held
+    coin.save(update_fields=['total_held'])
     # Update coin score holders count
     try:
         coin_score:CoinDRCScore = instance.coin.drc_score
