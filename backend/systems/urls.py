@@ -16,7 +16,7 @@ auth_urls = [
     path('coin-history/', views.CoinHistoryListView.as_view(), name='coin-history-list'),
     path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
     path('dashboard/profile/', views.PublicProfileCoinsView.as_view(), name='user-profile-coins'),
-    path('sol-price/',views.GetSolPriceView.as_view()),
+    path('sol-price/',views.GetSolPriceView.as_view(), name='user-profile-coins'),
 ]
 
 urlpatterns = [
