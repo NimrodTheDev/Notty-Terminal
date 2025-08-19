@@ -25,20 +25,13 @@ const CoinPage: React.FC = () => {
           // Merge dummy data with tokenData from Firebase
           // const dummyCoinData = getDummyCoinData(mintAddress);
 
-          const [
-            coinRes, 
-            // coinHistoryRes
-          ] = await Promise.all([
-            axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
-            // axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/${mintAddress}/`)
-          ]);
-
-          console.log("Coin Response:", coinRes.data);
-          console.log("Other Response:", coinHistoryRes.data);
-          
+          const response = await axios.get(
+            `https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`
+          );
           const solPrice = await getSolanaPriceUSD();
 
-          const coin = coinRes.data;
+          const coin = response.data;
+      
           const mergedData = {
             ...coin,
             marketcap: parseFloat(coin.current_marketcap) * solPrice,
