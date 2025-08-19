@@ -142,11 +142,12 @@ class CoinHistorySerializer(serializers.ModelSerializer):
 
 class CoinHolderSerializer(serializers.ModelSerializer):
     user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
+    user_traderscore = serializers.IntegerField(source='user.trader_score.score', read_only=True)
     held_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = UserCoinHoldings
-        fields = ['user_wallet_address', 'amount_held', 'held_percentage']
+        fields = ['user_wallet_address', 'amount_held', 'held_percentage', 'user_traderscore']
 
     def get_held_percentage(self, obj):
         supply = obj.coin.total_supply

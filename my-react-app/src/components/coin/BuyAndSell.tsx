@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 // import { PublicKey } from "@solana/web3.js";
 // import { Link } from "react-router-dom";
 import { Toast, useToast } from "../general/Toast";
-import { useSolBalance } from "../../hooks/solanabalance";
+import { useSolBalance, getSolanaPriceUSD } from "../../hooks/solanabalance";
 import axios from "axios";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useSolana } from "../../solanaClient";
@@ -22,6 +22,16 @@ function shortenAddress(address: string) {
 	if (!address || address.length < 10) return address;
 	return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
+
+function sumHeldPercentageByScore(
+	holders: any,
+	scoreThreshold: number,
+	scoreThreshold2: number
+  ): number {
+	return holders
+	  .filter((h: { user_traderscore: number; }) => (h.user_traderscore < scoreThreshold && h.user_traderscore > scoreThreshold2))
+	  .reduce((sum: any, h: { held_percentage: any; }) => sum + h.held_percentage, 0);
+  }
 
 function BuyAndSell({ coinData }: BuyAndSellProps) {
 	const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
@@ -126,9 +136,9 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 		{ label: string; value: string }[]
 	>([
 		{ label: "Total Holders", value: "200,000" },
-		// { label: 'T2 Holders', value: '99' },
-		// { label: 'Holders with 500K-500K', value: '25%' },
-		// { label: 'Holders with 500K-49M', value: '25%' },
+		{ label: 'Holders with DRS > 1000', value: '25%' },
+		{ label: 'Holders with DRS > 1000', value: '25%' },
+		{ label: 'Holders with DRS > 1000', value: '25%' },
 	]);
 
 	const getFormattedValues = (amount: string, price: number) => {
@@ -174,6 +184,9 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 				);
 				setHolderAnalytics([
 					{ label: "Total Holders", value: holders.length.toString() },
+					{ label: 'Holders with DRS > 1000', value: sumHeldPercentageByScore(holders, 1000, 700).toString() },
+					{ label: 'Holders with DRS > 700', value: sumHeldPercentageByScore(holders, 700, 400).toString() },
+					{ label: 'Holders with DRS > 400', value: sumHeldPercentageByScore(holders, 400, 0).toString() },
 				]);
 			} catch (e) {
 				console.error("Error fetching coin data:", e);
@@ -181,15 +194,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 		};
 		fetchCoinHolders(); // might want to use this differently
 	}, [id]);
-
-	async function getSolanaPriceUSD() {
-		const response = await fetch(
-			"https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd"
-		);
-		const data = await response.json();
-		const price = data.solana.usd;
-		return price;
-	}
 
 	return (
 		<div className='bg-custom-dark-blue rounded-lg p-4 text-white md:mr-12 lg:mr-24 w-full'>
