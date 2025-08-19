@@ -27,7 +27,7 @@ const CoinPage: React.FC = () => {
 
           const [coinRes, coinHistoryRes] = await Promise.all([
             axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
-            axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history${mintAddress}/`)
+            axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/${mintAddress}/`)
           ]);
 
           console.log("Coin Response:", coinRes.data);
