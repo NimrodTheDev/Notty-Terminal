@@ -13,8 +13,17 @@ import { CoinData } from "../components/coin/CoinFilter";
 import CoinHistory from "../components/coin/coinHistory";
 window.Buffer = Buffer;
 
+type HistoryItem = {
+  id: string;
+  key: string;
+  score: string;
+  description?: string;
+  created_at: string;
+};
+
 const CoinPage: React.FC = () => {
   const [coinData, setCoinData] = useState<any | (CoinData)>(); // to adjust this later
+  const [history, sethistory] = useState<any | (HistoryItem)>(); // to adjust this later
   const [loading, setLoading] = useState(true);
   const { id: mintAddress } = useParams();
 
@@ -27,12 +36,10 @@ const CoinPage: React.FC = () => {
 
           const [coinRes, coinHistoryRes] = await Promise.all([
             axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
-            axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history${mintAddress}/`)
+            axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/?coin_address=${mintAddress}/`)
           ]);
+          sethistory(coinHistoryRes.data.results)
 
-          console.log("Coin Response:", coinRes.data);
-          console.log("Other Response:", coinHistoryRes.data);
-          
           const solPrice = await getSolanaPriceUSD();
 
           const coin = coinRes.data;
@@ -85,7 +92,7 @@ const CoinPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-2 w-full sm:w-auto">
             <BuyAndSell coinData={coinData} />
-            <CoinHistory />
+            <CoinHistory coinHistory={history} />
           </div>
         </div>
         <SimilarCoins coinData={coinData} />

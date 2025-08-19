@@ -94,24 +94,24 @@ function CreateCoin() {
 			errors.tokenDescription = "Description must be less than 1000 characters";
 		}
 
-		if (!tokenWebsite.trim()) {
-			errors.tokenWebsite = "Website is required";
-		} else if (!/^https?:\/\/.+/.test(tokenWebsite)) {
-			errors.tokenWebsite =
-				"Please enter a valid URL starting with http:// or https://";
-		}
+		// if (!tokenWebsite.trim()) {
+		// 	errors.tokenWebsite = "Website is required";
+		// } else if (!/^https?:\/\/.+/.test(tokenWebsite)) {
+		// 	errors.tokenWebsite =
+		// 		"Please enter a valid URL starting with http:// or https://";
+		// }
 
-		if (!tokenTwitter.trim()) {
-			errors.tokenTwitter = "Twitter handle is required";
-		} else if (!/^@?[A-Za-z0-9_]{1,15}$/.test(tokenTwitter)) {
-			errors.tokenTwitter = "Please enter a valid Twitter handle";
-		}
+		// if (!tokenTwitter.trim()) {
+		// 	errors.tokenTwitter = "Twitter handle is required";
+		// } else if (!/^@?[A-Za-z0-9_]{1,15}$/.test(tokenTwitter)) {
+		// 	errors.tokenTwitter = "Please enter a valid Twitter handle";
+		// }
 
-		if (!tokenDiscord.trim()) {
-			errors.tokenDiscord = "Discord channel is required";
-		} else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
-			errors.tokenDiscord = "Please enter a valid Discord invite link";
-		}
+		// if (!tokenDiscord.trim()) {
+		// 	errors.tokenDiscord = "Discord channel is required";
+		// } else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
+		// 	errors.tokenDiscord = "Please enter a valid Discord invite link";
+		// }
 
 		if (!tokenImage) {
 			errors.tokenImage = "Project image is required";
@@ -491,7 +491,7 @@ function CreateCoin() {
 										htmlFor='webAddress'
 										className='block text-sm font-medium mb-2'
 									>
-										Website Address
+										Website Address *
 									</label>
 									<input
 										type='url'
@@ -516,7 +516,7 @@ function CreateCoin() {
 										htmlFor='twithand'
 										className='block text-sm font-medium mb-2'
 									>
-										Twitter Handle
+										Twitter Handle *
 									</label>
 									<input
 										type='text'
@@ -541,7 +541,7 @@ function CreateCoin() {
 										htmlFor='discord'
 										className='block text-sm font-medium mb-2'
 									>
-										Discord Channel
+										Discord Channel *
 									</label>
 									<input
 										type='url'

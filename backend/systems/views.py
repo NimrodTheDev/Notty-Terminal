@@ -137,7 +137,7 @@ class CoinViewSet(RestrictedViewset):
         # Optimized queryset for serializer
         holders = UserCoinHoldings.objects.filter(coin=coin)\
             .select_related('user', 'coin')\
-            .only('user__wallet_address', 'amount_held', 'coin__total_supply')\
+            .only('user__wallet_address', 'amount_held', 'coin__total_supply', 'user__trader_score')\
             .order_by('-amount_held')
         # display_name we can also add to check if available
 

@@ -1,68 +1,31 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { format } from "date-fns";
 
-function CoinHistory() {
+type HistoryItem = {
+	id: string;
+	key: string;
+	score: string;
+	description?: string;
+	created_at: string;
+};
+type CoinHistoryProps = {
+	coinHistory: HistoryItem[];
+  };
+  
+  function CoinHistory({ coinHistory }: CoinHistoryProps) {
 	const [selectedMonth, setSelectedMonth] = useState("July 2025");
 
-	// Sample data structure
-	const reputationData = [
-		{
-			id: 1,
-			date: "02 | 2:03 PM",
-			month: "July 2025",
-			text: "Lorem ipsum mi sed aliquet tellus lectus rho...",
-			drsScore: 10,
-		},
-		{
-			id: 2,
-			date: "02 | 2:03 PM",
-			month: "July 2025",
-			text: "New Coin Created",
-			drsScore: 10,
-		},
-		{
-			id: 3,
-			date: "02 | 2:03 PM",
-			month: "July 2025",
-			text: "New Coin Created",
-			drsScore: 10,
-		},
-		{
-			id: 4,
-			date: "02 | 2:03 PM",
-			month: "July 2025",
-			text: "New Coin Created",
-			drsScore: 10,
-		},
-		{
-			id: 5,
-			date: "02 | 2:03 PM",
-			month: "July 2025",
-			text: "New Coin Created",
-			drsScore: 10,
-		},
-		{
-			id: 6,
-			date: "15 | 4:30 PM",
-			month: "June 2025",
-			text: "Token Transfer Completed",
-			drsScore: 15,
-		},
-		{
-			id: 7,
-			date: "20 | 11:45 AM",
-			month: "June 2025",
-			text: "Reputation Boost Earned",
-			drsScore: 25,
-		},
-		{
-			id: 8,
-			date: "05 | 9:15 AM",
-			month: "May 2025",
-			text: "Community Participation",
-			drsScore: 8,
-		},
-	];
+	const reputationData = coinHistory.map((item) => {
+		const createdDate = new Date(item.created_at);
+		return {
+		  id: item.id,
+		  date: format(createdDate, "dd | h:mm a"),
+		  month: format(createdDate, "MMMM yyyy"),
+		  text: item.description || item.key,
+		  drsScore: Number(item.score),
+		};
+	  });
 
 	const months = [
 		"All Time",
