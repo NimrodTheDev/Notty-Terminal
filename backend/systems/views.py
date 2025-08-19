@@ -355,14 +355,14 @@ class CoinHistoryListView(ListAPIView):
     def get_queryset(self):
         qs = CoinHistory.objects.all().order_by('-created_at')
 
-        coin = self.request.query_params.get('coin')
+        coin_address = self.request.query_params.get('coin_address')
         year = self.request.query_params.get('year')
         month = self.request.query_params.get('month')
 
-        if not coin:
-            raise ValidationError({"coin": "This query parameter is required."})
+        if not coin_address:
+            raise ValidationError({"coin_address": "This query parameter is required."})
         
-        qs = qs.filter(user__wallet_address=coin)
+        qs = qs.filter(coin__address=coin_address)
         
         if year and month:
             qs = qs.filter(created_at__year=year, created_at__month=month)
