@@ -42,7 +42,8 @@ const CoinPage: React.FC = () => {
 
           const solPrice = await getSolanaPriceUSD();
 
-          const coin = coinRes.data;
+          const coin = response.data;
+      
           const mergedData = {
             ...coin,
             marketcap: parseFloat(coin.current_marketcap) * solPrice,

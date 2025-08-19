@@ -8,6 +8,8 @@ import { Toast, useToast } from "../general/Toast";
 import { useSolBalance, getSolanaPriceUSD } from "../../hooks/solanabalance";
 import axios from "axios";
 import { useConnection } from "@solana/wallet-adapter-react";
+import { useSolana } from "../../solanaClient";
+import { web3 } from "@coral-xyz/anchor";
 
 interface BuyAndSellProps {
 	coinData?: {
@@ -33,9 +35,10 @@ function sumHeldPercentageByScore(
 
 function BuyAndSell({ coinData }: BuyAndSellProps) {
 	const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
-	const [amount, setAmount] = useState("0.001");
+	const [amount, setAmount] = useState("0.1");
 	// const { BuyTokenMint, SellTokenMint } = useSolana()
 	const { id } = useParams();
+	const { BuyTokenMint, SellTokenMint } = useSolana();
 	// const wallet = useWallet();
 	const { connection } = useConnection();
 	const {
@@ -236,7 +239,10 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 						min='0'
 					/>
 					<span className='absolute right-3 top-2 text-gray-400'>
-						{activeTab === "buy" ? "SOL" : coinData?.ticker}
+						{
+							// activeTab === "buy" ? "SOL" :
+							coinData?.ticker
+						}
 					</span>
 				</div>
 			</div>
@@ -261,27 +267,36 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 			</div>
 
 			{/* Action Button */}
-			{/* <button
-            onClick={activeTab === "buy" ? handleBuy : handleSell}
-            disabled={isProcessing || !publicKey}
-            className={`w-full py-2 px-4 rounded-md font-medium mb-4 transition-colors ${
-              isProcessing
-                ? "bg-gray-600 cursor-not-allowed"
-                : !publicKey
-                ? "bg-gray-600 cursor-not-allowed"
-                : activeTab === "buy"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
-          >
-            {!publicKey
-              ? "Connect Wallet"
-              : isProcessing
-              ? "Processing..."
-              : activeTab === "buy"
-              ? `Buy ${coinData?.ticker}`
-              : `Sell ${coinData?.ticker}`}
-          </button> */}
+			<button
+				onClick={async () => {
+					let mintAccount = new web3.PublicKey(id || "");
+					if (BuyTokenMint && activeTab === "buy") {
+						console.log("called");
+						let { tx } = await BuyTokenMint(
+							mintAccount,
+							Number(amount) * 1000000000
+						);
+						console.log(tx);
+					}
+					if (activeTab === "sell" && SellTokenMint) {
+						let { tx } = await SellTokenMint(
+							mintAccount,
+							Number(amount) * 1000000000
+						);
+						console.log(tx);
+					}
+				}}
+				// disabled={isProcessing || !publicKey}
+				className={`w-full py-2 px-4 rounded-md font-medium mb-4 transition-colors ${
+					activeTab === "buy"
+						? "bg-green-600 hover:bg-green-700"
+						: "bg-red-600 hover:bg-red-700"
+				}`}
+			>
+				{activeTab === "buy"
+					? `Buy ${coinData?.ticker}`
+					: `Sell ${coinData?.ticker}`}
+			</button>
 
 			{/* Top Holders Section */}
 			<div className='mb-6'>
