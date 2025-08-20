@@ -31,18 +31,18 @@ const CoinPage: React.FC = () => {
     const fetchCoin = async () => {
       if (mintAddress) {
         try {
-          // Merge dummy data with tokenData from Firebase
-          // const dummyCoinData = getDummyCoinData(mintAddress);
-
-          const [coinRes, coinHistoryRes] = await Promise.all([
+          const [coinRes, coinHistoryRes, holdersRes] = await Promise.all([
             axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
-            axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/?coin_address=${mintAddress}/`)
+            axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/?coin_address=${mintAddress}`),
+            axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/holders`)
           ]);
-          sethistory(coinHistoryRes.data.results)
-
+    
+          console.log(coinHistoryRes.data)
+          sethistory(coinHistoryRes.data.results);
+    
           const solPrice = await getSolanaPriceUSD();
-
           const coin = coinRes.data;
+          const holders = holdersRes.data;
       
           const mergedData = {
             ...coin,
@@ -52,7 +52,8 @@ const CoinPage: React.FC = () => {
             start_marketcap: parseFloat(coin.start_marketcap),
             end_marketcap: parseFloat(coin.end_marketcap),
             total_supply: parseFloat(coin.total_supply),
-            mint: mintAddress
+            mint: mintAddress,
+            holders, // ✅ add holders to the coin object
           };
           setCoinData(mergedData);
           setLoading(false);

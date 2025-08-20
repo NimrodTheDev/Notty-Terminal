@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom";
 // import { Link } from "react-router-dom";
 import { Toast, useToast } from "../general/Toast";
 import { useSolBalance, getSolanaPriceUSD } from "../../hooks/solanabalance";
-import axios from "axios";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useSolana } from "../../solanaClient";
 import { web3 } from "@coral-xyz/anchor";
@@ -15,6 +14,7 @@ interface BuyAndSellProps {
 	coinData?: {
 		ticker?: string;
 		current_price?: string;
+		holders?:[];
 	};
 }
 
@@ -28,10 +28,30 @@ function sumHeldPercentageByScore(
 	scoreThreshold: number,
 	scoreThreshold2: number
   ): number {
-	return holders
-	  .filter((h: { user_traderscore: number; }) => (h.user_traderscore < scoreThreshold && h.user_traderscore > scoreThreshold2))
-	  .reduce((sum: any, h: { held_percentage: any; }) => sum + h.held_percentage, 0);
-  }
+	// return holders
+	//   .filter((h: { user_traderscore: number; }) => (h.user_traderscore < scoreThreshold && h.user_traderscore >= scoreThreshold2))
+	//   .reduce((sum: any, h: { held_percentage: any; }) => sum + h.held_percentage, 0);
+	const total = holders.length;
+	if (total === 0) return 0;
+
+	const countInRange = holders.filter(
+		(h: { user_traderscore: number }) =>
+		h.user_traderscore < scoreThreshold &&
+		h.user_traderscore >= scoreThreshold2
+	).length;
+
+	return (countInRange / total) * 100; // return percentage of people
+}
+
+function formatPercent(value: number, decimals = 4) {
+	const threshold = 1 / Math.pow(10, decimals); // e.g. 0.0001 if decimals=4
+
+	if (value > 0 && value < threshold) {
+		return `≤${threshold}`;
+	}
+
+	return value.toFixed(decimals).replace(/\.?0+$/, "");
+}
 
 function BuyAndSell({ coinData }: BuyAndSellProps) {
 	const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
@@ -122,13 +142,13 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 	// restricting the entry to this view if not verified
 	// For top holders
 	const [topHolders, setTopHolders] = useState<
-		{ address: string; percentage: string }[]
+		{ address: string; percentage: string; drs: string }[]
 	>([
-		{ address: "8rqb2fJrj...", percentage: "92%" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%" },
+		{ address: "8rqb2fJrj...", percentage: "92%", drs: "40" },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
 	]);
 
 	// For analytics summary
@@ -166,34 +186,30 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 	}, [amount, coinData?.current_price]);
 
 	useEffect(() => {
-		const fetchCoinHolders = async () => {
-			if (!id) {
-				return;
-			}
-			try {
-				const response = await axios.get(
-					`https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
-				);
-				const holders: Array<{}> = response.data;
-				setTopHolders(
-					holders.map((item: any) => ({
-						percentage: `${item.held_percentage}%`,
-						address: shortenAddress(item.user_wallet_address),
-						// change this if it has a displayname later
-					}))
-				);
-				setHolderAnalytics([
-					{ label: "Total Holders", value: holders.length.toString() },
-					{ label: 'Holders with DRS > 1000', value: sumHeldPercentageByScore(holders, 1000, 700).toString() },
-					{ label: 'Holders with DRS > 700', value: sumHeldPercentageByScore(holders, 700, 400).toString() },
-					{ label: 'Holders with DRS > 400', value: sumHeldPercentageByScore(holders, 400, 0).toString() },
-				]);
-			} catch (e) {
-				console.error("Error fetching coin data:", e);
-			}
-		};
-		fetchCoinHolders(); // might want to use this differently
-	}, [id]);
+		if (!coinData?.holders) return;
+	  
+		const holders = coinData.holders;
+	  
+		setTopHolders(
+		  holders
+			.sort((a: any, b: any) => b.held_percentage - a.held_percentage)
+			.slice(0, 10)
+			.map((item: any) => ({
+			  percentage: `${formatPercent(item.held_percentage)}%`,
+			  address: shortenAddress(item.user_wallet_address),
+			  drs: item.user_traderscore,
+			}))
+		);
+	  
+		setHolderAnalytics([
+		  { label: "Total Holders", value: holders.length.toString() },
+		  { label: 'DRS [ 2000 > ]', value: sumHeldPercentageByScore(holders, 100000000, 1999).toLocaleString() + "%" },
+		  { label: 'DRS [ 1999 - 1000 ]', value: sumHeldPercentageByScore(holders, 1999, 1000).toLocaleString() + "%" },
+		  { label: 'DRS [ 999 - 500 ]', value: sumHeldPercentageByScore(holders, 999, 500).toLocaleString() + "%" },
+		  { label: 'DRS [ 499 - 200 ]', value: sumHeldPercentageByScore(holders, 499, 200).toLocaleString() + "%" },
+		  { label: 'DRS [ 199 - 0 ]', value: sumHeldPercentageByScore(holders, 199, 0).toLocaleString() + "%" },
+		]);
+	  }, [coinData?.holders]);
 
 	return (
 		<div className='bg-custom-dark-blue rounded-lg p-4 text-white md:mr-12 lg:mr-24 w-full'>
@@ -312,7 +328,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 										<span className='text-xs font-bold text-black'>🏆</span>
 									</div>
 									<span className='text-custom-light-purple text-sm font-mono'>
-										{holder.address}
+										{holder.address} [DRS {holder.drs}]
 									</span>
 								</div>
 								<span className='text-gray-300 text-sm'>
@@ -327,6 +343,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 			{/* Holder Analytics Section */}
 			<div>
 				<h3 className='text-[#CCC1FA] font-medium my-8'>Holder Analytics</h3>
+				{/* add % */}
 				<div className='space-y-2 mb-12'>
 					{holderAnalytics.map((analytic, index) => (
 						<div key={index} className='flex items-center justify-between'>

@@ -14,7 +14,7 @@ type CoinHistoryProps = {
   };
   
   function CoinHistory({ coinHistory }: CoinHistoryProps) {
-	const [selectedMonth, setSelectedMonth] = useState("July 2025");
+	const [selectedMonth, setSelectedMonth] = useState("All Time");
 
 	const reputationData = coinHistory.map((item) => {
 		const createdDate = new Date(item.created_at);
@@ -29,6 +29,7 @@ type CoinHistoryProps = {
 
 	const months = [
 		"All Time",
+		"August 2025",
 		"July 2025",
 		"June 2025",
 		"May 2025",
