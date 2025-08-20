@@ -42,7 +42,7 @@ const CoinPage: React.FC = () => {
 
           const solPrice = await getSolanaPriceUSD();
 
-          const coin = response.data;
+          const coin = coinRes.data;
       
           const mergedData = {
             ...coin,
