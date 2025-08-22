@@ -1,10 +1,9 @@
-
 import { useState, useEffect, useMemo } from "react";
 // import { useSolana } from "../../solanaClient";
 import { useParams } from "react-router-dom";
 // import { PublicKey } from "@solana/web3.js";
 // import { Link } from "react-router-dom";
-import { Toast, useToast } from "../general/Toast";
+// import { Toast, useToast } from "../general/Toast";
 import { useSolBalance } from "../../hooks/solanabalance";
 import axios from "axios";
 import { useConnection } from "@solana/wallet-adapter-react";
@@ -16,6 +15,7 @@ interface BuyAndSellProps {
 		ticker?: string;
 		current_price?: string;
 	};
+	fetchCoin: () => void;
 }
 
 function shortenAddress(address: string) {
@@ -23,67 +23,18 @@ function shortenAddress(address: string) {
 	return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
-function BuyAndSell({ coinData }: BuyAndSellProps) {
+function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 	const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
 	const [amount, setAmount] = useState("0.1");
-	// const { BuyTokenMint, SellTokenMint } = useSolana()
 	const { id } = useParams();
-	const { BuyTokenMint, SellTokenMint } = useSolana();
-	// const wallet = useWallet();
+	const { BuyTokenMint, SellTokenMint, loading } = useSolana();
 	const { connection } = useConnection();
-	const {
-		showToast,
-		toastMessage,
-		toastType,
-		//  showToastMessage,
-		setShowToast,
-	} = useToast();
 	const [solPrice, setSolPrice] = useState<number>(1);
 	const tokenPrice = useMemo(() => {
 		const coinPriceInSol = parseFloat(coinData?.current_price || "0");
 		return coinPriceInSol * solPrice;
 	}, [coinData?.current_price, solPrice]);
-	const {
-		balance,
-		//  refetchBalance
-	} = useSolBalance(connection);
-
-	// const handleTokenAction = async () => {
-	// 	if (!id) return;
-
-	// 	// await refetchBalance(); // hget the balance of the user don't await it?
-	// 	const mintFn = (arg: any, arg2: any) =>  console.log(arg, arg2);
-	// 	// (activeTab === 'buy') ? BuyTokenMint : SellTokenMint
-	// 	if (!mintFn) {
-	// 		showToastMessage(
-	// 			`No function available to ${activeTab} tokens.`,
-	// 			"error"
-	// 		);
-	// 		return;
-	// 	}
-
-	// 	try {
-	// 		const res = await mintFn(new PublicKey(id), Number(amount));
-	// 		showToastMessage(
-	// 			<Link
-	// 				to={`https://explorer.solana.com/tx/${res.tx}?cluster=devnet`}
-	// 				target='_blank'
-	// 				className='underline'
-	// 			>
-	// 				Tokens{activeTab === "buy" ? "bought" : "sold"} successfully! View on
-	// 				Explorer
-	// 			</Link>,
-	// 			"success"
-	// 		);
-	// 		await refetchBalance();
-	// 	} catch (error) {
-	// 		console.error(`Error ${activeTab}ing tokens:`, error);
-	// 		showToastMessage(
-	// 			`Failed to ${activeTab} tokens. Please try again.`,
-	// 			"error"
-	// 		);
-	// 	}
-	// };
+	const { balance } = useSolBalance(connection);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -108,9 +59,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 		};
 	}, []);
 
-	// can still be improved
-	// restricting the entry to this view if not verified
-	// For top holders
 	const [topHolders, setTopHolders] = useState<
 		{ address: string; percentage: string }[]
 	>([
@@ -124,12 +72,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 	// For analytics summary
 	const [holderAnalytics, setHolderAnalytics] = useState<
 		{ label: string; value: string }[]
-	>([
-		{ label: "Total Holders", value: "200,000" },
-		// { label: 'T2 Holders', value: '99' },
-		// { label: 'Holders with 500K-500K', value: '25%' },
-		// { label: 'Holders with 500K-49M', value: '25%' },
-	]);
+	>([{ label: "Total Holders", value: "200,000" }]);
 
 	const getFormattedValues = (amount: string, price: number) => {
 		const parsedAmount = parseFloat(amount || "0");
@@ -155,30 +98,30 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 		);
 	}, [amount, coinData?.current_price]);
 
+	const fetchCoinHolders = async () => {
+		if (!id) {
+			return;
+		}
+		try {
+			const response = await axios.get(
+				`https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
+			);
+			const holders: Array<{}> = response.data;
+			setTopHolders(
+				holders.map((item: any) => ({
+					percentage: `${item.held_percentage}%`,
+					address: shortenAddress(item.user_wallet_address),
+					// change this if it has a displayname later
+				}))
+			);
+			setHolderAnalytics([
+				{ label: "Total Holders", value: holders.length.toString() },
+			]);
+		} catch (e) {
+			console.error("Error fetching coin data:", e);
+		}
+	};
 	useEffect(() => {
-		const fetchCoinHolders = async () => {
-			if (!id) {
-				return;
-			}
-			try {
-				const response = await axios.get(
-					`https://solana-market-place-backend.onrender.com/api/coins/${id}/holders`
-				);
-				const holders: Array<{}> = response.data;
-				setTopHolders(
-					holders.map((item: any) => ({
-						percentage: `${item.held_percentage}%`,
-						address: shortenAddress(item.user_wallet_address),
-						// change this if it has a displayname later
-					}))
-				);
-				setHolderAnalytics([
-					{ label: "Total Holders", value: holders.length.toString() },
-				]);
-			} catch (e) {
-				console.error("Error fetching coin data:", e);
-			}
-		};
 		fetchCoinHolders(); // might want to use this differently
 	}, [id]);
 
@@ -264,6 +207,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 
 			{/* Action Button */}
 			<button
+				disabled={loading}
 				onClick={async () => {
 					let mintAccount = new web3.PublicKey(id || "");
 					if (BuyTokenMint && activeTab === "buy") {
@@ -281,6 +225,8 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 						);
 						console.log(tx);
 					}
+					fetchCoinHolders();
+					fetchCoin();
 				}}
 				// disabled={isProcessing || !publicKey}
 				className={`w-full py-2 px-4 rounded-md font-medium mb-4 transition-colors ${
@@ -289,7 +235,9 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 						: "bg-red-600 hover:bg-red-700"
 				}`}
 			>
-				{activeTab === "buy"
+				{loading
+					? "loading..."
+					: activeTab === "buy"
 					? `Buy ${coinData?.ticker}`
 					: `Sell ${coinData?.ticker}`}
 			</button>
@@ -339,14 +287,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 					))}
 				</div>
 			</div>
-
-			{showToast && (
-				<Toast
-					message={toastMessage}
-					type={toastType}
-					onClose={() => setShowToast(false)}
-				/>
-			)}
 		</div>
 	);
 }
