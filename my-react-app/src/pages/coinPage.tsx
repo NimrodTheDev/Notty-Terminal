@@ -36,7 +36,6 @@ const CoinPage: React.FC = () => {
 				axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/holders`)
 				]);
 
-				console.log(coinHistoryRes.data)
 				sethistory(coinHistoryRes.data.results);
 
 				const solPrice = await getSolanaPriceUSD();
