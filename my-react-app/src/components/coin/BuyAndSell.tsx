@@ -251,7 +251,6 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 						);
 						console.log(tx);
 					}
-					fetchCoinHolders();
 					fetchCoin();
 				}}
 				// disabled={isProcessing || !publicKey}
