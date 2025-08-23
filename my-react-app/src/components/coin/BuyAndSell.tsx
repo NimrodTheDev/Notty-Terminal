@@ -1,11 +1,11 @@
-
 import { useState, useEffect, useMemo } from "react";
 // import { useSolana } from "../../solanaClient";
 import { useParams } from "react-router-dom";
 // import { PublicKey } from "@solana/web3.js";
 // import { Link } from "react-router-dom";
-import { Toast, useToast } from "../general/Toast";
 import { useSolBalance, getSolanaPriceUSD } from "../../hooks/solanabalance";
+// import { Toast, useToast } from "../general/Toast";
+// import axios from "axios";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useSolana } from "../../solanaClient";
 import { web3 } from "@coral-xyz/anchor";
@@ -16,6 +16,7 @@ interface BuyAndSellProps {
 		current_price?: string;
 		holders?:[];
 	};
+	fetchCoin: () => void;
 }
 
 function shortenAddress(address: string) {
@@ -53,67 +54,18 @@ function formatPercent(value: number, decimals = 4) {
 	return value.toFixed(decimals).replace(/\.?0+$/, "");
 }
 
-function BuyAndSell({ coinData }: BuyAndSellProps) {
+function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 	const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
 	const [amount, setAmount] = useState("0.1");
-	// const { BuyTokenMint, SellTokenMint } = useSolana()
 	const { id } = useParams();
-	const { BuyTokenMint, SellTokenMint } = useSolana();
-	// const wallet = useWallet();
+	const { BuyTokenMint, SellTokenMint, loading } = useSolana();
 	const { connection } = useConnection();
-	const {
-		showToast,
-		toastMessage,
-		toastType,
-		//  showToastMessage,
-		setShowToast,
-	} = useToast();
 	const [solPrice, setSolPrice] = useState<number>(1);
 	const tokenPrice = useMemo(() => {
 		const coinPriceInSol = parseFloat(coinData?.current_price || "0");
 		return coinPriceInSol * solPrice;
 	}, [coinData?.current_price, solPrice]);
-	const {
-		balance,
-		//  refetchBalance
-	} = useSolBalance(connection);
-
-	// const handleTokenAction = async () => {
-	// 	if (!id) return;
-
-	// 	// await refetchBalance(); // hget the balance of the user don't await it?
-	// 	const mintFn = (arg: any, arg2: any) =>  console.log(arg, arg2);
-	// 	// (activeTab === 'buy') ? BuyTokenMint : SellTokenMint
-	// 	if (!mintFn) {
-	// 		showToastMessage(
-	// 			`No function available to ${activeTab} tokens.`,
-	// 			"error"
-	// 		);
-	// 		return;
-	// 	}
-
-	// 	try {
-	// 		const res = await mintFn(new PublicKey(id), Number(amount));
-	// 		showToastMessage(
-	// 			<Link
-	// 				to={`https://explorer.solana.com/tx/${res.tx}?cluster=devnet`}
-	// 				target='_blank'
-	// 				className='underline'
-	// 			>
-	// 				Tokens{activeTab === "buy" ? "bought" : "sold"} successfully! View on
-	// 				Explorer
-	// 			</Link>,
-	// 			"success"
-	// 		);
-	// 		await refetchBalance();
-	// 	} catch (error) {
-	// 		console.error(`Error ${activeTab}ing tokens:`, error);
-	// 		showToastMessage(
-	// 			`Failed to ${activeTab} tokens. Please try again.`,
-	// 			"error"
-	// 		);
-	// 	}
-	// };
+	const { balance } = useSolBalance(connection);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -138,9 +90,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 		};
 	}, []);
 
-	// can still be improved
-	// restricting the entry to this view if not verified
-	// For top holders
 	const [topHolders, setTopHolders] = useState<
 		{ address: string; percentage: string; drs: string }[]
 	>([
@@ -284,6 +233,7 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 
 			{/* Action Button */}
 			<button
+				disabled={loading}
 				onClick={async () => {
 					let mintAccount = new web3.PublicKey(id || "");
 					if (BuyTokenMint && activeTab === "buy") {
@@ -301,6 +251,8 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 						);
 						console.log(tx);
 					}
+					fetchCoinHolders();
+					fetchCoin();
 				}}
 				// disabled={isProcessing || !publicKey}
 				className={`w-full py-2 px-4 rounded-md font-medium mb-4 transition-colors ${
@@ -309,7 +261,9 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 						: "bg-red-600 hover:bg-red-700"
 				}`}
 			>
-				{activeTab === "buy"
+				{loading
+					? "loading..."
+					: activeTab === "buy"
 					? `Buy ${coinData?.ticker}`
 					: `Sell ${coinData?.ticker}`}
 			</button>
@@ -360,14 +314,6 @@ function BuyAndSell({ coinData }: BuyAndSellProps) {
 					))}
 				</div>
 			</div>
-
-			{showToast && (
-				<Toast
-					message={toastMessage}
-					type={toastType}
-					onClose={() => setShowToast(false)}
-				/>
-			)}
 		</div>
 	);
 }
