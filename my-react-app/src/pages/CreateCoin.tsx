@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Toast } from "../components/general/Toast";
 // import Hero from '../components/landingPage/hero'
 import { useWallet } from "@solana/wallet-adapter-react";
+import toast from "react-hot-toast";
 // import { Connection } from "@solana/web3.js";
 
 // Add animation keyframes
@@ -50,16 +51,16 @@ interface ValidationErrors {
 function CreateCoin() {
 	const [tokenName, settTokenName] = useState("");
 	const [tokenSymbol, settTokenSymbol] = useState("");
-	const [loading, setLoading] = useState({
-		bool: false,
-		msg: "",
-	});
+	// const [loading, setLoading] = useState({
+	// 	bool: false,
+	// 	msg: "",
+	// });
 	const [tokenDescription, setTokenDescription] = useState("");
 	const [tokenImage, setTokenImage] = useState<File | null>(null);
 	const [tokenWebsite, setTokenWebsite] = useState("");
 	const [tokenTwitter, setTokenTwitter] = useState("");
 	const [tokenDiscord, setTokenDiscord] = useState("");
-	const { CreateTokenMint } = useSolana();
+	const { CreateTokenMint, loading } = useSolana();
 	// const [error] = useState<string | null>(null);
 	const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
 		{}
@@ -134,7 +135,7 @@ function CreateCoin() {
 		}
 		try {
 			if (!tokenImage) {
-				setLoading({ bool: false, msg: "" });
+				// setLoading({ bool: false, msg: "" });
 				return;
 			}
 
@@ -148,12 +149,13 @@ function CreateCoin() {
 			});
 
 			if (metadataUrl.length === 0) {
-				setLoading({ bool: false, msg: "" });
+				// setLoading({ bool: false, msg: "" });
 				showToastMessage("Failed to upload token", "error");
+				toast.error("Failed to upload token");
 				return;
 			}
 
-			setLoading({ bool: true, msg: "Creating token" });
+			// setLoading({ bool: true, msg: "Creating token" });
 
 			if (CreateTokenMint) {
 				const txHash = await CreateTokenMint(
@@ -164,28 +166,29 @@ function CreateCoin() {
 
 				if (txHash) {
 					setResult(txHash.tx);
-					showToastMessage(
+					showToastMessage("", "success");
+					toast.success(
 						<Link
 							to={`https://explorer.solana.com/tx/${txHash.tx}?cluster=devnet`}
 							target='_blank'
 							className='underline'
 						>
 							Token created successfully! View on Explorer
-						</Link>,
-						"success"
+						</Link>
 					);
 				} else {
 					showToastMessage(
 						"Please ensure you have Phantom extension installed",
 						"error"
 					);
+					toast.error("Please ensure you have Phantom extension installed");
 				}
 			}
 		} catch (e: any) {
 			console.error(e);
-			showToastMessage(e.message, "error");
+			// showToastMessage(e.message, "error");
 		} finally {
-			setLoading({ bool: false, msg: "" });
+			// setLoading({ bool: false, msg: "" });
 		}
 	};
 
@@ -571,10 +574,10 @@ function CreateCoin() {
 											: "bg-gray-600 text-gray-300 cursor-not-allowed"
 									} px-6 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
 									onClick={handleSubmit}
-									disabled={loading.bool || !connected || !publicKey}
+									disabled={loading || !connected || !publicKey}
 								>
-									{loading.bool
-										? loading.msg + "..."
+									{loading
+										? "Loading" + "..."
 										: !connected || !publicKey
 										? "Connect Wallet to Launch"
 										: "Launch Token with Bonding Curve"}
