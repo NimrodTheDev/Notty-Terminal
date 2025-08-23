@@ -13,40 +13,54 @@ import { CoinData } from "../components/coin/CoinFilter";
 import CoinHistory from "../components/coin/coinHistory";
 window.Buffer = Buffer;
 
+type HistoryItem = {
+  id: string;
+  key: string;
+  score: string;
+  description?: string;
+  created_at: string;
+};
+
 const CoinPage: React.FC = () => {
+<!--   const [coinData, setCoinData] = useState<any | (CoinData)>(); // to adjust this later -->
+  const [history, sethistory] = useState<any | (HistoryItem)>(); // to adjust this later
 	const [coinData, setCoinData] = useState<any | CoinData>(); // to adjust this later
 	const [loading, setLoading] = useState(true);
 	const { id: mintAddress } = useParams();
 
 	const fetchCoin = async () => {
 		if (mintAddress) {
-			try {
-				// Merge dummy data with tokenData from Firebase
-				// const dummyCoinData = getDummyCoinData(mintAddress);
+      try {
+        const [coinRes, coinHistoryRes, holdersRes] = await Promise.all([
+          axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
+          axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/?coin_address=${mintAddress}`),
+          axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/holders`)
+        ]);
 
-				const response = await axios.get(
-					`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`
-				);
-				const solPrice = await getSolanaPriceUSD();
+        console.log(coinHistoryRes.data)
+        sethistory(coinHistoryRes.data.results);
 
-				const coin = response.data;
-				const mergedData = {
-					...coin,
-					marketcap: parseFloat(coin.current_marketcap) * solPrice,
-					current_marketcap: parseFloat(coin.current_marketcap),
-					current_price: parseFloat(coin.current_price),
-					start_marketcap: parseFloat(coin.start_marketcap),
-					end_marketcap: parseFloat(coin.end_marketcap),
-					total_supply: parseFloat(coin.total_supply),
-					mint: mintAddress,
-				};
-				setCoinData(mergedData);
-				setLoading(false);
-			} catch (err) {
-				console.error("Failed to fetch coin data:", err);
-				setLoading(false);
-			}
-		}
+        const solPrice = await getSolanaPriceUSD();
+        const coin = coinRes.data;
+        const holders = holdersRes.data;
+
+        const mergedData = {
+          ...coin,
+          marketcap: parseFloat(coin.current_marketcap) * solPrice,
+          current_marketcap: parseFloat(coin.current_marketcap),
+          current_price: parseFloat(coin.current_price),
+          start_marketcap: parseFloat(coin.start_marketcap),
+          end_marketcap: parseFloat(coin.end_marketcap),
+          total_supply: parseFloat(coin.total_supply),
+          mint: mintAddress,
+          holders, // ✅ add holders to the coin object
+        };
+        setCoinData(mergedData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch coin data:", err);
+        setLoading(false);
+      }
 	};
 	useEffect(() => {
 		fetchCoin();
@@ -67,7 +81,7 @@ const CoinPage: React.FC = () => {
 			</div>
 		);
 	}
-
+  
 	return (
 		<div className='bg-custom-dark-blue w-full items-center overflow-x-hidden'>
 			<div className='bg-custom-dark-blue flex flex-col gap-2 mx-auto text-white max-w-7xl p-2 xs:p-4'>
@@ -78,7 +92,7 @@ const CoinPage: React.FC = () => {
 					</div>
 					<div className='flex flex-col gap-2 w-full sm:w-auto'>
 						<BuyAndSell fetchCoin={fetchCoin} coinData={coinData} />
-						<CoinHistory />
+						<CoinHistory coinHistory={history} />
 					</div>
 				</div>
 				<SimilarCoins coinData={coinData} />

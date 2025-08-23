@@ -23,12 +23,12 @@ def create_user_scores(sender, instance, created, **kwargs):
 
 def update_total_held_on_save(delta, coin):
     """
-    Adjust total_held_cached based on the change in this Holding's amount.
+    Adjust total_held based on the change in this Holding's amount.
     Atomic and race-condition safe.
     """
     update_data = {}
     if delta != 0:
-        update_data['total_held_cached'] = F('total_held_cached') + delta
+        update_data['total_held'] = F('total_held') + delta
 
     # Use DB's GREATEST function for atomic ATH update
     update_data['ath'] = Greatest(F('ath'), Value(coin.current_price))
@@ -49,8 +49,11 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
 
         # Update market cap (atomic)
         sol_price = instance.sol_amount * (-1 if instance.trade_type == 'SELL' else 1)
-        Coin.objects.filter(pk=coin.pk).update(current_marketcap=F('current_marketcap') + sol_price)
-        coin.refresh_from_db(fields=['current_marketcap'])
+        Coin.objects.filter(pk=coin.pk).update(
+            current_marketcap=F('current_marketcap') + sol_price, 
+            change=F('change')+instance.sol_amount
+        )
+        coin.refresh_from_db(fields=['current_marketcap', 'change']) # test 
 
         # Get or create user's holdings for this coin
         holdings, _ = UserCoinHoldings.objects.get_or_create(
@@ -65,7 +68,7 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         if delta != 0:
             UserCoinHoldings.objects.filter(pk=holdings.pk).update(amount_held=F('amount_held') + delta)
 
-        # Increment total_held_cached atomically
+        # Increment total_held atomically
         update_total_held_on_save(delta, coin)
 
         # Refresh holdings from DB
@@ -82,47 +85,14 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         # Update coin score - track 24h volume
         coin_score, _ = CoinDRCScore.objects.get_or_create(coin=coin)
         
-        # Add this trade's volume to 24h volume if it's a buy or sell
-        if instance.trade_type in ['BUY', 'SELL']:
-            # Get trades from last 24 hours
-            one_day_ago = timezone.now() - timezone.timedelta(hours=24)
-            recent_trades = Trade.objects.filter(
-                coin=coin,
-                created_at__gte=one_day_ago
-            )
-            
-            # Calculate volume
-            # volume = sum(t.sol_amount for t in recent_trades)
-            # coin_score.trade_volume_24h = volume
-            # coin_score.save(update_fields=['trade_volume_24h', 'updated_at'])
-        
-        # If this is a coin creation, update developer score
-        if instance.trade_type == 'COIN_CREATE':
-            dev_score, _ = DeveloperScore.objects.get_or_create(developer=coin.creator)
-            dev_score.recalculate_score()
-        
         # Now delete the holdings if necessary
         if delete_holdings:
             holdings.delete()
         
         # Update holders count and recalculate scores
         coin_score.update_holders_count()
-        trader_score.calculate_daily_score()
+        trader_score.calculate_daily_score() # should this be in the atomic
         broadcast_trade_created(instance)
-
-@receiver(pre_save, sender=Coin)
-def update_coin_ath(sender, instance, **kwargs):
-    # If it's a new record, no need to check
-    if not instance.pk:
-        instance.ath = instance.current_price
-        return
-    
-    # Get old record
-    old_coin = Coin.objects.get(pk=instance.pk)
-
-    # Update ATH if the new price is higher
-    if instance.current_price > old_coin.ath:
-        instance.ath = instance.current_price
 
 @receiver(post_save, sender=Coin)
 def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
@@ -145,8 +115,8 @@ def update_on_holdings_delete(sender, instance, **kwargs):
     """Update scores when holdings are deleted (e.g. when amount becomes zero)"""
     # This handles cases where holdings might be deleted outside of trade context
     coin = instance.coin
-    coin.total_held_cached -= instance.amount_held
-    coin.save(update_fields=['total_held_cached'])
+    coin.total_held -= instance.amount_held
+    coin.save(update_fields=['total_held'])
     # Update coin score holders count
     try:
         coin_score:CoinDRCScore = instance.coin.drc_score

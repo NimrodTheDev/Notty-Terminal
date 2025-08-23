@@ -10,6 +10,7 @@ import aiohttp
 import time
 from django.db import connection, close_old_connections
 from django.utils import timezone
+from datetime import timezone as dt_timezone
 from datetime import datetime
 from django.forms.models import model_to_dict
 
@@ -94,7 +95,6 @@ class Command(BaseCommand):
         # check the type
         signature = getattr(event_data, 'signature', None)
         logs = getattr(event_data, 'logs', [])
-        # print(logs)
         event_type, currect_log = self.get_function_id(logs)
         if event_type and signature:
             if event_type == "CreateToken":
@@ -143,7 +143,6 @@ class Command(BaseCommand):
                     raydium_pool = logs["raydium_pool"],
                 )
                 new_coin.save()
-                print(model_to_dict(new_coin))
                 print(f"Created new coin with address: {logs['mint']}")
         except Exception as e:
             print(f"Error while saving coin: {e}")
@@ -165,12 +164,12 @@ class Command(BaseCommand):
 
         amount = logs.get("amount_purchased") or logs.get("amount_sold")
         coin_amount = self.bigint_to_float(amount, coin.decimals)
-        sol_amount = logs["cost"]#self.bigint_to_float(logs["cost"], 9)
+        sol_amount = self.bigint_to_float(logs["cost"], 9)
         try:
             self.ensure_connection()
-            timestamp = datetime.fromtimestamp(logs['timestamp'], tz=timezone.utc)
+            timestamp = datetime.fromtimestamp(logs['timestamp'], tz=dt_timezone.utc)
             if coin.updated < timestamp:
-                coin.current_price = logs['current_price']
+                coin.current_price = self.bigint_to_float(logs['current_price'], 9)
                 coin.updated = timestamp
                 coin.save(update_fields=['current_price', 'updated'])
             if not Trade.objects.filter(transaction_hash=signature).exists() and tradeuser != None and coin != None:

@@ -31,7 +31,7 @@ export async function getSolanaPriceUSD() {
     const token = localStorage.getItem('auth_token');
     let price = 150;
     try{
-        if (!token){
+        if (!token){ // this is wrong
             throw new TypeError("Missing auth token")
         }
         const response = await axios.get(

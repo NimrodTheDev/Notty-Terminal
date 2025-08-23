@@ -40,6 +40,8 @@ class SolanaUser(AbstractUser):
     """User model for Solana wallet authentication"""
     username = None  # Remove username
     email = None  # Remove email
+    first_name = None
+    last_name = None
     wallet_address = models.CharField(max_length=44, unique=True, primary_key=True)
     display_name = models.CharField(max_length=150, blank=True)
     bio = models.TextField(blank=True)
@@ -116,6 +118,10 @@ class Coin(models.Model): # we have to store the ath
     def save(self, *args, **kwargs):
         if self.ticker:
             self.ticker = self.ticker.upper()  # Ensure it's always uppercase
+        if self._state.adding or self.ath is None:
+            self.ath = self.current_price
+        else:
+            self.ath = max(self.ath, self.current_price)
         super().save(*args, **kwargs)
 
     @property
@@ -1033,3 +1039,8 @@ class TraderScore(DRCScore):
         if now.day < created.day:
             months -= 1
         return max(months, 0)
+
+# Calculate volume
+# volume = sum(t.sol_amount for t in recent_trades)
+# coin_score.trade_volume_24h = volume
+# coin_score.save(update_fields=['trade_volume_24h', 'updated_at'])

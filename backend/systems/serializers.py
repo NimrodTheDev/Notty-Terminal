@@ -71,13 +71,13 @@ class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need imag
         include_market_cap = kwargs.pop('include_market_cap', False)
         super().__init__(*args, **kwargs)
         if include_market_cap:
-            self.fields['market_cap'] = serializers.SerializerMethodField()
+            self.fields['current_marketcap'] = serializers.SerializerMethodField()
 
     def get_value(self, obj):
         return float(obj.amount_held) * float(obj.coin.current_price)
 
-    def get_market_cap(self, obj):
-        return float(obj.coin.market_cap)
+    def get_current_marketcap(self, obj):
+        return float(obj.coin.current_marketcap)
 
 class TradeSerializer(serializers.ModelSerializer):
     coin_symbol = serializers.ReadOnlyField(source='coin.ticker')
@@ -142,11 +142,12 @@ class CoinHistorySerializer(serializers.ModelSerializer):
 
 class CoinHolderSerializer(serializers.ModelSerializer):
     user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
+    user_traderscore = serializers.IntegerField(source='user.trader_score.score', read_only=True)
     held_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = UserCoinHoldings
-        fields = ['user_wallet_address', 'amount_held', 'held_percentage']
+        fields = ['user_wallet_address', 'amount_held', 'held_percentage', 'user_traderscore']
 
     def get_held_percentage(self, obj):
         supply = obj.coin.total_supply
