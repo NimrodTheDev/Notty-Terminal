@@ -86,7 +86,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 							rel="noopener noreferrer"
 							className="p-2 rounded-full  transition-colors"
 						>
-							<Twitter size={20} />
+							<img src="/Group.png" alt="" className=" self-center"/>
 						</a>
 					)}
 					{coinData?.website && (

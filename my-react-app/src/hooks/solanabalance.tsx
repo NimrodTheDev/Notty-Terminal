@@ -38,6 +38,7 @@ export async function getSolanaPriceUSD() {
             `https://solana-market-place-backend.onrender.com/api/sol-price`,
             {headers: { Authorization: `Token ${token}` }}
         )
+        console.log(response.data)
         price = parseFloat(response.data.sol_price);
     } catch (error) {
         console.error("Failed to fetch SOL price:", error);
@@ -47,7 +48,6 @@ export async function getSolanaPriceUSD() {
 
 export function useSolanaPrice(defaultPrice = 150) {
     const [price, setPrice] = useState(defaultPrice);
-
     useEffect(() => {
         let isMounted = true;
         getSolanaPriceUSD().then((fetched) => {

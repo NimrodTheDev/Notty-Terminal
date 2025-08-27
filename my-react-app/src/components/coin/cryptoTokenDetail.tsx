@@ -55,45 +55,47 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 		<div className="bg-custom-dark-blue text-white p-8 w-full rounded-lg flex flex-col  ">
 			<div className="flex flex-col gap-2">
 				<div className="flex flex-col sm:flex-row justify-between">
-					<div className="text-purple-200">Creator</div>
+					<div className="text-[#ccc1fa]">Creator</div>
 					<Link to={`https://explorer.solana.com/address/${coinData.creator}?cluster=devnet`} className="font-medium underline text-xs whitespace-wrap">{coinData.creator_display_name || "Smart Contract Owner"}</Link>
 				</div>
 				<div className="flex flex-col sm:flex-row justify-between">
-					<div className="text-purple-200">Profile</div>
+					<div className="text-[#ccc1fa]">Profile</div>
 					<Link to={`/dashboard/profile/${coinData.creator}`} className="font-medium underline text-xs whitespace-wrap">{coinData.creator_display_name || "Smart Contract Owner"}</Link>
 				</div>
 				<div className="flex justify-between">
-					<div className="text-purple-200">Time Launched:</div>
+					<div className="text-[#ccc1fa]">Time Launched:</div>
 					<div className="text-right">{timeLaunched}</div>
 				</div>
 
 				<div className="flex justify-between">
-					<div className="text-purple-200">Marketcap:</div>
+					<div className="text-[#ccc1fa]">Marketcap:</div>
 					<div className="text-right">${coinData.marketcap.toLocaleString()}</div>
 				</div>
 
 				<div className="flex justify-between">
-					<div className="text-purple-200">DRS:</div>
+					<div className="text-[#ccc1fa]">DRS:</div>
 					<div className="text-right">{drs}</div>
 				</div>
 
 
-				<div className="text-purple-200">Contract Address</div>
-				<div className="flex items-center gap-2 justify-end flex-wrap">
-					<span className="break-all text-xs whitespace-wrap">{coinData.address}</span>
-					<button onClick={handleCopyClick} className="hover:text-purple-400 transition-colors">
+				
+				<div className="flex items-center  gap-2 justify-between flex-wrap">
+					<div className="text-[#ccc1fa]">Contract Address</div>
+					<div className="flex">
+						<span className="break-all text-xs whitespace-wrap">{coinData.address}</span>
+					<button onClick={handleCopyClick} className="hover:text-purple-400 ml-2 transition-colors">
 						<Copy size={16} />
 					</button>
-					{copySuccess && <span className="text-green-400 text-xs ml-1">Copied!</span>}
+					{copySuccess && <span className="text-green-400 text-xs ml-1">Copied!</span>}</div>
 				</div>
 
-				<div className="text-purple-200">Total Supply</div>
-				<div className="text-right">{coinData.total_supply}</div>
+				<div className="flex items-center justify-between"><div className="text-[#ccc1fa]">Total Supply</div>
+				<div className="text-right">{coinData.total_supply}</div></div>
 			</div>
 
 			{/* Bonding curve progress */}
 			<div className="flex items-center gap-4 mt-4">
-				{/* <span className="text-purple-200">Bonding curve progress</span> */}
+				{/* <span className="text-[#ccc1fa]">Bonding curve progress</span> */}
 				<div className="flex-1 flex flex-col">
 					{/* <div className="flex items-center gap-2">
 						<div className="w-48 h-4 bg-gray-700 rounded-full overflow-hidden relative">
@@ -114,8 +116,8 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 
 			{/* Website */}
 			{coinData.website && (
-				<div className="mt-6">
-					<div className="text-purple-200 mb-1">Website</div>
+				<div className="mt-6 flex items-center justify-between">
+					<div className="text-[#ccc1fa] mb-1">Website</div>
 					<a
 						href={coinData.website.startsWith('http') ? coinData.website : `https://${coinData.website}`}
 						target="_blank"
