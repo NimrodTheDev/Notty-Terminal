@@ -13,6 +13,7 @@ from django.utils import timezone
 from datetime import timezone as dt_timezone
 from datetime import datetime
 from django.forms.models import model_to_dict
+from django.conf import settings
 
 class Command(BaseCommand):
     help = 'Listen for Solana program events'
@@ -23,12 +24,9 @@ class Command(BaseCommand):
 
     async def run_listener(self):
         # Setup your event listener similar to the consumer code
-        rpc_ws_url = "wss://api.devnet.solana.com"
-        program_id = "3Jy5qUaaAQMKVUehh4cLncAAYVgf1XELnt1RhNJGe8ZD"
-        
         listener = SolanaEventListener(
-            rpc_ws_url=rpc_ws_url,
-            program_id=program_id,
+            rpc_ws_url=settings.RPC_WS_URL, #"ntt7FdxskUiwbG52JpdCeubLvtFcZe3SJm6cT18PouG"
+            program_id=settings.PROGRAM_ID,
             callback=self.process_event,
             max_retries=None,  # Infinite retries
             retry_delay=3,

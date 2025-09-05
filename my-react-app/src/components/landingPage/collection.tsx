@@ -26,10 +26,13 @@ interface NFT {
 
 interface NFTCardProps {
 	nft: NFT;
+	viewMode: 'card' | 'list';
 }
 
 export default function NFTCollection() {
 	const [nfts, setNft] = useState<NFT[]>([]);
+	const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+
 	useEffect(() => {
 		(async () => {
 			const arg = await axios.get('https://solana-market-place-backend.onrender.com/api/coins/top-coins/?limit=8')
@@ -46,17 +49,72 @@ export default function NFTCollection() {
 			}
 		})()
 	}, [])
+
 	return (
 		<div className='bg-transparent min-h-screen p-4 sm:p-8 z-10 w-screen'>
 			<div className='max-w-7xl mx-auto'>
-				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6'>
-					{nfts.map((nft) => (
-						<NFTCard key={nft.address} nft={nft} />
-					))}
+				{/* View Toggle Header */}
+				<div className='flex items-center justify-end mb-6'>
+					{/* <h1 className='text-white text-2xl font-bold'>Top Collections</h1> */}
+					<div className='flex items-center space-x-2'>
+						<span className='text-gray-400 text-sm mr-2'>View:</span>
+						<div className='flex bg-gray-800/50 rounded-lg  border border-gray-700'>
+	<button
+		onClick={() => setViewMode('card')}
+		className={`flex items-center justify-center px-4 py-2 rounded-l-md text-sm font-medium transition-colors duration-200 ${
+			viewMode === 'card'
+				? 'bg-white/90 text-purple-300 shadow-sm'
+				: 'text-[#9a83f6] hover:text-white'
+		}`}
+	>
+		{/* Grid Icon - 2x2 squares */}
+		<svg className='w-5 h-5' fill='currentColor' viewBox='0 0 24 24'>
+			<rect x="3" y="3" width="7" height="7" rx="1" />
+			<rect x="14" y="3" width="7" height="7" rx="1" />
+			<rect x="3" y="14" width="7" height="7" rx="1" />
+			<rect x="14" y="14" width="7" height="7" rx="1" />
+		</svg>
+	</button>
+	<button
+		onClick={() => setViewMode('list')}
+		className={`flex items-center justify-center px-4 py-2 rounded-r-md text-sm font-medium transition-colors duration-200 ${
+			viewMode === 'list'
+				? 'bg-white/90 text-purple-300 shadow-sm'
+				: 'text-[#9a83f6] hover:text-white'
+		}`}
+	>
+		{/* List Icon - horizontal lines with dots */}
+		<svg className='w-5 h-5' fill='currentColor' viewBox='0 0 24 24'>
+			<circle cx="4" cy="6" r="1.5" />
+			<rect x="8" y="5" width="12" height="2" rx="1" />
+			<circle cx="4" cy="12" r="1.5" />
+			<rect x="8" y="11" width="12" height="2" rx="1" />
+			<circle cx="4" cy="18" r="1.5" />
+			<rect x="8" y="17" width="12" height="2" rx="1" />
+		</svg>
+	</button>
+</div>
+					</div>
 				</div>
+
+				{/* Content based on view mode */}
+				{viewMode === 'card' ? (
+					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6'>
+						{nfts.map((nft) => (
+							<NFTCard key={nft.address} nft={nft} viewMode={viewMode} />
+						))}
+					</div>
+				) : (
+					<div className='divide-y divide-gray-800'>
+						{nfts.map((nft) => (
+							<NFTCard key={nft.address} nft={nft} viewMode={viewMode} />
+						))}
+					</div>
+				)}
+
 				<div className='flex justify-center mt-6'>
 					<Link to="/CoinMarket"> {/* link to show all coins page */}
-						<button className='text-white'>
+						<button className='text-white hover:text-purple-400 transition-colors'>
 							<svg
 								className='w-8 h-8'
 								fill='none'
@@ -78,18 +136,70 @@ export default function NFTCollection() {
 	);
 }
 
-export function NFTCard({ nft }: NFTCardProps) {
-	// console.log(nft)
+export function NFTCard({ nft, viewMode }: NFTCardProps) {
+	if (viewMode === 'list') {
+		return (
+			<div className='flex h-40 items-center border rounded-lg my-4 transition-colors duration-150 border-gray-800'>
+				<div className='h-full w-1/3 rounded-l-lg overflow-hidden mr-4 flex-shrink-0'>
+					<img
+						src={nft.image_url || img}
+						alt={nft.name}
+						className='w-full h-full object-cover'
+					/>
+				</div>
+				<div className='flex-1 space-y-4 min-w-0'>
+					<div className='flex flex-col  sm:items-start sm:justify-between'>
+						<div className='flex-1 min-w-0'>
+							<h3 className='text-white text-lg font-bold truncate'>
+								{nft.name}
+							</h3>
+							<p className='text-gray-400 text-sm truncate'>
+								{nft.description || 'No description available'}
+							</p>
+						</div>
+						<div className='mt-2 sm:mt-0 flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm'>
+							<div className='flex flex-col '>
+								<span className='text-[#9a83f6] text-xs'>MARKET CAP</span>
+								<span className='text-[#9a83f6] text-xs'>DRS</span>
+								
+							</div>
+							<div className='flex flex-col '>
+								<span className='text-gray-400'>${nft.market_cap.toFixed(2)}</span>
+								<span className='text-gray-400'>{nft.score}</span>
 
-	// const [url, setUrl] = useState(img);
-	// let data: any = axios.get(nft.image_url).then((res)=>{
-	// 	console.log(res)
-	// 	// return res.data
-	// 	res.status === 200 && setUrl(res?.data?.image || img)
-	// })
-	// console.log(data)
+							</div>
+							
+						</div>
+						<div className="flex">
+							<Link
+								to={`/coin/${nft.address}`}
+								className='bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded flex items-center justify-center gap-1 transition-colors text-sm whitespace-nowrap'
+							>
+								View Details
+								<svg
+									className='w-4 h-4'
+									fill='none'
+									stroke='currentColor'
+									viewBox='0 0 24 24'
+								>
+									<path
+										strokeLinecap='round'
+										strokeLinejoin='round'
+										strokeWidth='2'
+										d='M14 5l7 7m0 0l-7 7m7-7H3'
+									/>
+								</svg>
+							</Link>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Card view (original design)
 	return (
-		<div className=' bg-transparent rounded-lg overflow-hidden border border-gray-800'>
+		<div className='bg-transparent rounded-lg overflow-hidden border border-gray-800 hover:border-purple-500/50 transition-colors duration-200'>
 			<div className='relative pb-[100%]'>
 				<img
 					src={nft.image_url || img}
@@ -100,15 +210,15 @@ export function NFTCard({ nft }: NFTCardProps) {
 
 			<div className='p-4'>
 				<h3 className='text-white text-xl font-bold mb-2'>{nft.name}</h3>
-				<p className='text-gray-400 text-sm mb-4'>{nft.description}</p>
+				<p className='text-gray-400 text-sm mb-4 line-clamp-2'>{nft.description}</p>
 
-				<div className=' justify-between text-sm gap-y-4 items-center mb-4'>
+				<div className='justify-between text-sm gap-y-4 items-center mb-4'>
 					<div className="flex flex-col mb-4 sm:flex-row justify-between">
-						<p className='text-[#9a83f6] '>MARKET CAP:</p>
-						<p className=' text-gray-400'>${nft.market_cap.toFixed(2)}</p>
+						<p className='text-[#9a83f6]'>MARKET CAP:</p>
+						<p className='text-gray-400'>${nft.market_cap.toFixed(2)}</p>
 					</div>
-					<div className=' flex flex-col mb-4 sm:flex-row justify-between'>
-						<p className='text-[#9a83f6] '>DRS:</p>
+					<div className='flex flex-col mb-4 sm:flex-row justify-between'>
+						<p className='text-[#9a83f6]'>DRS:</p>
 						<p className='text-gray-400'>{nft.score}</p>
 					</div>
 				</div>
@@ -130,7 +240,7 @@ export function NFTCard({ nft }: NFTCardProps) {
 							d='M14 5l7 7m0 0l-7 7m7-7H3'
 						/>
 					</svg>
-				</Link>
+					</Link>
 			</div>
 		</div>
 	);

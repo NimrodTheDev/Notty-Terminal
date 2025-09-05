@@ -139,7 +139,7 @@ const DashHome = () => {
 					<div className='bg-custom-nav-purple rounded-xl flex-1 p-4'>
 						<div className='text-gray-400 text-sm mb-2'>Portfolio Value</div>
 						<div className='text-3xl font-bold'>
-							$ {portfolioValue.toLocaleString()}
+							 {portfolioValue.toLocaleString()} SOL
 						</div>
 					</div>
 				</div>
@@ -165,7 +165,7 @@ const DashHome = () => {
 				<h2 className='text-xl font-bold mb-6'>Your Coins</h2>
 				<div className='space-y-4'>
 					{coins.map((coin) => (
-						<div
+						<Link to={``}
 							// key={coin.id}
 							className='bg-custom-nav-purple rounded-md p-6 flex items-center justify-between hover:bg-gray-750 transition-colors'
 						>
@@ -204,7 +204,7 @@ const DashHome = () => {
 								{/* <div className="text-green-400 text-sm">{coin.change}</div> */}
 								{/* it should show red, green, gray */}
 							</div>
-						</div>
+						</Link>
 					))}
 				</div>
 			</div>

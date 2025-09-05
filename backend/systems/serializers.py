@@ -151,6 +151,7 @@ class CoinHolderSerializer(serializers.ModelSerializer):
 
     def get_held_percentage(self, obj):
         supply = obj.coin.total_supply
+
         if not supply or supply == 0:
             return 0.0
         return float(obj.amount_held) / float(supply) * 100
