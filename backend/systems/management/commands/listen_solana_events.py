@@ -14,6 +14,7 @@ from datetime import timezone as dt_timezone
 from datetime import datetime
 from django.forms.models import model_to_dict
 from django.conf import settings
+import json
 
 class Command(BaseCommand):
     help = 'Listen for Solana program events'
@@ -25,7 +26,7 @@ class Command(BaseCommand):
     async def run_listener(self):
         # Setup your event listener similar to the consumer code
         listener = SolanaEventListener(
-            rpc_ws_url=settings.RPC_WS_URL, #"ntt7FdxskUiwbG52JpdCeubLvtFcZe3SJm6cT18PouG"
+            rpc_ws_url=settings.RPC_WS_URL,
             program_id=settings.PROGRAM_ID,
             callback=self.process_event,
             max_retries=None,  # Infinite retries
@@ -53,13 +54,15 @@ class Command(BaseCommand):
         # cost is sol used
         self.decoders["PurchaseToken"] = TokenEventDecoder(
             "PurchasedToken", {
+                "base_cost": "u64",
+                "trading_fee": "u64",
+                "total_cost": "u64",
                 "mint": "pubkey",
                 "amount_purchased": "u64",
                 "migrated": "bool",
                 "total_supply": "u64",
                 "tokens_sold": "u64",
                 "sol_raised": "u64",
-                "cost": "u64", 
                 "current_price": "u64",
                 "buyer": "pubkey",
                 "timestamp": "i64",
@@ -68,7 +71,9 @@ class Command(BaseCommand):
         self.decoders["SellToken"] = TokenEventDecoder(
             "SoldToken", {
                 "mint": "pubkey",
-                "cost": "u64", 
+                "base_proceeds": "u64",
+                "trading_fee": "u64",
+                "net_proceeds": "u64",
                 "amount_sold": "u64",
                 "migrated": "bool",
                 "total_supply": "u64",
@@ -91,6 +96,7 @@ class Command(BaseCommand):
     async def process_event(self, event_data):
         # This handles both dict and dot-access objects
         # check the type
+        # print("\n--------------\n")
         signature = getattr(event_data, 'signature', None)
         logs = getattr(event_data, 'logs', [])
         event_type, currect_log = self.get_function_id(logs)
@@ -113,6 +119,7 @@ class Command(BaseCommand):
 
     @sync_to_async(thread_sensitive=True)
     def handle_coin_creation(self, signature: str, logs: dict):
+        print("create:", json.dumps(logs, indent=2))
         creator = self.custom_check(
             lambda: SolanaUser.objects.get(wallet_address=logs["creator"]),
             not_found_exception=SolanaUser.DoesNotExist
@@ -148,6 +155,7 @@ class Command(BaseCommand):
     @sync_to_async(thread_sensitive=True)
     def handle_trade(self, signature, logs):
         """Handle coin creation event"""
+        print("trades:", json.dumps(self.handel_conversion(logs), indent=2))
         wallet = logs.get("buyer") or logs.get("seller")
         transfer_type = '0' if logs.get("buyer") else '1'
         tradeuser:SolanaUser = self.custom_check(
@@ -161,8 +169,9 @@ class Command(BaseCommand):
         )
         try:
             amount = logs.get("amount_purchased") or logs.get("amount_sold")
+            sol_cost = logs.get("base_cost") or logs.get("base_proceeds")
             coin_amount = self.bigint_to_float(amount, coin.decimals)
-            sol_amount = self.bigint_to_float(logs["cost"], 9)
+            sol_amount = self.bigint_to_float(sol_cost, 9)
             self.ensure_connection()
             timestamp = datetime.fromtimestamp(logs['timestamp'], tz=dt_timezone.utc)
             if coin.updated < timestamp:
@@ -178,11 +187,21 @@ class Command(BaseCommand):
                     coin_amount=coin_amount,
                     sol_amount=sol_amount,
                     created_at=timestamp,
-                ) 
+                    trading_fee=self.bigint_to_float(logs['trading_fee'], 9),
+                )
                 new_trade.save()
                 print(f"Created new trade with transaction_hash: {signature}")
         except Exception as e:
             print(f"Error while saving trade: {e}")
+
+    def handel_conversion(self, logs:dict):
+        nic = {}
+        for i in logs.keys():
+            output = logs[i]
+            if isinstance(output, int) and i != "timestamp":
+                output = self.bigint_to_float(output, 9)
+            nic[i] = str(output)
+        return nic
 
     # listener helper functions
     def custom_check(self, info: callable, not_found_exception: type[Exception]):
