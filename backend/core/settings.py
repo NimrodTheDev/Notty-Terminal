@@ -33,8 +33,10 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
-# Application definition
+PROGRAM_ID = os.getenv("PROGRAM_ID", "3Jy5qUaaAQMKVUehh4cLncAAYVgf1XELnt1RhNJGe8ZD")
+RPC_WS_URL = os.getenv("RPC_WS_URL", "wss://api.devnet.solana.com")
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
