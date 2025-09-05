@@ -100,7 +100,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {coins.map((coin) => (
-              <NFTCard key={coin.address} nft={coin} />
+              <NFTCard key={coin.address} nft={coin} viewMode="card" />
             ))}
           </div>
         )}
