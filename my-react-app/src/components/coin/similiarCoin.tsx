@@ -35,7 +35,7 @@ export default function SimilarCoins({ coinData }: SimilarCoinsProps) {
 				<p className="text-gray-400">Similar coins to {coinData.name}</p>
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2'>
 					{coins.map((coin) => (
-						<NFTCard key={coin.address} nft={coin} />
+						<NFTCard key={coin.address} nft={coin} viewMode="card" />
 					))}
 				</div>
 			</div>
