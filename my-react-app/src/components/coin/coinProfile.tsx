@@ -1,8 +1,5 @@
 import { Twitter, Globe } from "lucide-react";
 import { useState } from "react";
-// import img from "../../assets/images/istockphoto-1409329028-612x612.jpg"
-// import { useParams } from "react-router-dom";
-// import axios from "axios";
 import img from "../../assets/images/istockphoto-1409329028-612x612.jpg";
 
 // Define the type for the coin data
@@ -35,16 +32,8 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 	const handleFireClick = () => {
 		// setFireCount((prevCount) => prevCount + 1);
 	};
-	// useEffect(()=>{
-	// 	axios.get(coinData.image_url).then((res)=>{
-	// 		console.log(res)
-	// 		// return res.data
-	// 		res.status === 200 && setUrl(res?.data?.image || img)
-	// 		res.status === 200 && setData(res?.data)
-	// 	})
-	// }, [])
+
 	return (
-		//
 		<div className="bg-custom-dark-blue w-full overflow-x-hidden text-white p-4">
 			<div className="max-w-2xl mx-auto flex flex-col items-center">
 				{/* Header */}
@@ -56,12 +45,9 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 
 				{/* Cat Image */}
 				<div className="mb-8">
-					{/* aspect-[16/9] the solution to the aspect ration stuff, reomve it if its a problem */}
 					<div className="rounded-xl overflow-hidden border-2 border-gray-700 max-w-md aspect-[16/9]">
 						<img
-							src={
-								coinData.image_url || img
-							}
+							src={coinData.image_url || img}
 							alt={`${coinData.name} image`}
 							className="w-full h-full object-cover"
 						/>
@@ -69,7 +55,8 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 				</div>
 
 				<div className="mb-4">
-					<div className="text-center text-gray-300 space-x-2"
+					<div
+						className="text-center text-gray-300 space-x-2"
 						onClick={handleFireClick}
 					>
 						<span className="text-2xl font-semibold">DRS</span>
@@ -81,12 +68,12 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 				<div className="flex justify-center gap-4 mb-8">
 					{coinData?.twitter && (
 						<a
-							href={"https://x.com/" + coinData?.twitter || ""}
+							href={"https://x.com/" + coinData?.twitter}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="p-2 rounded-full  transition-colors"
+							className="p-2 rounded-full transition-colors"
 						>
-							<img src="/Group.png" alt="" className=" self-center"/>
+							<Twitter size={20} />
 						</a>
 					)}
 					{coinData?.website && (
@@ -94,7 +81,7 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 							href={coinData?.website}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="p-2 rounded-full  transition-colors"
+							className="p-2 rounded-full transition-colors"
 						>
 							<Globe size={20} />
 						</a>
@@ -104,12 +91,12 @@ export default function CoinProfile({ coinData }: CoinProfileProps) {
 							href={coinData?.discord}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="p-2 rounded-full  transition-colors"
+							className="p-2 rounded-full transition-colors"
 						>
 							<img
 								src="/discord-app-icon.png"
 								alt="Discord"
-								className=" w-8 h-6"
+								className="w-8 h-6"
 							/>
 						</a>
 					)}
