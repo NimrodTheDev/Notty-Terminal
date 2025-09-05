@@ -163,9 +163,10 @@ class Trade(models.Model): # change to transaction hash
     user = models.ForeignKey(SolanaUser, on_delete=models.CASCADE, related_name='trades', to_field="wallet_address")
     coin = models.ForeignKey(Coin, on_delete=models.CASCADE, related_name='trades', to_field="address")
     trade_type = models.CharField(max_length=14, choices=TRADE_TYPES)
-    coin_amount = models.DecimalField(max_digits=20, decimal_places=10)
-    sol_amount = models.DecimalField(max_digits=20, decimal_places=10)
+    coin_amount = models.DecimalField(max_digits=24, decimal_places=9)
+    sol_amount = models.DecimalField(max_digits=24, decimal_places=9)
     created_at = models.DateTimeField(default=timezone.now)
+    trading_fee = models.DecimalField(max_digits=24, decimal_places=9, default=0)
 
     def __str__(self):
         return f"{self.get_trade_type_display()} Trade by {self.user.get_display_name()} on {self.coin.ticker}, created_at {self.created_at}"
@@ -255,17 +256,17 @@ class CoinDRCScore(DRCScore):
     # Market metrics
     holders_count = models.IntegerField(default=0)
     age_in_hours = models.IntegerField(default=0)
-    max_volume_recorded = models.DecimalField(max_digits=24, decimal_places=8, default=0)
+    max_volume_recorded = models.DecimalField(max_digits=24, decimal_places=9, default=0)
     
     # Price tracking
     price_breakouts_per_month = models.IntegerField(default=0)
-    last_recorded_price = models.DecimalField(max_digits=24, decimal_places=8, default=0) # was integer before
-    last_price = models.DecimalField(max_digits=24, decimal_places=8, default=0)
+    last_recorded_price = models.DecimalField(max_digits=24, decimal_places=9, default=0) # was integer before
+    last_price = models.DecimalField(max_digits=24, decimal_places=9, default=0)
     
     # Holder metrics
     holder_retention_months = models.IntegerField(default=0)
     last_recorded_holders = models.IntegerField(default=0)
-    last_held_percent = models.DecimalField(max_digits=24, decimal_places=8, default=0)
+    last_held_percent = models.DecimalField(max_digits=24, decimal_places=9, default=0)
 
     # Flags for abandonment detection
     team_abandonment = models.BooleanField(default=False)
@@ -786,7 +787,7 @@ class TraderScore(DRCScore):
                                  related_name='trader_score',
                                  to_field="wallet_address")
 
-    total_portfolio_growth_per_month = models.DecimalField(default= 0.0, max_digits=20, decimal_places=10)
+    total_portfolio_growth_per_month = models.DecimalField(default= 0.0, max_digits=24, decimal_places=10)
     valid_long_term_holding = models.IntegerField(default=0)
     flash_dumps = models.IntegerField(default=0)
     valid_held_months = models.IntegerField(default=0)
