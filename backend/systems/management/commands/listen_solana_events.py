@@ -159,11 +159,10 @@ class Command(BaseCommand):
             lambda: Coin.objects.get(address=logs["mint"]),
             not_found_exception=Coin.DoesNotExist
         )
-
-        amount = logs.get("amount_purchased") or logs.get("amount_sold")
-        coin_amount = self.bigint_to_float(amount, coin.decimals)
-        sol_amount = self.bigint_to_float(logs["cost"], 9)
         try:
+            amount = logs.get("amount_purchased") or logs.get("amount_sold")
+            coin_amount = self.bigint_to_float(amount, coin.decimals)
+            sol_amount = self.bigint_to_float(logs["cost"], 9)
             self.ensure_connection()
             timestamp = datetime.fromtimestamp(logs['timestamp'], tz=dt_timezone.utc)
             if coin.updated < timestamp:
