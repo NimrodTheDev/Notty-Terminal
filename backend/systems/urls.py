@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+from . import api_views
 from django.http import HttpResponse
 
 router = DefaultRouter()
@@ -16,12 +17,18 @@ auth_urls = [
     path('coin-history/', views.CoinHistoryListView.as_view(), name='coin-history-list'),
     path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
     path('dashboard/profile/', views.PublicProfileCoinsView.as_view(), name='user-profile-coins'),
-    path('sol-price/',views.GetSolPriceView.as_view(), name='user-profile-coins'),
+    path('sol-price/',views.GetSolPriceView.as_view(), name='sol-price'),
+]
+
+bot_urls = [
+    path("get-price/", api_views.PriceView.as_view(), name="get-price"),
 ]
 
 urlpatterns = [
+    path("bot_api/", include(bot_urls)),
     path("api/", include(auth_urls)),
     path("api/", include(router.urls)),
     path('alive-api/', lambda request: HttpResponse("OK")),
     path('update-sol-price/', views.UpdateSolPriceView.as_view()),
+
 ]
