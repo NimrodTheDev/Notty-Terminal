@@ -22,6 +22,7 @@ auth_urls = [
 
 bot_urls = [
     path("get-price/", api_views.PriceView.as_view(), name="get-price"),
+    path("connect-bot/", api_views.ConnectBotWalletView.as_view(), name="connect-bot"),
 ]
 
 urlpatterns = [
@@ -30,5 +31,4 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path('alive-api/', lambda request: HttpResponse("OK")),
     path('update-sol-price/', views.UpdateSolPriceView.as_view()),
-
 ]
