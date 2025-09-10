@@ -9,12 +9,13 @@ from .models import SolanaUser
 class PriceView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
-        coin_address = request.data.get("coin_address")
-        coin = Coin.objects.filter(address=coin_address).first()
-        if not coin:
-            Response({"error": "Coin not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        return Response({"price": coin.current_price}, status.HTTP_200_OK)
+        coin_address = request.query_params.get("coin_address")
+        if not coin_address:
+            return Response({"error": "Coin address not found."}, status=status.HTTP_400_BAD_REQUEST)
+        price = Coin.objects.filter(address=coin_address).values_list("current_price", flat=True).first()
+        if price is None:
+            return Response({"error": "Coin not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"price": price}, status.HTTP_200_OK)
 
 class ConnectBotWalletView(APIView):
     permission_classes = [AllowAny]
