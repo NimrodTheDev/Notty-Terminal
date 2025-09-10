@@ -23,6 +23,7 @@ auth_urls = [
 bot_urls = [
     path("get-price/", api_views.PriceView.as_view(), name="get-price"),
     path("connect-bot/", api_views.ConnectBotWalletView.as_view(), name="connect-bot"),
+    path("list-coins/", api_views.CoinListView.as_view(), name="list-coins"),
 ]
 
 urlpatterns = [

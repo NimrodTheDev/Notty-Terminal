@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
-from .models import Coin
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
-from .models import SolanaUser
+from .models import SolanaUser, Coin
+from rest_framework.generics import ListAPIView
+from rest_framework import serializers
 
 class PriceView(APIView):
     permission_classes = [AllowAny]
@@ -36,3 +37,28 @@ class ConnectBotWalletView(APIView):
             "token": token.key,
             "wallet_address": user.wallet_address,
         }, status=status.HTTP_200_OK)
+
+# class CoinListView(APIView):
+#     permission_classes = [AllowAny]
+#     def get(self, request):
+#         coins = list(Coin.objects.values_list("current_price", flat=True))
+#         return Response({"coins": coins}, status.HTTP_200_OK)
+
+
+
+class CoinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coin
+        fields = ["address"]
+
+class CoinListView(ListAPIView):
+    queryset = Coin.objects.all()
+    serializer_class = CoinSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None  # disables pagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        addresses = queryset.values_list("address", flat=True)
+        return Response(list(addresses))
+
