@@ -1,5 +1,5 @@
 import { useState, ReactNode } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { useSolana } from "../solanaClient/index";
 import { uploadFile } from "../solanaClient/usePinta";
 import DragAndDropFileInput from "../components/general/dragNdrop";
@@ -48,6 +48,140 @@ interface ValidationErrors {
 	tokenImage?: string;
 }
 
+interface PendingTokenData {
+	tokenName: string;
+	tokenSymbol: string;
+	tokenDescription: string;
+	tokenWebsite: string;
+	tokenTwitter: string;
+	tokenDiscord: string;
+	tokenImage: File;
+}
+
+interface SniperProtectionPopupProps {
+	isOpen: boolean;
+	onClose: () => void;
+	onConfirm: (amount: string) => void;
+	onSkip: () => void;
+	isLoading?: boolean;
+}
+
+const SniperProtectionPopup: React.FC<SniperProtectionPopupProps> = ({
+	isOpen,
+	onClose,
+	onConfirm,
+	onSkip,
+	isLoading = false
+}) => {
+	const [amount, setAmount] = useState('0.1');
+
+	if (!isOpen) return null;
+
+	const handleConfirm = () => {
+		if (amount && parseFloat(amount) > 0) {
+			onConfirm(amount);
+		}
+	};
+
+	const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		// Allow only numbers and decimal points
+		if (/^\d*\.?\d*$/.test(value)) {
+			setAmount(value);
+		}
+	};
+
+	return (
+		<div className="fixed inset-0 z-50 flex items-center justify-center">
+			{/* Backdrop */}
+			<div 
+				className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+				onClick={onClose}
+			/>
+			
+			{/* Modal */}
+			<div className="relative bg-gray-900 border border-gray-600 rounded-lg p-6 max-w-md w-full mx-4 animate-slide-up">
+				{/* Close Button */}
+				<button
+					onClick={onClose}
+					className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+					disabled={isLoading}
+				>
+					<X size={20} />
+				</button>
+
+				{/* Header */}
+				<div className="mb-6">
+					<h3 className="text-xl font-bold text-white mb-2">
+						🛡️ Protect Your Token
+					</h3>
+					<p className="text-gray-300 text-sm leading-relaxed">
+						Would you like to buy a small amount of your coin to protect it from snipers?
+						This helps establish initial liquidity and prevents bots from manipulating the price.
+					</p>
+				</div>
+
+				{/* Amount Input */}
+				<div className="mb-4">
+					<label className="block text-sm font-medium text-gray-300 mb-2">
+						Purchase Amount (SOL)
+					</label>
+					<div className="relative">
+						<input
+							type="text"
+							value={amount}
+							onChange={handleAmountChange}
+							className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-3 text-white focus:border-purple-500 focus:outline-none transition-colors"
+							placeholder="0.1"
+							disabled={isLoading}
+						/>
+						<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+							SOL
+						</span>
+					</div>
+					<p className="text-xs text-gray-400 mt-1">
+						Recommended: 0.1 - 1.0 SOL
+					</p>
+				</div>
+
+				{/* Action Buttons */}
+				<div className="space-y-3">
+					<button
+						onClick={handleConfirm}
+						disabled={isLoading || !amount || parseFloat(amount) <= 0}
+						className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded font-medium transition-colors"
+					>
+						{isLoading ? 'Processing...' : `Buy ${amount || '0'} SOL Worth`}
+					</button>
+					
+					<button
+						onClick={onSkip}
+						disabled={isLoading}
+						className="w-full bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white px-4 py-3 rounded font-medium transition-colors"
+					>
+						Skip Protection
+					</button>
+				</div>
+
+				{/* Info Box */}
+				<div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded">
+					<div className="flex items-start space-x-2">
+						<div className="text-blue-400 text-sm mt-0.5">ℹ️</div>
+						<div className="text-blue-300 text-xs">
+							<p className="font-medium mb-1">Why protect against snipers?</p>
+							<ul className="space-y-1 text-blue-200">
+								<li>• Prevents bots from buying large amounts immediately</li>
+								<li>• Creates initial price stability</li>
+								<li>• Gives real users a fair chance to participate</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
 function CreateCoin() {
 	const [tokenName, settTokenName] = useState("");
 	const [tokenSymbol, settTokenSymbol] = useState("");
@@ -72,6 +206,10 @@ function CreateCoin() {
 	const [toastType, setToastType] = useState<"success" | "error">("success");
 	const { publicKey, connected, connect } = useWallet();
 	const [showBondingCurveInfo] = useState(false);
+
+	// New state for sniper protection popup
+	const [showSniperPopup, setShowSniperPopup] = useState(false);
+	const [pendingTokenData, setPendingTokenData] = useState<PendingTokenData | null>(null);
 
 	const validate = (): boolean => {
 		const errors: ValidationErrors = {};
@@ -133,34 +271,117 @@ function CreateCoin() {
 		if (!validate()) {
 			return;
 		}
-		try {
-			if (!tokenImage) {
-				// setLoading({ bool: false, msg: "" });
-				return;
-			}
 
-			const metadataUrl = await uploadFile(tokenImage, {
-				name: tokenName,
-				symbol: tokenSymbol,
-				description: tokenDescription,
-				website: tokenWebsite,
-				twitter: tokenTwitter,
-				discord: tokenDiscord,
+		if (!tokenImage) {
+			return;
+		}
+
+		// Store the form data and show the popup instead of immediately creating
+		setPendingTokenData({
+			tokenName,
+			tokenSymbol,
+			tokenDescription,
+			tokenWebsite,
+			tokenTwitter,
+			tokenDiscord,
+			tokenImage
+		});
+		setShowSniperPopup(true);
+	};
+
+	// New handler functions for sniper protection
+	const handleSniperProtectionConfirm = async (amount: string) => {
+		// Close popup and proceed with token creation + purchase
+		setShowSniperPopup(false);
+		await createTokenWithProtection(amount);
+	};
+
+	const handleSniperProtectionSkip = async () => {
+		// Close popup and proceed with just token creation
+		setShowSniperPopup(false);
+		await createTokenOnly();
+	};
+
+	const createTokenWithProtection = async (protectionAmount: string) => {
+		try {
+			if (!pendingTokenData?.tokenImage) return;
+
+			const metadataUrl = await uploadFile(pendingTokenData.tokenImage, {
+				name: pendingTokenData.tokenName,
+				symbol: pendingTokenData.tokenSymbol,
+				description: pendingTokenData.tokenDescription,
+				website: pendingTokenData.tokenWebsite,
+				twitter: pendingTokenData.tokenTwitter,
+				discord: pendingTokenData.tokenDiscord,
 			});
 
 			if (metadataUrl.length === 0) {
-				// setLoading({ bool: false, msg: "" });
 				showToastMessage("Failed to upload token", "error");
 				toast.error("Failed to upload token");
 				return;
 			}
 
-			// setLoading({ bool: true, msg: "Creating token" });
+			if (CreateTokenMint) {
+				// Create token with protection amount
+				// Note: You'll need to modify your CreateTokenMint function to accept the protection amount
+				const txHash = await CreateTokenMint(
+					pendingTokenData.tokenName,
+					pendingTokenData.tokenSymbol,
+					metadataUrl
+					// parseFloat(protectionAmount) // You may need to pass this to your backend
+				);
+
+				if (txHash) {
+					setResult(txHash.tx);
+					showToastMessage("", "success");
+					toast.success(
+						<Link
+							to={`https://explorer.solana.com/tx/${txHash.tx}?cluster=devnet`}
+							target='_blank'
+							className='underline'
+						>
+							Token created and protected successfully! View on Explorer
+						</Link>
+					);
+				} else {
+					showToastMessage(
+						"Please ensure you have Phantom extension installed",
+						"error"
+					);
+					toast.error("Please ensure you have Phantom extension installed");
+				}
+			}
+		} catch (e: any) {
+			console.error(e);
+			showToastMessage(e.message || "Failed to create token", "error");
+		} finally {
+			setPendingTokenData(null);
+		}
+	};
+
+	const createTokenOnly = async () => {
+		try {
+			if (!pendingTokenData?.tokenImage) return;
+
+			const metadataUrl = await uploadFile(pendingTokenData.tokenImage, {
+				name: pendingTokenData.tokenName,
+				symbol: pendingTokenData.tokenSymbol,
+				description: pendingTokenData.tokenDescription,
+				website: pendingTokenData.tokenWebsite,
+				twitter: pendingTokenData.tokenTwitter,
+				discord: pendingTokenData.tokenDiscord,
+			});
+
+			if (metadataUrl.length === 0) {
+				showToastMessage("Failed to upload token", "error");
+				toast.error("Failed to upload token");
+				return;
+			}
 
 			if (CreateTokenMint) {
 				const txHash = await CreateTokenMint(
-					tokenName,
-					tokenSymbol,
+					pendingTokenData.tokenName,
+					pendingTokenData.tokenSymbol,
 					metadataUrl
 				);
 
@@ -186,9 +407,9 @@ function CreateCoin() {
 			}
 		} catch (e: any) {
 			console.error(e);
-			// showToastMessage(e.message, "error");
+			showToastMessage(e.message || "Failed to create token", "error");
 		} finally {
-			// setLoading({ bool: false, msg: "" });
+			setPendingTokenData(null);
 		}
 	};
 
@@ -593,6 +814,20 @@ function CreateCoin() {
           )} */}
 				</div>
 			</div>
+
+			{/* Sniper Protection Popup */}
+			{showSniperPopup && (
+				<SniperProtectionPopup
+					isOpen={showSniperPopup}
+					onClose={() => {
+						setShowSniperPopup(false);
+						setPendingTokenData(null);
+					}}
+					onConfirm={handleSniperProtectionConfirm}
+					onSkip={handleSniperProtectionSkip}
+					isLoading={loading}
+				/>
+			)}
 
 			{showToast && (
 				<Toast
