@@ -14,14 +14,14 @@ import { web3 } from "@coral-xyz/anchor";
 const styles = `
 @keyframes slide-up {
     from {
-        transform: translate(-50%, 100%);
+        transform: translate(-50%, -50%) scale(0.9);
         opacity: 0;
     }
     to {
-        transform: translate(-50%, 0);
+        transform: translate(-50%, -50%) scale(1);
         opacity: 1;
     }
-}
+}}
 
 .animate-slide-up {
     animation: slide-up 0.3s ease-out forwards;
