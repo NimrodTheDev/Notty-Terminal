@@ -7,20 +7,20 @@ import { getSolanaPriceUSD } from "../../hooks/solanabalance";
 // Define TypeScript interfaces
 interface NFT {
 	address: string;
-	ticker: string;
+	// ticker: string;
 	name: string;
-	creator: string;
-	creator_display_name: string;
-	created_at: string;
-	total_supply: string;
+	// creator: string;
+	// creator_display_name: string;
+	// created_at: string;
+	// total_supply: string;
 	image_url: string;
 	description: string | null;
-	telegram: string | null;
+	// telegram: string | null;
 	score: number;
-	website: string | null;
-	twitter: string | null;
+	// website: string | null;
+	// twitter: string | null;s
 	current_price: string;
-	total_held: number;
+	// total_held: number;
 	market_cap: number;
 }
 

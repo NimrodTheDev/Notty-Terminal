@@ -21,12 +21,12 @@ const CoinMarket: React.FC = () => {
 		const fetchAllCoins = async () => {
 			setErrorList(null);
 			try {
-				const response = await request<CoinData[]>({
+				const response = await request({
 					method: "get",
 					url: `/coin/all`,
 				});
 				if (response.status === 200) {
-					const coins = response.data; // ← assume this is an array
+					const coins:CoinData[] = response.data.results; // ← assume this is an array
 					// Convert string fields to numbers for all coins
 					const solPrice = await getSolanaPriceUSD();
 					const parsedCoins = (coins || []).map((coin: any) => ({

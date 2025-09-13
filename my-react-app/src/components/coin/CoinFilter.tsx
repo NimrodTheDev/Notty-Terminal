@@ -4,24 +4,17 @@ import { NFTCard } from "../landingPage/collection";
 
 export interface CoinData {
   address: string;
-  created_at: string;
   score: number;
-  creator: string;
-  creator_display_name: string;
+  // creator: string;
+  // creator_display_name: string;
   current_price: string;
   description: string | null;
   image_url: string;
   market_cap: number;
   name: string;
-  telegram: string | null;
   ticker: string;
   total_held: number;
-  total_supply: string;
-  twitter: string | null;
-  website: string | null;
   current_marketcap: number;
-  start_marketcap: number;
-  end_marketcap: number;
 }
 
 export interface FilterOptions {
