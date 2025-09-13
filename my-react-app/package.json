@@ -27,6 +27,7 @@
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
+    "esbuild": "^0.25.9",
     "lucide": "^0.511.0",
     "lucide-react": "^0.507.0",
     "pinata": "^2.2.2",
