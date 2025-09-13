@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 // import { useSolana } from "../../solanaClient";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 // import { PublicKey } from "@solana/web3.js";
 // import { Link } from "react-router-dom";
 import { useSolBalance, getSolanaPriceUSD } from "../../hooks/solanabalance";
@@ -91,13 +91,13 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 	}, []);
 
 	const [topHolders, setTopHolders] = useState<
-		{ address: string; percentage: string; drs: string }[]
+		{ address: string; percentage: string; drs: string, fullAddress: string }[]
 	>([
-		{ address: "8rqb2fJrj...", percentage: "92%", drs: "40" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
-		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40" },
+		{ address: "8rqb2fJrj...", percentage: "92%", drs: "40", fullAddress: "8rqb2fJrj..." },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40", fullAddress: "8rqb2fJrj..." },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40", fullAddress: "8rqb2fJrj..." },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40", fullAddress: "8rqb2fJrj..." },
+		{ address: "8rqb2fJrj...", percentage: "0.97%", drs: "40", fullAddress: "8rqb2fJrj..." },
 	]);
 
 	// For analytics summary
@@ -147,6 +147,7 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 			  percentage: `${formatPercent(item.held_percentage)}%`,
 			  address: shortenAddress(item.user_wallet_address),
 			  drs: item.user_traderscore,
+			  fullAddress: item.user_wallet_address,
 			}))
 		);
 	  
@@ -240,14 +241,14 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 						console.log("called");
 						let { tx } = await BuyTokenMint(
 							mintAccount,
-							Number(amount) * 1000000000
+							Number(amount) * 1_000_000_000
 						);
 						console.log(tx);
 					}
 					if (activeTab === "sell" && SellTokenMint) {
 						let { tx } = await SellTokenMint(
 							mintAccount,
-							Number(amount) * 1000000000
+							Number(amount) * 1_000_000_000
 						);
 						console.log(tx);
 					}
@@ -281,7 +282,7 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 										<span className='text-xs font-bold text-black'>🏆</span>
 									</div>
 									<span className='text-custom-light-purple text-sm font-mono'>
-										{holder.address} [DRS {holder.drs}]
+										<Link to={`/dashboard/profile/${holder.fullAddress}`} className="font-medium underline text-xs whitespace-wrap">{holder.address || "Proud Holder"} [DRS {holder.drs}]</Link>
 									</span>
 								</div>
 								<span className='text-gray-300 text-sm'>
@@ -292,6 +293,7 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 					)}
 				</div>
 			</div>
+{/* {console.log(coinData?.holders)} */}
 
 			{/* Holder Analytics Section */}
 			<div>
