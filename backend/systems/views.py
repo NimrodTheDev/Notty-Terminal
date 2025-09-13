@@ -169,7 +169,8 @@ class UserDashboardView(APIView):
 
     def get(self, request):
         user = request.user
-        created_coins = Coin.objects.filter(creator=user)
+        created_coins = get_coin_info(Coin.objects.filter(creator=user))
+        held_coins, net_worth = get_user_holdings(user, include_market_cap=True, include_net_worth=True)
 
         return Response({
             "user": {
@@ -179,8 +180,11 @@ class UserDashboardView(APIView):
                 "devscore": user.devscore,
                 "tradescore": user.tradescore,
             },
-            "holdings": get_user_holdings(user, include_market_cap=True),
-            "created_coins": get_coin_info(created_coins),
+            "holdings": held_coins,
+            "created_coins": created_coins,
+            "number_of_created_coins": len(created_coins),
+            "number_of_held_coins": len(held_coins),
+            "net_worth": float(net_worth),  # send as number to frontend
         })
 
 class PublicProfileCoinsView(APIView):
@@ -192,8 +196,8 @@ class PublicProfileCoinsView(APIView):
             return Response({"detail": "Missing wallet address."}, status=400)
 
         user = get_object_or_404(SolanaUser, wallet_address=wallet_address)
-        created_coins = Coin.objects.filter(creator=user)
-
+        created_coins = get_coin_info(Coin.objects.filter(creator=user))
+        held_coins, _ = get_user_holdings(user)
         return Response({
             "user": {
                 "wallet_address": user.wallet_address,
@@ -202,8 +206,10 @@ class PublicProfileCoinsView(APIView):
                 "devscore": user.devscore,
                 "tradescore": user.tradescore
             },
-            "holdings": get_user_holdings(user, include_market_cap=False),
-            "created_coins": get_coin_info(created_coins)
+            "holdings": held_coins,
+            "created_coins": created_coins,
+            "number_of_created_coins": len(created_coins),
+            "number_of_held_coins": len(held_coins),
         })
 
 class TradeViewSet(RestrictedViewset):

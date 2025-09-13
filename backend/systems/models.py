@@ -175,7 +175,7 @@ class Trade(models.Model): # change to transaction hash
     def __str__(self):
         return f"{self.get_trade_type_display()} Trade by {self.user.get_display_name()} on {self.coin.ticker}, created_at {self.created_at}"
 
-    class Meta:  # error here ordering should be latest trades first
+    class Meta:
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['user']),
