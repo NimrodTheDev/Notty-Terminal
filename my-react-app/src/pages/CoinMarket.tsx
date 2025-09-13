@@ -23,7 +23,7 @@ const CoinMarket: React.FC = () => {
 			try {
 				const response = await request<CoinData[]>({
 					method: "get",
-					url: `/coins/`,
+					url: `/coin/all`,
 				});
 				if (response.status === 200) {
 					const coins = response.data; // ← assume this is an array

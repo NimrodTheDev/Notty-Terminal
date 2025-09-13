@@ -133,6 +133,10 @@ class Coin(models.Model): # we have to store the ath
     @property
     def liquidity(self):
         return (self.total_held * self.current_price)
+    
+    @property
+    def marketcap(self):
+        return (self.total_supply * self.current_price) # or current_price
 
     class Meta:
         ordering = ['-created_at']

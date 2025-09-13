@@ -31,6 +31,7 @@ from .serializers import (
 from datetime import timedelta
 import requests
 from decimal import Decimal
+from .utils.coin_utils import get_coin_info, get_user_holdings
 
 User = get_user_model()
 
@@ -98,26 +99,6 @@ class CoinViewSet(RestrictedViewset):
     serializer_class = CoinSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'address'
-    
-    @action(detail=False, methods=['get'], url_path='top-coins')
-    def top_coins(self, request):
-        """Return top coins by score (cached)"""
-        try:
-            limit = int(request.query_params.get('limit', 10))
-            limit = max(1, min(limit, 100))  # Clamp limit between 1 and 100
-        except ValueError:
-            return Response({'detail': 'Invalid limit value'}, status=400)
-        
-        cache_key = f'top_coins_{limit}'
-        cached = cache.get(cache_key)
-        if cached:
-            return Response(cached)
-
-        coins = Coin.objects.order_by('-score')[:limit]
-        serializer = self.get_serializer(coins, many=True)
-        cache.set(cache_key, serializer.data, timeout=60)  # cache for 1 minute
-
-        return Response(serializer.data)
     
     @action(detail=False, methods=['get'], url_path='my-coins', permission_classes=[permissions.IsAuthenticated])
     def my_coins(self, request):
@@ -188,17 +169,7 @@ class UserDashboardView(APIView):
 
     def get(self, request):
         user = request.user
-        context = {'request': request}
-
-        holdings = UserCoinHoldings.objects.filter(user=user).select_related("coin")
-        created_coins = Coin.objects.filter(creator=user)  # add .only() if needed
-
-        holdings_serializer = UserCoinHoldingsSerializer(
-            holdings, many=True, context=context, include_market_cap=True
-        )
-        coins_serializer = CoinSerializer(
-            created_coins, many=True, context=context
-        )
+        created_coins = Coin.objects.filter(creator=user)
 
         return Response({
             "user": {
@@ -206,10 +177,10 @@ class UserDashboardView(APIView):
                 "display_name": user.get_display_name(),
                 "bio": user.bio,
                 "devscore": user.devscore,
-                "tradescore": user.tradescore
+                "tradescore": user.tradescore,
             },
-            "holdings": holdings_serializer.data,
-            "created_coins": coins_serializer.data
+            "holdings": get_user_holdings(user, include_market_cap=True),
+            "created_coins": get_coin_info(created_coins),
         })
 
 class PublicProfileCoinsView(APIView):
@@ -221,10 +192,8 @@ class PublicProfileCoinsView(APIView):
             return Response({"detail": "Missing wallet address."}, status=400)
 
         user = get_object_or_404(SolanaUser, wallet_address=wallet_address)
-        context = {'request': request}
         created_coins = Coin.objects.filter(creator=user)
 
-        serializer = CoinSerializer(created_coins, many=True, context=context)
         return Response({
             "user": {
                 "wallet_address": user.wallet_address,
@@ -233,7 +202,8 @@ class PublicProfileCoinsView(APIView):
                 "devscore": user.devscore,
                 "tradescore": user.tradescore
             },
-            "created_coins": serializer.data,
+            "holdings": get_user_holdings(user, include_market_cap=False),
+            "created_coins": get_coin_info(created_coins)
         })
 
 class TradeViewSet(RestrictedViewset):
