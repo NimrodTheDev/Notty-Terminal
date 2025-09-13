@@ -81,7 +81,7 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 				})
 				.rpc();
 			setLoading(false);
-			toast.success("Token created successfully");
+			// toast.success("Token created successfully", {duration: 500}); // make toast delay a bit 
 			console.log("Your transaction signature", tx);
 		} catch (e) {
 			setLoading(false);
