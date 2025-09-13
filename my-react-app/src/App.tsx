@@ -24,6 +24,7 @@ import HistoryPage from "./pages/History";
 import { useAxios } from "./hooks/useAxios";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import CreateCoin2 from "./pages/CreateCoin2";
 
 function App() {
 	const wallet = useWallet();
