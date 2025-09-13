@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 // import { useSolana } from "../../solanaClient";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 // import { PublicKey } from "@solana/web3.js";
 // import { Link } from "react-router-dom";
 import { useSolBalance, getSolanaPriceUSD } from "../../hooks/solanabalance";
@@ -281,7 +281,8 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 										<span className='text-xs font-bold text-black'>🏆</span>
 									</div>
 									<span className='text-custom-light-purple text-sm font-mono'>
-										{holder.address} [DRS {holder.drs}]
+										<Link to={`/dashboard/profile/${holder}`} className="font-medium underline text-xs whitespace-wrap">{holder.address || "Proud Holder"} [DRS {holder.drs}]</Link>
+										 
 									</span>
 								</div>
 								<span className='text-gray-300 text-sm'>
@@ -292,6 +293,7 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 					)}
 				</div>
 			</div>
+{/* {console.log(coinData?.holders)} */}
 
 			{/* Holder Analytics Section */}
 			<div>

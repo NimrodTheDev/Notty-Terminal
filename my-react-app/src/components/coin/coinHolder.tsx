@@ -10,6 +10,7 @@ export default function HoldersAnalytics({ }: { coinData: any }) {
 		{ name: "Specialdev", percentage: "0.07%" },
 	];
 
+
 	// Analytics data
 	const analytics = [
 		{ label: "Total Holders", value: "200,000" },
