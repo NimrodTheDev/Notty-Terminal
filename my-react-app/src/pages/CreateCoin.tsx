@@ -1,14 +1,14 @@
-import { useState, ReactNode } from "react";
+import { useState } from "react";
 import { ArrowRight, X } from "lucide-react";
 import { useSolana } from "../solanaClient/index";
 import { uploadFile } from "../solanaClient/usePinta";
 import DragAndDropFileInput from "../components/general/dragNdrop";
 import { Link } from "react-router-dom";
-import { Toast } from "../components/general/Toast";
 // import Hero from '../components/landingPage/hero'
 import { useWallet } from "@solana/wallet-adapter-react";
 import toast from "react-hot-toast";
 // import { Connection } from "@solana/web3.js";
+import { web3 } from "@coral-xyz/anchor";
 
 // Add animation keyframes
 const styles = `
@@ -185,27 +185,22 @@ const SniperProtectionPopup: React.FC<SniperProtectionPopupProps> = ({
 function CreateCoin() {
 	const [tokenName, settTokenName] = useState("");
 	const [tokenSymbol, settTokenSymbol] = useState("");
-	// const [loading, setLoading] = useState({
-	// 	bool: false,
-	// 	msg: "",
-	// });
 	const [tokenDescription, setTokenDescription] = useState("");
 	const [tokenImage, setTokenImage] = useState<File | null>(null);
 	const [tokenWebsite, setTokenWebsite] = useState("");
 	const [tokenTwitter, setTokenTwitter] = useState("");
 	const [tokenDiscord, setTokenDiscord] = useState("");
-	const { CreateTokenMint, loading } = useSolana();
+	const { BuyTokenMint, CreateTokenMint, loading } = useSolana();
 	// const [error] = useState<string | null>(null);
 	const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
 		{}
 	);
 	const [token, setResult] = useState<string | null>(null);
 	console.log(token);
-	const [showToast, setShowToast] = useState(false);
-	const [toastMessage, setToastMessage] = useState<ReactNode>("");
-	const [toastType, setToastType] = useState<"success" | "error">("success");
 	const { publicKey, connected, connect } = useWallet();
-	const [showBondingCurveInfo] = useState(false);
+	const [showBondingCurveInfo, setBondingCurveState] = useState(false);
+	const [metadataLoading, setMetaDataload] = useState(false);
+	const [createdTokenData, setCreatedTokenData] = useState<object | null>(null);
 
 	// New state for sniper protection popup
 	const [showSniperPopup, setShowSniperPopup] = useState(false);
@@ -246,7 +241,7 @@ function CreateCoin() {
 		// 	errors.tokenTwitter = "Please enter a valid Twitter handle";
 		// }
 
-		// if (!tokenDiscord.trim()) {
+		// if (!tokenDiscord.trim()) { // check for discord correctness if dscord else don't check
 		// 	errors.tokenDiscord = "Discord channel is required";
 		// } else if (!/^https?:\/\/discord\/.+/.test(tokenDiscord)) {
 		// 	errors.tokenDiscord = "Please enter a valid Discord invite link";
@@ -258,13 +253,6 @@ function CreateCoin() {
 
 		setValidationErrors(errors);
 		return Object.keys(errors).length === 0;
-	};
-
-	const showToastMessage = (message: ReactNode, type: "success" | "error") => {
-		setToastMessage(message);
-		setToastType(type);
-		setShowToast(true);
-		setTimeout(() => setShowToast(false), 5000);
 	};
 
 	const handleSubmit = async () => {
@@ -305,6 +293,8 @@ function CreateCoin() {
 	const createTokenWithProtection = async (protectionAmount: string) => {
 		try {
 			if (!pendingTokenData?.tokenImage) return;
+			setMetaDataload(true);
+			const loaderId = toast.loading("Creation Started", {duration: 10_000});	
 
 			const metadataUrl = await uploadFile(pendingTokenData.tokenImage, {
 				name: pendingTokenData.tokenName,
@@ -316,53 +306,67 @@ function CreateCoin() {
 			});
 
 			if (metadataUrl.length === 0) {
-				showToastMessage("Failed to upload token", "error");
 				toast.error("Failed to upload token");
 				return;
 			}
+			toast.dismiss(loaderId);
+			toast.success(`Token Info Generated successfully`, {duration: 1000});
 
 			if (CreateTokenMint) {
-				// Create token with protection amount
-				// Note: You'll need to modify your CreateTokenMint function to accept the protection amount
 				const txHash = await CreateTokenMint(
 					pendingTokenData.tokenName,
 					pendingTokenData.tokenSymbol,
 					metadataUrl
-					// parseFloat(protectionAmount) // You may need to pass this to your backend
 				);
 
-				if (txHash) {
+				if (txHash?.tx) {
 					setResult(txHash.tx);
-					showToastMessage("", "success");
-					toast.success(
-						<Link
-							to={`https://explorer.solana.com/tx/${txHash.tx}?cluster=devnet`}
-							target='_blank'
-							className='underline'
-						>
-							Token created and protected successfully! View on Explorer
-						</Link>
-					);
+					showExplorerToast(txHash.tx, "Token created successfully! View on Explorer", 2000);
+					const protLoadId = toast.loading("Protecting Token", {duration: 10_000});
+
+					const mintAccount = new web3.PublicKey(txHash?.mintAccount.publicKey || "");
+					const amount = (parseFloat(protectionAmount)*(20_000)) * 1_000_000_000; // price per sol use properone
+					if (BuyTokenMint) {
+						let { tx } = await BuyTokenMint(
+							mintAccount,
+							amount
+						);
+						if (tx) {
+							toast.dismiss(protLoadId);
+							showExplorerToast(tx.tx, "Token protected successfully! View on Explorer");
+							const trueAmount = (amount/1_000_000_000)
+							setCreatedTokenData({
+								totalRaised: trueAmount, mint: txHash.mintAccount.publicKey.toString(), 
+								tokensAvailable: 1_000_000_000, totalSupply: DEFAULT_CONFIG.totalSupply - trueAmount
+							})
+							setBondingCurveState(true);
+						} else {
+							toast.dismiss(protLoadId);
+							console.error("buy failed");
+						}
+					}else{
+						console.error("BuyTokenMint Not found");
+					}
 				} else {
-					showToastMessage(
-						"Please ensure you have Phantom extension installed",
-						"error"
-					);
-					toast.error("Please ensure you have Phantom extension installed");
+					console.error("Create failed");
 				}
+			}else{
+				console.error("CreateTokenMint Not found");
 			}
 		} catch (e: any) {
 			console.error(e);
-			showToastMessage(e.message || "Failed to create token", "error");
+			toast.error("Failed to create and protect token");
 		} finally {
 			setPendingTokenData(null);
+			setMetaDataload(false);
 		}
 	};
 
 	const createTokenOnly = async () => {
 		try {
 			if (!pendingTokenData?.tokenImage) return;
-
+			setMetaDataload(true);
+			const loader_id = toast.loading("Creation Started", {duration: 10_000});			  
 			const metadataUrl = await uploadFile(pendingTokenData.tokenImage, {
 				name: pendingTokenData.tokenName,
 				symbol: pendingTokenData.tokenSymbol,
@@ -373,10 +377,11 @@ function CreateCoin() {
 			});
 
 			if (metadataUrl.length === 0) {
-				showToastMessage("Failed to upload token", "error");
 				toast.error("Failed to upload token");
 				return;
 			}
+			toast.dismiss(loader_id);
+			toast.success(`Token Info Generated successfully`, {duration: 1_000});	
 
 			if (CreateTokenMint) {
 				const txHash = await CreateTokenMint(
@@ -385,31 +390,27 @@ function CreateCoin() {
 					metadataUrl
 				);
 
-				if (txHash) {
+				console.log(txHash);
+				if (txHash?.tx) {
 					setResult(txHash.tx);
-					showToastMessage("", "success");
-					toast.success(
-						<Link
-							to={`https://explorer.solana.com/tx/${txHash.tx}?cluster=devnet`}
-							target='_blank'
-							className='underline'
-						>
-							Token created successfully! View on Explorer
-						</Link>
-					);
+					showExplorerToast(txHash.tx, "Token created successfully! View on Explorer");
+					setCreatedTokenData({
+						totalRaised: 0, mint: txHash.mintAccount.publicKey.toString(), 
+						tokensAvailable: 1_000_000_000, totalSupply: DEFAULT_CONFIG.totalSupply
+					})
+					setBondingCurveState(true);
 				} else {
-					showToastMessage(
-						"Please ensure you have Phantom extension installed",
-						"error"
-					);
-					toast.error("Please ensure you have Phantom extension installed");
+					console.error("Create failed");
 				}
+			}else{
+				console.error("CreateTokenMint Not found");
 			}
 		} catch (e: any) {
 			console.error(e);
-			showToastMessage(e.message || "Failed to create token", "error");
+			toast.error("Failed to create token", {duration: 1000});
 		} finally {
 			setPendingTokenData(null);
+			setMetaDataload(false);
 		}
 	};
 
@@ -419,107 +420,121 @@ function CreateCoin() {
 		return `$${mc?.toFixed(0) || 0}`;
 	};
 
-	// const BondingCurveInfo = ({ tokenData }: { tokenData: any }) => {
-	// 	if (!tokenData) return null;
+	const showExplorerToast = (tx: string, message: string, duration: number = 2000) => {
+		toast.success(
+		<a
+			href={`https://explorer.solana.com/tx/${tx}?cluster=devnet`}
+			target="_blank"
+			className="underline"
+			rel="noreferrer"
+		>
+			{message}
+		</a>,
+		{duration: duration}
+		);
+	};
 
-	// 	const currentMarketCap =
-	// 		DEFAULT_CONFIG.startMarketCap + tokenData.totalRaised;
-	// 	const progress = Math.min(
-	// 		100,
-	// 		Math.max(
-	// 			0,
-	// 			((currentMarketCap - DEFAULT_CONFIG.startMarketCap) /
-	// 				(DEFAULT_CONFIG.endMarketCap - DEFAULT_CONFIG.startMarketCap)) *
-	// 				100
-	// 		)
-	// 	);
+	const BondingCurveInfo = ({ tokenData }: { tokenData: any }) => {
+		if (!tokenData) return null;
 
-	// 	return (
-	// 		<div className='mt-8 p-6 bg-gray-800 rounded-lg border border-gray-600'>
-	// 			<h3 className='text-xl font-bold text-white mb-4'>
-	// 				🚀 Token Launched with Bonding Curve!
-	// 			</h3>
+		const currentMarketCap =
+			DEFAULT_CONFIG.startMarketCap + tokenData.totalRaised;
+		const progress = Math.min(
+			100,
+			Math.max(
+				0,
+				((currentMarketCap - DEFAULT_CONFIG.startMarketCap) /
+					(DEFAULT_CONFIG.endMarketCap - DEFAULT_CONFIG.startMarketCap)) *
+					100
+			)
+		);
 
-	// 			<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-	// 				<div className='bg-gray-700 p-4 rounded'>
-	// 					<p className='text-gray-400 text-sm'>Token Address</p>
-	// 					<p className='text-white font-mono text-sm break-all'>
-	// 						{tokenData.mint}
-	// 					</p>
-	// 				</div>
+		return (
+			<div className='mt-8 p-6 bg-gray-800 rounded-lg border border-gray-600'>
+				<h3 className='text-xl font-bold text-white mb-4'>
+					🚀 Token Launched with Bonding Curve!
+				</h3>
 
-	// 				<div className='bg-gray-700 p-4 rounded'>
-	// 					<p className='text-gray-400 text-sm'>Initial Market Cap</p>
-	// 					<p className='text-white font-bold'>
-	// 						{formatMarketCap(currentMarketCap)}
-	// 					</p>
-	// 				</div>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
+					<div className='bg-gray-700 p-4 rounded'>
+						<p className='text-gray-400 text-sm'>Token Address</p>
+						<p className='text-white font-mono text-sm break-all'>
+							{tokenData.mint}
+						</p>
+					</div>
 
-	// 				<div className='bg-gray-700 p-4 rounded'>
-	// 					<p className='text-gray-400 text-sm'>Total Supply</p>
-	// 					<p className='text-white font-bold'>
-	// 						{tokenData.totalSupply.toLocaleString()}
-	// 					</p>
-	// 				</div>
+					<div className='bg-gray-700 p-4 rounded'>
+						<p className='text-gray-400 text-sm'>Initial Market Cap</p>
+						<p className='text-white font-bold'>
+							{formatMarketCap(currentMarketCap)}
+						</p>
+					</div>
 
-	// 				<div className='bg-gray-700 p-4 rounded'>
-	// 					<p className='text-gray-400 text-sm'>Tokens Available</p>
-	// 					<p className='text-white font-bold'>
-	// 						{tokenData.tokensAvailable.toLocaleString()}
-	// 					</p>
-	// 				</div>
-	// 			</div>
+					<div className='bg-gray-700 p-4 rounded'>
+						<p className='text-gray-400 text-sm'>Total Supply</p>
+						<p className='text-white font-bold'>
+							{tokenData.totalSupply.toLocaleString()}
+						</p>
+					</div>
 
-	// 			<div className='mb-4'>
-	// 				<div className='flex justify-between text-sm text-gray-400 mb-2'>
-	// 					<span>Bonding Curve Progress</span>
-	// 					<span>{progress.toFixed(1)}%</span>
-	// 				</div>
-	// 				<div className='w-full bg-gray-700 rounded-full h-2'>
-	// 					<div
-	// 						className='bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500'
-	// 						style={{ width: `${progress}%` }}
-	// 					></div>
-	// 				</div>
-	// 				<div className='flex justify-between text-xs text-gray-500 mt-1'>
-	// 					<span>{formatMarketCap(DEFAULT_CONFIG.startMarketCap)}</span>
-	// 					<span>{formatMarketCap(DEFAULT_CONFIG.endMarketCap)}</span>
-	// 				</div>
-	// 			</div>
+					<div className='bg-gray-700 p-4 rounded'>
+						<p className='text-gray-400 text-sm'>Tokens Available</p>
+						<p className='text-white font-bold'>
+							{tokenData.tokensAvailable.toLocaleString()}
+						</p>
+					</div>
+				</div>
 
-	// 			<div className='bg-blue-900/30 border border-blue-500/30 rounded p-4'>
-	// 				<h4 className='text-blue-300 font-medium mb-2'>📈 How it works:</h4>
-	// 				<ul className='text-sm text-gray-300 space-y-1'>
-	// 					<li>
-	// 						• Tokens are available for purchase through the bonding curve
-	// 					</li>
-	// 					<li>• Price increases as more tokens are bought</li>
-	// 					<li>
-	// 						• When market cap reaches{" "}
-	// 						{formatMarketCap(DEFAULT_CONFIG.endMarketCap)}, liquidity migrates
-	// 						to Raydium DEX
-	// 					</li>
-	// 					<li>• Early buyers get the best prices!</li>
-	// 				</ul>
-	// 			</div>
+				<div className='mb-4'>
+					<div className='flex justify-between text-sm text-gray-400 mb-2'>
+						<span>Bonding Curve Progress</span>
+						<span>{progress.toFixed(1)}%</span>
+					</div>
+					<div className='w-full bg-gray-700 rounded-full h-2'>
+						<div
+							className='bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500'
+							style={{ width: `${progress}%` }}
+						></div>
+					</div>
+					<div className='flex justify-between text-xs text-gray-500 mt-1'>
+						<span>{formatMarketCap(DEFAULT_CONFIG.startMarketCap)}</span>
+						<span>{formatMarketCap(DEFAULT_CONFIG.endMarketCap)}</span>
+					</div>
+				</div>
 
-	// 			<div className='mt-4 flex space-x-3'>
-	// 				<Link
-	// 					to={`/coin/${tokenData.mint}`}
-	// 					className='flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-center transition-colors'
-	// 				>
-	// 					View Token Page
-	// 				</Link>
-	// 				<Link
-	// 					to={`/coin/${tokenData.mint}`}
-	// 					className='flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-center transition-colors'
-	// 				>
-	// 					Start Trading
-	// 				</Link>
-	// 			</div>
-	// 		</div>
-	// 	);
-	// };
+				<div className='bg-blue-900/30 border border-blue-500/30 rounded p-4'>
+					<h4 className='text-blue-300 font-medium mb-2'>📈 How it works:</h4>
+					<ul className='text-sm text-gray-300 space-y-1'>
+						<li>
+							• Tokens are available for purchase through the bonding curve
+						</li>
+						<li>• Price increases as more tokens are bought</li>
+						<li>
+							• When market cap reaches{" "}
+							{formatMarketCap(DEFAULT_CONFIG.endMarketCap)}, liquidity migrates
+							to Raydium DEX
+						</li>
+						<li>• Early buyers get the best prices!</li>
+					</ul>
+				</div>
+
+				<div className='mt-4 flex space-x-3'>
+					<Link
+						to={`/coin/${tokenData.mint}`}
+						className='flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-center transition-colors'
+					>
+						View Token Page
+					</Link>
+					<Link
+						to={`/coin/${tokenData.mint}`}
+						className='flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-center transition-colors'
+					>
+						Start Trading
+					</Link>
+				</div>
+			</div>
+		);
+	};
 
 	return (
 		<div className='w-full flex flex-col bg-custom-dark-blue'>
@@ -795,9 +810,9 @@ function CreateCoin() {
 											: "bg-gray-600 text-gray-300 cursor-not-allowed"
 									} px-6 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
 									onClick={handleSubmit}
-									disabled={loading || !connected || !publicKey}
+									disabled={loading || !connected || !publicKey || metadataLoading}
 								>
-									{loading
+									{loading || metadataLoading
 										? "Loading" + "..."
 										: !connected || !publicKey
 										? "Connect Wallet to Launch"
@@ -809,9 +824,9 @@ function CreateCoin() {
 					)}
 
 					{/* Show BondingCurveInfo after creation, outside the form */}
-					{/* {showBondingCurveInfo && createdTokenData && (
-            <BondingCurveInfo tokenData={createdTokenData} />
-          )} */}
+					{showBondingCurveInfo && createdTokenData && (
+						<BondingCurveInfo tokenData={createdTokenData} />
+					)}
 				</div>
 			</div>
 
@@ -826,14 +841,6 @@ function CreateCoin() {
 					onConfirm={handleSniperProtectionConfirm}
 					onSkip={handleSniperProtectionSkip}
 					isLoading={loading}
-				/>
-			)}
-
-			{showToast && (
-				<Toast
-					message={toastMessage}
-					type={toastType}
-					onClose={() => setShowToast(false)}
 				/>
 			)}
 		</div>

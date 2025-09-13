@@ -60,7 +60,7 @@ function App() {
 	}, [wallet.connected, request]);
 	return (
 		<>
-			<Toaster position='top-right' reverseOrder={false} />
+			<Toaster position='top-right' reverseOrder={false} toastOptions={{ duration: 2000 }}/>
 			<Router>
 				<Routes>
 					<Route
