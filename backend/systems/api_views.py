@@ -7,7 +7,7 @@ from .models import SolanaUser, Coin
 from rest_framework.generics import ListAPIView
 from rest_framework import serializers
 
-class PriceView(APIView):
+class PriceView(APIView): # fails often because of the coin used is not found? check it again and why?
     permission_classes = [AllowAny]
     def get(self, request):
         coin_address = request.query_params.get("coin_address")
@@ -38,14 +38,6 @@ class ConnectBotWalletView(APIView):
             "wallet_address": user.wallet_address,
         }, status=status.HTTP_200_OK)
 
-# class CoinListView(APIView):
-#     permission_classes = [AllowAny]
-#     def get(self, request):
-#         coins = list(Coin.objects.values_list("current_price", flat=True))
-#         return Response({"coins": coins}, status.HTTP_200_OK)
-
-
-
 class CoinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coin
@@ -61,4 +53,3 @@ class CoinListView(ListAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         addresses = queryset.values_list("address", flat=True)
         return Response(list(addresses))
-

@@ -240,14 +240,14 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 						console.log("called");
 						let { tx } = await BuyTokenMint(
 							mintAccount,
-							Number(amount) * 1000000000
+							Number(amount) * 1_000_000_000
 						);
 						console.log(tx);
 					}
 					if (activeTab === "sell" && SellTokenMint) {
 						let { tx } = await SellTokenMint(
 							mintAccount,
-							Number(amount) * 1000000000
+							Number(amount) * 1_000_000_000
 						);
 						console.log(tx);
 					}

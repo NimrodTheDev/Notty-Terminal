@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode, useState } from "react";
 import * as web3 from "@solana/web3.js";
 import BN from "bn.js";
-import { getProgram } from "./proveder";
+import { getProgram } from "./provider";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 
@@ -69,8 +69,8 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 					name: tokenName,
 					tokenSymbol: tokenSymbol,
 					tokenUri: tokenUri,
-					targetSol: new BN(460_000_000_000), // 460 SOL (matches your metrics)
-					startMcap: new BN(25_000_000_000), // 25 SOL (matches your metrics)
+					targetSol: new BN(450_000_000_000), // 460 SOL (matches your metrics) -> 450
+					startMcap: new BN(50_000_000_000), // 25 SOL (matches your metrics) -> 50
 					totalSupply: new BN(1_000_000_000), // 1B tokens (matches your metrics)
 				})
 				.signers([mintAccount])
@@ -111,7 +111,7 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 			tx = await program.methods
 				.purchaseToken({
 					amount: new BN(amount),
-					minAmountOut: new BN(0),
+					maxSolCost: new BN(1_000_000_000), // use this to calculate slippage // 1 SOL default
 				})
 				.accounts({
 					user: wallet.publicKey?.toBase58(),
@@ -124,7 +124,13 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 			toast.success("Token purchased successfully");
 		} catch (error) {
 			setLoading(false);
-			toast.error("Token purchased failed");
+			// console.log(error.message);
+			if (error && typeof error === "object" && "message" in error) {
+				toast.error(`Token purchase failed: ${(error as { message: string }).message}`);
+			  } else {
+				toast.error("Token purchase failed: Unknown error");
+			}
+			// toast.error("Token purchased failed");
 		} finally {
 			setLoading(false);
 		}
@@ -150,7 +156,7 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 			tx = await program.methods
 				.sellToken({
 					amount: new BN(amount),
-					minProceeds: new BN(0),
+					minProceeds: new BN(0),  // use this to calculate slippage // 0 sol by default but auto genrate it a some point
 				})
 				.accounts({
 					user: wallet.publicKey?.toBase58(),
