@@ -35,7 +35,7 @@ export default function NFTCollection() {
 
 	useEffect(() => {
 		(async () => {
-			const arg = await axios.get('https://solana-market-place-backend.onrender.com/api/coins/top-coins/?limit=8')
+			const arg = await axios.get('https://solana-market-place-backend.onrender.com/api/coin/top/?limit=8')
 			if (arg.status === 200) {
 				const coins = arg.data; // ← assume this is an array
 				// Convert string fields to numbers for all coins

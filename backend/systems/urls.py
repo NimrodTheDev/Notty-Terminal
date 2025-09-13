@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from . import api_views
+from .custom_views import api_views
+from .custom_views import coin_views
 from django.http import HttpResponse
 
 router = DefaultRouter()
@@ -18,6 +19,8 @@ auth_urls = [
     path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
     path('dashboard/profile/', views.PublicProfileCoinsView.as_view(), name='user-profile-coins'),
     path('sol-price/',views.GetSolPriceView.as_view(), name='sol-price'),
+    path('coin/top/', coin_views.TopCoinsView.as_view(), name='top-coins'),
+    path('coin/all/', coin_views.CoinListView.as_view(), name='all-coins'),
 ]
 
 bot_urls = [

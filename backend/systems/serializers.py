@@ -40,6 +40,7 @@ class ConnectWalletSerializer(serializers.Serializer):
 
 class CoinSerializer(serializers.ModelSerializer):
     creator_display_name = serializers.SerializerMethodField()
+    marketcap = serializers.SerializerMethodField()
     
     class Meta:
         model = Coin
@@ -49,12 +50,28 @@ class CoinSerializer(serializers.ModelSerializer):
             'description', 'discord', 'website', 'twitter',
             'current_price', 'total_held', 'score',
             'decimals', 'bonding_curve',
-            'current_marketcap', 'start_marketcap', 'end_marketcap',
+            'current_marketcap', 'start_marketcap', 'end_marketcap', 
+            'marketcap', 'change'
         ]
         read_only_fields = ['creator', 'creator_display_name', 'created_at']
     
     def get_creator_display_name(self, obj):
         return obj.creator.get_display_name()
+    
+    def get_marketcap(self, obj):
+        return obj.marketcap
+
+class DashboardCoinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coin
+        fields = [
+            'address', 'ticker', 'name',
+            'created_at', 
+            'current_price', 'total_held', 'score',
+            'current_marketcap', 'change',
+            # 'image_url',
+            #  'creator', we need for look up but not for shing anyother thing
+        ]
 
 class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need images
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
