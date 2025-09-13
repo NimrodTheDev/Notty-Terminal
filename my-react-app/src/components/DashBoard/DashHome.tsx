@@ -16,6 +16,7 @@ type CoinItem = {
 	user: string;
 	value: number;
 	current_marketcap: number;
+	coin_address: string;
 };
 
 type UserInfo = {
@@ -69,19 +70,15 @@ const DashHome = () => {
 				const token = localStorage.getItem("auth_token");
 				const response = await axios.get(
 					`https://solana-market-place-backend.onrender.com/api/dashboard`,
+					// `http://127.0.0.1:8000/api/dashboard`,
 					{
 						headers: { Authorization: `Token ${token}` },
 					}
 				);
-				const { user, holdings, created_coins: coins } = response.data;
+				const { user, holdings, created_coins: coins, net_worth } = response.data;
 				console.log(wallet.publicKey?.toBase58());
 				console.log("Holdings:", holdings);
-				// move to work calculations to the backend incase of pagification
-				const netWorth = holdings.reduce(
-					(sum: number, item: { value: number }) => sum + (item.value || 0),
-					0
-				);
-				setPortfolioValue(netWorth);
+				setPortfolioValue(net_worth);
 				setCreatedCoins(coins.length);
 				setCoins(holdings);
 				setUserInfo(user);
@@ -166,7 +163,7 @@ const DashHome = () => {
 				<div className='space-y-4'>
 					{coins.map((coin) => (
 						<Link to={``}
-							// key={coin.id}
+							key={coin.coin_address}
 							className='bg-custom-nav-purple rounded-md p-6 flex items-center justify-between hover:bg-gray-750 transition-colors'
 						>
 							<div className='flex items-center space-x-4'>
@@ -197,7 +194,9 @@ const DashHome = () => {
 								</div>
 								<div className='flex space-x-1 justify-end items-center'>
 									<div className='text-white font-semibold'>
-										${coin.current_marketcap.toLocaleString()}
+									${(coin.current_marketcap * solPrice).toLocaleString()} (
+										{coin.current_marketcap.toLocaleString()} SOL)
+										{/* ${coin.current_marketcap.toLocaleString()} SOL */}
 									</div>
 									<div className='text-green-400 text-sm'>+1.90</div>
 								</div>

@@ -1,5 +1,5 @@
 from systems.models import Coin, UserCoinHoldings
-from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 
 def get_coin_info(queryset):
     """
@@ -11,11 +11,14 @@ def get_coin_info(queryset):
             "address", "ticker", "name",
             "created_at",
             "current_price", "total_held", "score",
-            "current_marketcap", "change"
+            "current_marketcap",
         )
     )
 
-def get_user_holdings(user, include_market_cap=False):
+# add a calculation for change in volume per day how
+# nother cron job for the daily volume
+
+def get_user_holdings(user, include_market_cap=False, include_net_worth=False):
     qs = (
         UserCoinHoldings.objects
         .filter(user=user)
@@ -50,5 +53,9 @@ def get_user_holdings(user, include_market_cap=False):
         if include_market_cap:
             entry["current_marketcap"] = h["coin__current_marketcap"]
         results.append(entry)
+    
+    net_worth = 0
+    if include_net_worth:
+        net_worth = qs.aggregate(total=Sum("value"))["total"] or 0
 
-    return results
+    return results, net_worth

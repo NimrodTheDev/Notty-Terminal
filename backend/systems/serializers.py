@@ -61,18 +61,6 @@ class CoinSerializer(serializers.ModelSerializer):
     def get_marketcap(self, obj):
         return obj.marketcap
 
-class DashboardCoinSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Coin
-        fields = [
-            'address', 'ticker', 'name',
-            'created_at', 
-            'current_price', 'total_held', 'score',
-            'current_marketcap', 'change',
-            # 'image_url',
-            #  'creator', we need for look up but not for shing anyother thing
-        ]
-
 class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need images
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
     coin_name = serializers.ReadOnlyField(source='coin.name')
