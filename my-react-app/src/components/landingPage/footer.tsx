@@ -13,7 +13,7 @@ export default function NottyTerminalFooter() {
 			<div className='container mx-auto'>
 				<div className='flex flex-col gap-8 md:flex-row justify-between items-start md:items-center mb-8 md:mb-16 px-2 md:px-24'>
 					<div className='mb-4 md:mb-0'>
-						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#a4b9fa] to-[#1ce8fd] bg-clip-text text-transparent'>
+						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#A4B9FA] to-[#9A83F6] bg-clip-text text-transparent'>
 							Notty Terminal
 						</h2>
 						<p className='text-gray-300 mt-1'>The future of Web3 is here.</p>

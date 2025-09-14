@@ -17,8 +17,8 @@ export default function OnboardingCard() {
 			<WalletMultiButton />
 		  </div>
 		  <div className="flex items-start">
-			<div className="bg-indigo-900 bg-opacity-50 p-6 rounded-full">
-			  <Wallet size={48} className="text-indigo-300" />
+			<div className="bg-[#9A83F633] bg-opacity-50 p-6 rounded-full">
+			  <Wallet size={48} className="text-[#9A83F6]" />
 			</div>
 		  </div>
 		</div>
