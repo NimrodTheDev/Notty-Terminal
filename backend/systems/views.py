@@ -13,6 +13,8 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import ValidationError
+# from django.db.models import F
+from django.db.models import F, ExpressionWrapper, FloatField
 
 from .models import (
     DeveloperScore, TraderScore, 
@@ -109,21 +111,58 @@ class CoinViewSet(RestrictedViewset):
         coins = Coin.objects.filter(creator=request.user)
         serializer = self.get_serializer(coins, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=["get"])
+    def full_info(self, request, address=None):
+        """
+        Returns full coin info (all serializer fields), top holders, and recent history.
+        """
+        # 1️⃣ Coin info using serializer
+        try:
+            coin = Coin.objects.get(address=address)
+        except Coin.DoesNotExist:
+            return Response({"detail": "Coin not found"}, status=404)
+        coin_data = CoinSerializer(coin).data
 
-    @action(detail=True, methods=['get'])
-    def holders(self, request, address=None):
-        """Get all holders of a specific coin"""
-        coin = self.get_object()  # returns Coin instance
+        # 2️⃣ Top holders (limit top 50)
+        holders_qs = (
+            UserCoinHoldings.objects.filter(coin=coin)
+            .select_related("user", "user__trader_score")
+            .annotate(
+                wallet_address=F("user__wallet_address"),
+                traderscore=F("user__trader_score__score"),
+                held_percentage=ExpressionWrapper(
+                    F("amount_held") * 100.0 / F("coin__total_supply"), output_field=FloatField()
+                )
+            )
+            .values("wallet_address", "traderscore", "amount_held", "held_percentage")
+            .order_by("-amount_held")[:50]
+        )
 
-        # Optimized queryset for serializer
-        holders = UserCoinHoldings.objects.filter(coin=coin)\
-            .select_related('user', 'coin')\
-            .only('user__wallet_address', 'amount_held', 'coin__total_supply', 'user__trader_score')\
-            .order_by('-amount_held')
-        # display_name we can also add to check if available
+        # 3️⃣ Recent history (paginated)
+        history_qs = CoinHistory.objects.filter(coin=coin).order_by("-created_at")
+        paginator = HistoryPagination()
+        page = paginator.paginate_queryset(history_qs, request)
+        history = list(page.values("created_at", "score", "description", 'key', 'id')) if page else []
 
-        serializer = CoinHolderSerializer(holders, many=True)
-        return Response(serializer.data)
+        return Response({
+            "coin": coin_data,
+            "holders": list(holders_qs),
+            "history": history,
+        })
+
+    # @action(detail=True, methods=["get"])
+    # def trades(self, request, address=None):
+    #     """Get all trades for a specific coin, optimized with .values()."""
+    #     trades = Trade.objects.filter(coin__address=address).values(
+    #         "transaction_hash",
+    #         "trade_type",
+    #         "coin_amount",
+    #         "sol_amount",
+    #         "created_at",
+    #         "trading_fee",
+    #     ).order_by("-created_at")
+    #     return Response(list(trades))
     
     @action(detail=True, methods=['get'])
     def trades(self, request, address=None):

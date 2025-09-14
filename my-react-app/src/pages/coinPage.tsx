@@ -22,7 +22,7 @@ type HistoryItem = {
 };
 
 const CoinPage: React.FC = () => {
-  	const [history, sethistory] = useState<any | HistoryItem>(); // to adjust this later
+  	const [history, setHistory] = useState<any | HistoryItem>(); // to adjust this later
 	const [coinData, setCoinData] = useState<any | CoinData>(); // to adjust this later
 	const [loading, setLoading] = useState(true);
 	const { id: mintAddress } = useParams();
@@ -30,33 +30,62 @@ const CoinPage: React.FC = () => {
 	const fetchCoin = async () => {
 		if (mintAddress) {
 			try {
-				const [coinRes, coinHistoryRes, holdersRes] = await Promise.all([
-				axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
-				axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/?coin_address=${mintAddress}`),
-				axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/holders`)
-				]);
+				// `https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/full_info/`
+				const response = await axios.get(`http://127.0.0.1:8000/api/coins/${mintAddress}/full_info/`);
 
-				sethistory(coinHistoryRes.data.results);
+				const { coin, holders, history } = response.data;
 
 				const solPrice = await getSolanaPriceUSD();
-				const coin = coinRes.data;
-				const holders = holdersRes.data;
 
 				const mergedData = {
-				...coin,
-				marketcap: parseFloat(coin.current_marketcap) * solPrice,
-				current_marketcap: parseFloat(coin.current_marketcap),
-				current_price: parseFloat(coin.current_price),
-				start_marketcap: parseFloat(coin.start_marketcap),
-				end_marketcap: parseFloat(coin.end_marketcap),
-				total_supply: parseFloat(coin.total_supply),
-				mint: mintAddress,
-				holders, // ✅ add holders to the coin object
+					...coin,
+					marketcap: parseFloat(coin.current_marketcap) * solPrice,
+					current_marketcap: parseFloat(coin.current_marketcap),
+					current_price: parseFloat(coin.current_price),
+					start_marketcap: parseFloat(coin.start_marketcap),
+					end_marketcap: parseFloat(coin.end_marketcap),
+					total_supply: parseFloat(coin.total_supply),
+					mint: mintAddress,
+					holders, // ✅ add holders to the coin object
 				};
+				console.log(mergedData)
+				// const mergedData: Coin = {
+				// ...coin,
+				// holders,
+				// history,
+				// marketcap: parseFloat(coin.current_marketcap) * solPrice,
+				// current_marketcap: parseFloat(coin.current_marketcap),
+				// };
+
 				setCoinData(mergedData);
-				setLoading(false);
+				setHistory(history);
+				// const [coinRes, coinHistoryRes, holdersRes] = await Promise.all([
+				// 	axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/`),
+				// 	axios.get(`https://solana-market-place-backend.onrender.com/api/coin-history/?coin_address=${mintAddress}`),
+				// 	axios.get(`https://solana-market-place-backend.onrender.com/api/coins/${mintAddress}/holders`)
+				// ]);
+
+				// sethistory(coinHistoryRes.data.results);
+
+				// const solPrice = await getSolanaPriceUSD();
+				// const coin = coinRes.data;
+				// const holders = holdersRes.data;
+
+				// const mergedData = {
+				// ...coin,
+				// marketcap: parseFloat(coin.current_marketcap) * solPrice,
+				// current_marketcap: parseFloat(coin.current_marketcap),
+				// current_price: parseFloat(coin.current_price),
+				// start_marketcap: parseFloat(coin.start_marketcap),
+				// end_marketcap: parseFloat(coin.end_marketcap),
+				// total_supply: parseFloat(coin.total_supply),
+				// mint: mintAddress,
+				// holders, // ✅ add holders to the coin object
+				// };
+				// setCoinData(mergedData);
 			} catch (err) {
 				console.error("Failed to fetch coin data:", err);
+			}finally{
 				setLoading(false);
 			}
 		}

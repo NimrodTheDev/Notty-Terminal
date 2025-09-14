@@ -15,9 +15,9 @@ export default function FeaturesSection() {
 			description:
 				"Launch your Web3 projects with ease. Get funding, resources, and support from our community.",
 			icon: (
-				<div className='bg-purple-900 rounded-full p-3 flex items-center justify-center'>
+				<div className='bg-[#9A83F633] rounded-full p-3 flex items-center justify-center'>
 					<svg
-						className='w-6 h-6 text-purple-300'
+						className='w-6 h-6 text-[#9A83F6]'
 						viewBox='0 0 24 24'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -39,9 +39,9 @@ export default function FeaturesSection() {
 			description:
 				"Find and connect with the best developers, designers, and marketers in the Web3 space.",
 			icon: (
-				<div className='bg-purple-900 rounded-full p-3 flex items-center justify-center'>
+				<div className='bg-[#9A83F633] rounded-full p-3 flex items-center justify-center'>
 					<svg
-						className='w-6 h-6 text-purple-300'
+						className='w-6 h-6 text-[#9A83F6]'
 						viewBox='0 0 24 24'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -63,9 +63,9 @@ export default function FeaturesSection() {
 			description:
 				"Discover and invest in innovative Web3 projects at various stages of development.",
 			icon: (
-				<div className='bg-purple-900 rounded-full p-3 flex items-center justify-center'>
+				<div className='bg-[#9A83F633] rounded-full p-3 flex items-center justify-center'>
 					<svg
-						className='w-6 h-6 text-purple-300'
+						className='w-6 h-6 text-[#9A83F6]'
 						viewBox='0 0 24 24'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -87,9 +87,9 @@ export default function FeaturesSection() {
 			description:
 				"Join a thriving community of builders, creators, and innovators in the Web3 ecosystem.",
 			icon: (
-				<div className='bg-purple-900 rounded-full p-3 flex items-center justify-center'>
+				<div className='bg-[#9A83F633] rounded-full p-3 flex items-center justify-center'>
 					<svg
-						className='w-6 h-6 text-purple-300'
+						className='w-6 h-6 text-[#9A83F6]'
 						viewBox='0 0 24 24'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -111,9 +111,9 @@ export default function FeaturesSection() {
 			description:
 				"Create stunning visuals for your projects with our AI-powered image generation tools.",
 			icon: (
-				<div className='bg-purple-900 rounded-full p-3 flex items-center justify-center'>
+				<div className='bg-[#9A83F633] rounded-full p-3 flex items-center justify-center'>
 					<svg
-						className='w-6 h-6 text-purple-300'
+						className='w-6 h-6 text-[#9A83F6]'
 						viewBox='0 0 24 24'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -135,9 +135,9 @@ export default function FeaturesSection() {
 			description:
 				"Manage all your projects in one place with comprehensive analytics and tracking tools.",
 			icon: (
-				<div className='bg-purple-900 rounded-full p-3 flex items-center justify-center'>
+				<div className='bg-[#9A83F633] rounded-full p-3 flex items-center justify-center'>
 					<svg
-						className='w-6 h-6 text-purple-300'
+						className='w-6 h-6 text-[#9A83F6]'
 						viewBox='0 0 24 24'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -179,7 +179,7 @@ export default function FeaturesSection() {
 			<div className='relative z-10 max-w-6xl mx-auto'>
 				{/* Header */}
 				<div className='text-center mb-16'>
-					<span className='px-4 py-1 rounded-full bg-gray-800 text-purple-300 text-sm font-medium inline-block mb-4'>
+					<span className='px-4 py-1 rounded-full bg-gray-800 text-white text-sm font-medium inline-block mb-4'>
 						Features
 					</span>
 					<h2 className='text-4xl md:text-5xl font-bold text-white mb-4'>
@@ -204,7 +204,7 @@ export default function FeaturesSection() {
 
 function FeatureCard({ feature }: { feature: FeatureItem }) {
 	return (
-		<div className='bg-[#121421] bg-opacity-50 backdrop-filter backdrop-blur-sm border border-gray-700 rounded-lg p-6 transition-all hover:bg-gray-700 hover:border-purple-500'>
+		<div className='bg-[#121421] bg-opacity-50 backdrop-filter backdrop-blur-sm border border-gray-700 rounded-lg p-6 transition-all hover:bg-[#132431] hover:border-[#9A83F6]'>
 			<div className='mb-4 rounded-full w-fit'>{feature.icon}</div>
 			<h3 className='text-xl font-bold text-white mb-2'>{feature.title}</h3>
 			<p className='text-gray-400'>{feature.description}</p>

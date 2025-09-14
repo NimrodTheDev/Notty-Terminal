@@ -22,7 +22,7 @@ export default function Hero() {
 				</div>
 
 				{/* Headline */}
-				<h1 className='text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-200 text-transparent bg-clip-text break-words'>
+				<h1 className='text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#BCACF9] to-[#4D427B] text-transparent bg-clip-text break-words'>
 					Build Credibility as you
 					<br />
 					Launch on Web3

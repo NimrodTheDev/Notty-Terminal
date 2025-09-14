@@ -7,11 +7,11 @@ interface StepProps {
 const Step = ({ number, title, description }: StepProps) => {
 	return (
 		<div className='flex flex-col items-center text-center'>
-			<div className='bg-indigo-200 rounded-full w-16 h-16 flex items-center justify-center mb-6'>
-				<span className='text-xl font-medium text-indigo-800'>{number}</span>
+			<div className='bg-[#CCC1FA] rounded-full w-14 h-14 flex items-center justify-center mb-6'>
+				<span className='text-xl font-medium text-[#4D427B]'>{number}</span>
 			</div>
-			<h3 className='text-xl font-semibold text-white mb-3'>{title}</h3>
-			<p className='text-gray-300 max-w-xs'>{description}</p>
+			<h3 className='text-xl font-semibold text-[#DDD6FC] mb-3'>{title}</h3>
+			<p className='text-[#DDD6FC] max-w-xs'>{description}</p>
 		</div>
 	);
 };
@@ -42,7 +42,7 @@ export default function HowItWorks() {
 		<div className='py-20 bg-custom-dark-blue'>
 			<div className='container mx-auto px-4'>
 				<div className='text-center mb-16'>
-					<h2 className='text-4xl font-bold text-indigo-300 mb-4'>
+					<h2 className='text-4xl font-bold text-[#BCACF9] mb-4'>
 						How it works
 					</h2>
 					<p className='text-gray-300 max-w-2xl mx-auto'>
