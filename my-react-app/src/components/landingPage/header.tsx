@@ -13,7 +13,7 @@ export default function Header({ hideList = false }: { hideList?: boolean }) {
 	}
 
 	return (
-		<header className='bg-custom-dark-blue border-b-2 border-gray-600 text-white px-2 xs:px-4 py-3 shadow-md'>
+		<header className='bg-custom-dark-blue border-b border-[#FFFFFF1A] text-white px-2 xs:px-4 py-3 shadow-md'>
 			<div className='max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between'>
 				{/* Logo and Toggle */}
 				<div className='flex items-center justify-between w-full md:w-auto'>

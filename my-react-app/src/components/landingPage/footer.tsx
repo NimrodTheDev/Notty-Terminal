@@ -9,7 +9,7 @@ export default function NottyTerminalFooter() {
 	}
 
 	return (
-		<div className='bg-custom-dark-blue border-t-2 border-gray-600 text-white py-8 px-4'>
+		<div className='bg-custom-dark-blue border-t border-[#FFFFFF1A] text-white py-8 px-4'>
 			<div className='container mx-auto'>
 				<div className='flex flex-col gap-8 md:flex-row justify-between items-start md:items-center mb-8 md:mb-16 px-2 md:px-24'>
 					<div className='mb-4 md:mb-0'>

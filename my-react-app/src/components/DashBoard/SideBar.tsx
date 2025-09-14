@@ -59,7 +59,7 @@ const Sidebar = () => {
 	};
 
 	return (
-		<div className=' bg-custom-dark-blue '>
+		<div className=' bg-custom-dark-blue border-r border-[#FFFFFF1A]'>
 			{/* Mobile Menu Button - Only visible on mobile */}
 			<button
 				onClick={toggleMobileMenu}

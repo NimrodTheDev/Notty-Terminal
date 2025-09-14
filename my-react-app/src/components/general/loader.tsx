@@ -1,15 +1,21 @@
 const Loader = () => {
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="relative inline-block h-9 w-9 animate-spin">
-        <div className="absolute h-full w-1/3 bottom-1 left-0 transform rotate-60 origin-bottom">
-          <div className="h-0 w-full pb-full bg-purple-800 rounded-full animate-wobble1" />
-        </div>
-        <div className="absolute h-full w-1/3 bottom-1 right-0 transform -rotate-60 origin-bottom">
-          <div className="h-0 w-full pb-full bg-purple-800 rounded-full animate-wobble2" />
-        </div>
-        <div className="absolute h-full w-1/3 bottom-[-5%] left-0 translate-x-[116.666%]">
-          <div className="h-0 w-full pb-full bg-purple-800 rounded-full animate-wobble3" />
+    <div className="flex justify-center items-center h-screen bg-transperant">
+      <div className="relative w-24 h-24">
+        {/* Orbit container */}
+        <div className="absolute inset-0 animate-spin-slow">
+          {/* Dot 1 */}
+          <div className="absolute top-1/2 left-0 transform -translate-y-1/2 animate-pulse-dot animation-delay-0">
+            <div className="w-5 h-5 bg-purple-600 rounded-full"></div>
+          </div>
+          {/* Dot 2 */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 animate-pulse-dot animation-delay-200">
+            <div className="w-5 h-5 bg-purple-400 rounded-full"></div>
+          </div>
+          {/* Dot 3 */}
+          <div className="absolute bottom-1/2 right-0 transform translate-y-1/2 animate-pulse-dot animation-delay-400">
+            <div className="w-5 h-5 bg-purple-500 rounded-full"></div>
+          </div>
         </div>
       </div>
     </div>
