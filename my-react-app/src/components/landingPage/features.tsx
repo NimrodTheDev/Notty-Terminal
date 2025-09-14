@@ -156,7 +156,7 @@ export default function FeaturesSection() {
 	]);
 
 	return (
-		<div className='bg-gray-900 min-h-screen p-6 md:p-10 relative overflow-hidden'>
+		<div className='bg-custom-dark-blue min-h-screen p-6 md:p-10 relative overflow-hidden'>
 			{/* Background decorative elements */}
 			<div className='absolute inset-0 overflow-hidden'>
 				<div className='absolute top-20 left-24 text-purple-500 opacity-10 text-6xl'>
@@ -204,7 +204,7 @@ export default function FeaturesSection() {
 
 function FeatureCard({ feature }: { feature: FeatureItem }) {
 	return (
-		<div className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-sm border border-gray-700 rounded-lg p-6 transition-all hover:bg-gray-700 hover:border-purple-500'>
+		<div className='bg-[#121421] bg-opacity-50 backdrop-filter backdrop-blur-sm border border-gray-700 rounded-lg p-6 transition-all hover:bg-gray-700 hover:border-purple-500'>
 			<div className='mb-4 rounded-full w-fit'>{feature.icon}</div>
 			<h3 className='text-xl font-bold text-white mb-2'>{feature.title}</h3>
 			<p className='text-gray-400'>{feature.description}</p>

@@ -37,7 +37,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
   onFilterChange,
 }) => {
   return (
-    <div className="bg-gray-900 min-h-screen p-4 sm:p-8 z-10 w-fit">
+    <div className="bg-transperant min-h-screen p-4 sm:p-8 z-10 w-fit">
       <div className="mx-auto">
         {/* Header */}
         <div className="mx-auto text-center rounded-md px-6 mb-8">
@@ -48,21 +48,21 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         </div>
 
         {/* Navbar */}
-        <nav className="mb-8 mx-[-32px] bg-[#1d213799] px-6 py-3 flex items-center flex-col justify-between w-[calc(100%+64px)] gap-2 md:flex-row ">
+        <nav className="mb-8 mx-[-32px] bg-[#1F1A31] px-6 py-3 flex items-center flex-col justify-between w-[calc(100%+64px)] gap-2 md:flex-row ">
           <div className="flex items-center flex-1 max-w-fit">
             <input
               type="text"
               placeholder="Let's Go!"
               value={searchTerm}
               onChange={onSearchChange}
-              className="w-full rounded-md px-1 py-1 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              className="w-full bg-transparent rounded-sm px-2 py-1 text-gray-900 placeholder-gray-500 border border-[#232842] focus:outline-none focus:ring-2 focus:ring-[#9A83F6CC] transition"
               aria-label="Search coins by ID or name"
               spellCheck={false}
             />
           </div>
 
           <div className="flex items-center space-x-2 min-w-[220px]">
-            <div className="flex items-center space-x-1 text-purple-400 font-medium select-none">
+            <div className="flex items-center space-x-1 text-[#9A83F6CC] font-medium select-none">
               <Funnel className="w-5 h-5" />
               <span>Filter</span>
             </div>
@@ -72,10 +72,10 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
                   <button
                     key={type}
                     onClick={() => onFilterChange(type)}
-                    className={`px-2 py-1 text-sm rounded transition-colors ${
+                    className={`px-6 py-2 text-sm rounded transition-colors ${
                       filter === type
-                        ? "bg-purple-700 text-white"
-                        : "bg-purple-100 text-purple-700"
+                        ? "bg-[#9A83F6CC] text-white"
+                        : "bg-[#232842] text-white"
                     }`}
                     aria-pressed={filter === type}
                   >

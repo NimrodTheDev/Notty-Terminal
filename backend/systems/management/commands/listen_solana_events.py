@@ -117,8 +117,9 @@ class Command(BaseCommand):
                             await self.handle_trade(signature, event)
                             break
 
+    # shadow buy after create buy immediately might cause issues later create a shadow object to safe guard that
     @sync_to_async(thread_sensitive=True)
-    def handle_coin_creation(self, signature: str, logs: dict):
+    def handle_coin_creation(self, signature: str, logs: dict): 
         print("create:", json.dumps(logs, indent=2))
         creator = self.custom_check(
             lambda: SolanaUser.objects.get(wallet_address=logs["creator"]),

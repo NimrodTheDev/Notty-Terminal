@@ -173,7 +173,7 @@ export function NFTCard({ nft, viewMode }: NFTCardProps) {
 						<div className="flex">
 							<Link
 								to={`/coin/${nft.address}`}
-								className='bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded flex items-center justify-center gap-1 transition-colors text-sm whitespace-nowrap'
+								className='bg-[#9A83F6CC] hover:bg-[#9A83F6] text-white py-2 px-4 rounded flex items-center justify-center gap-1 transition-colors text-sm whitespace-nowrap'
 							>
 								View Details
 								<svg
@@ -199,7 +199,7 @@ export function NFTCard({ nft, viewMode }: NFTCardProps) {
 
 	// Card view (original design)
 	return (
-		<div className='bg-transparent rounded-lg overflow-hidden border border-gray-800 hover:border-purple-500/50 transition-colors duration-200'>
+		<div className='bg-transparent rounded-lg overflow-hidden border border-gray-800 hover:border-[#9A83F6]/50 transition-colors duration-200'>
 			<div className='relative pb-[100%]'>
 				<img
 					src={nft.image_url || img}
@@ -224,7 +224,7 @@ export function NFTCard({ nft, viewMode }: NFTCardProps) {
 				</div>
 				<Link
 					to={`/coin/${nft.address}`}
-					className='w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded flex items-center justify-center gap-1 transition-colors'
+					className='w-full bg-[#9A83F6CC] hover:bg-[#9A83F6] text-white py-2 px-4 rounded flex items-center justify-center gap-1 transition-colors'
 				>
 					View Details
 					<svg

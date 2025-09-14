@@ -162,7 +162,7 @@ const DashHome = () => {
 				<h2 className='text-xl font-bold mb-6'>Your Coins</h2>
 				<div className='space-y-4'>
 					{coins.map((coin) => (
-						<Link to={``}
+						<Link to={`/coin/${coin.coin_address}`}
 							key={coin.coin_address}
 							className='bg-custom-nav-purple rounded-md p-6 flex items-center justify-between hover:bg-gray-750 transition-colors'
 						>

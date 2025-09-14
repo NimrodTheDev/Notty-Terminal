@@ -7,6 +7,7 @@ import CoinFilter, {
 } from "../components/coin/CoinFilter";
 import Loader from "../components/general/loader"; // Imported the Loader component
 import { getSolanaPriceUSD } from "../hooks/solanabalance";
+import toast from "react-hot-toast";
 
 const CoinMarket: React.FC = () => {
 	const [allCoins, setAllCoins] = useState<CoinData[]>([]); // fetch all coins
@@ -14,13 +15,13 @@ const CoinMarket: React.FC = () => {
 	const [filter, setFilter] = useState<FilterOptions["filter"]>("all");
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const { loading, request } = useAxios();
-	const [errorList, setErrorList] = useState<string | null>(null);
+	const [mainloading, setMainLoading] = useState(true);
 
 	// Fetch all coins once without filter params (server returns all)
 	useEffect(() => {
 		const fetchAllCoins = async () => {
-			setErrorList(null);
 			try {
+				setMainLoading(true);
 				const response = await request({
 					method: "get",
 					url: `/coin/all`,
@@ -37,14 +38,18 @@ const CoinMarket: React.FC = () => {
 					setAllCoins(parsedCoins);
 					setFilteredCoins(parsedCoins); // initialize filtered coins with all
 				} else {
-					setErrorList(`Unexpected status code: ${response.status}`);
+					toast.error(`Unexpected status code: ${response.status}`);
+					console.error(`Unexpected status code: ${response.status}`);
 					setAllCoins([]);
 					setFilteredCoins([]);
 				}
 			} catch (err: any) {
-				setErrorList(err.message || "Failed to fetch coins.");
+				toast.error("Failed to fetch coins.");
+				console.error(err.message || "Failed to fetch coins.");
 				setAllCoins([]);
 				setFilteredCoins([]);
+			} finally{
+				setMainLoading(false);
 			}
 		};
 		fetchAllCoins();
@@ -82,23 +87,17 @@ const CoinMarket: React.FC = () => {
 		setSearchTerm("");
 	};
 
-	if (loading) {
+	if (loading || mainloading) {
 		return (
-			<div className='bg-gray-900 text-white min-h-screen p-4'>
+			<div className='bg-custom-dark-blue text-white min-h-screen p-4'>
 				<Loader />
 			</div>
 		);
 	}
 
-	if (errorList) {
-		return (
-			<div className='bg-gray-900 text-white min-h-screen p-4'>{errorList}</div>
-		);
-	}
-
 	// Render CoinFilter UI with coin list and filter/search handlers
 	return (
-		<div className='bg-gray-900 text-white min-h-screen p-2 xs:p-4 overflow-x-hidden'>
+		<div className='bg-custom-dark-blue text-white min-h-screen p-2 xs:p-4 overflow-x-hidden'>
 			<CoinFilter
 				coins={filteredCoins}
 				filter={filter}
