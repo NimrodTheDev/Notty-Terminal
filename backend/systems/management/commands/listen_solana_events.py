@@ -126,38 +126,38 @@ class Command(BaseCommand):
             not_found_exception=SolanaUser.DoesNotExist
         )
 
-        # try:
-        print(json.dumps(logs, indent=2))
-        self.ensure_connection()
-        if not Coin.objects.filter(address=logs["mint"]).exists() and creator:
-            attributes = logs.get('attributes') or {}
-            new_coin = Coin(
-                address=logs["mint"],
-                name=logs["name"],
-                ticker=logs["symbol"],
-                creator=creator,
-                total_supply=Decimal(str(logs["total_supply"])),
-                image_url=logs.get("image", ""),
-                current_price=Decimal(str(logs["initial_price_per_token"])),
-                description=logs.get("description", None),
-                discord=attributes.get("discord"),
-                website=attributes.get("website"),
-                twitter=attributes.get("twitter"),
-                decimals = 9,
-                current_marketcap=self.bigint_to_float(logs["start_mcap"], 9), # amount of sol raised
-                start_marketcap=self.bigint_to_float(logs["start_mcap"], 9),
-                end_marketcap=self.bigint_to_float(logs["target_sol"], 9),
-                raydium_pool = logs["raydium_pool"],
-            )
-            new_coin.save()
-            print(f"Created new coin with address: {logs['mint']}")
-        # except Exception as e:
-        #     print(f"Error while saving coin: {e}")
+        try:
+            # print(json.dumps(logs, indent=2))
+            self.ensure_connection()
+            if not Coin.objects.filter(address=logs["mint"]).exists() and creator:
+                attributes = logs.get('attributes') or {}
+                new_coin = Coin(
+                    address=logs["mint"],
+                    name=logs["name"],
+                    ticker=logs["symbol"],
+                    creator=creator,
+                    total_supply=Decimal(str(logs["total_supply"])),
+                    image_url=logs.get("image", ""),
+                    current_price=Decimal(str(logs["initial_price_per_token"])),
+                    description=logs.get("description", None),
+                    discord=attributes.get("discord"),
+                    website=attributes.get("website"),
+                    twitter=attributes.get("twitter"),
+                    decimals = 9,
+                    current_marketcap=self.bigint_to_float(logs["start_mcap"], 9), # amount of sol raised
+                    start_marketcap=self.bigint_to_float(logs["start_mcap"], 9),
+                    end_marketcap=self.bigint_to_float(logs["target_sol"], 9),
+                    raydium_pool = logs["raydium_pool"],
+                )
+                new_coin.save()
+                print(f"Created new coin with address: {logs['mint']}")
+        except Exception as e:
+            print(f"Error while saving coin: {e}")
     
     @sync_to_async(thread_sensitive=True)
     def handle_trade(self, signature, logs):
         """Handle coin creation event"""
-        print("trades:", json.dumps(self.handel_conversion(logs), indent=2))
+        # print("trades:", json.dumps(self.handel_conversion(logs), indent=2))
         wallet = logs.get("buyer") or logs.get("seller")
         transfer_type = '0' if logs.get("buyer") else '1'
         tradeuser:SolanaUser = self.custom_check(

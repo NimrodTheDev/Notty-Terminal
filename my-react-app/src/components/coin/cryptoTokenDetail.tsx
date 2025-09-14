@@ -49,7 +49,7 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 	// Placeholder for DRS (not in CoinData)
 	const drs = coinData.score;
 	// Bonding curve progress (hardcoded to 60% for now)
-	// const bondingProgress = 60;
+	const bondingProgress = (coinData.current_marketcap /coinData.end_marketcap).toFixed(2);
 
 	return (
 		<div className="bg-custom-dark-blue text-white p-8 w-full rounded-lg flex flex-col  ">
@@ -95,9 +95,9 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 
 			{/* Bonding curve progress */}
 			<div className="flex items-center gap-4 mt-4">
-				{/* <span className="text-[#ccc1fa]">Bonding curve progress</span> */}
+				<span className="text-[#ccc1fa]">Bonding curve progress</span>
 				<div className="flex-1 flex flex-col">
-					{/* <div className="flex items-center gap-2">
+					<div className="flex items-center gap-2">
 						<div className="w-48 h-4 bg-gray-700 rounded-full overflow-hidden relative">
 							<div
 								className="bg-green-500 h-full rounded-full"
@@ -105,8 +105,8 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 							></div>
 						</div>
 						<span className="text-white font-semibold">{bondingProgress}%</span>
-						<Info size={16} className="text-gray-400 ml-1" aria-label="Bonding curve info" tabIndex={0} />
-					</div> */}
+						{/* <Info size={16} className="text-gray-400 ml-1" aria-label="Bonding curve info" tabIndex={0} /> */}
+					</div>
 					{/* <div className="flex justify-between text-xs text-gray-400 mt-1">
 						<span>short note below</span>
 						<a href="#" className="text-blue-400 hover:underline">link text</a>
