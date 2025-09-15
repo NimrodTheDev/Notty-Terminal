@@ -145,9 +145,9 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 			.slice(0, 10)
 			.map((item: any) => ({
 			  percentage: `${formatPercent(item.held_percentage)}%`,
-			  address: shortenAddress(item.user_wallet_address),
-			  drs: item.user_traderscore,
-			  fullAddress: item.user_wallet_address,
+			  address: shortenAddress(item.wallet_address), // change to to either formated or a name if possible
+			  drs: item.traderscore,
+			  fullAddress: item.wallet_address,
 			}))
 		);
 	  
