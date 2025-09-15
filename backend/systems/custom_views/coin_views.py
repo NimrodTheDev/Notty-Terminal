@@ -8,12 +8,11 @@ from systems.models import (
     Coin
 )
 from rest_framework import permissions
-# from systems.serializers
 
 User = get_user_model()
 
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
+    page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 100
 
