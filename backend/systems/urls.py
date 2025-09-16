@@ -6,7 +6,7 @@ from .custom_views import coin_views
 from django.http import HttpResponse
 
 router = DefaultRouter()
-router.register(r'users', views.UserViewSet)
+# router.register(r'users', views.UserViewSet)
 router.register(r'coins', views.CoinViewSet)
 router.register(r'holdings', views.UserCoinHoldingsViewSet)
 router.register(r'trades', views.TradeViewSet)
@@ -19,7 +19,7 @@ auth_urls = [
     path('dashboard/', views.UserDashboardView.as_view(), name='user-dashboard'),
     path('dashboard/profile/', views.PublicProfileCoinsView.as_view(), name='user-profile-coins'),
     path('sol-price/',views.GetSolPriceView.as_view(), name='sol-price'),
-    path('coin/top/', coin_views.TopCoinsView.as_view(), name='top-coins'),
+    path('coin/top/', coin_views.TopCoinsView.as_view(), name='top-coins'), # new
     path('coin/all/', coin_views.CoinListView.as_view(), name='all-coins'),
 ]
 
@@ -28,6 +28,10 @@ bot_urls = [
     path("connect-bot/", api_views.ConnectBotWalletView.as_view(), name="connect-bot"),
     path("list-coins/", api_views.CoinListView.as_view(), name="list-coins"),
 ]
+
+# cron_urls =[
+
+# ]
 
 urlpatterns = [
     path("bot_api/", include(bot_urls)),

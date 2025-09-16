@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
-from .permissions import IsCronjobRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.core.cache import cache
+from django.db.models import F, ExpressionWrapper, FloatField
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -13,8 +13,6 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import ValidationError
-# from django.db.models import F
-from django.db.models import F, ExpressionWrapper, FloatField
 
 from .models import (
     DeveloperScore, TraderScore, 
@@ -22,21 +20,21 @@ from .models import (
     Coin, UserCoinHoldings, Trade, SolanaUser,
     PriceApi, CoinHistory
 )
-
 from .serializers import (
     ConnectWalletSerializer, CoinHistorySerializer,
     CoinSerializer, UserCoinHoldingsSerializer, 
-    TradeSerializer, SolanaUserSerializer,
-    TraderHistorySerializer, CoinHolderSerializer
+    TradeSerializer, #SolanaUserSerializer,
+    TraderHistorySerializer, #CoinHolderSerializer
 )
+from .utils.coin_utils import get_coin_info, get_user_holdings
+from .permissions import IsCronjobRequest
+from .throttling import SolPriceThrottle
 
 from datetime import timedelta
 import requests
 from decimal import Decimal
-from .utils.coin_utils import get_coin_info, get_user_holdings
 
 User = get_user_model()
-
 
 class RecalculateDailyScoresView(APIView):
     permission_classes = [IsCronjobRequest]
@@ -73,6 +71,7 @@ class UpdateSolPriceView(APIView): # cron job
             return Response({"error": str(e)}, status=500)
 
 class GetSolPriceView(APIView): # add a rate limit? per user auth
+    throttle_classes = [SolPriceThrottle]
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         price = cache.get("sol_price")
@@ -261,53 +260,53 @@ class TradeViewSet(RestrictedViewset):
     lookup_field = 'id' # Should eventually be changed to transaction_hash
     http_method_names = ['get', 'options']
 
-class UserViewSet(RestrictedViewset): # check later
-    """
-    API endpoint for Solana Users
-    """
-    queryset = SolanaUser.objects.all()
-    serializer_class = SolanaUserSerializer
-    permission_classes = [permissions.AllowAny]#permissions.IsAuthenticated]
-    lookup_field = 'wallet_address'
+# class UserViewSet(RestrictedViewset): # check later
+#     """
+#     API endpoint for Solana Users
+#     """
+#     queryset = SolanaUser.objects.all()
+#     serializer_class = SolanaUserSerializer
+#     permission_classes = [permissions.AllowAny]#permissions.IsAuthenticated]
+#     lookup_field = 'wallet_address'
     
-    @action(detail=True, methods=['get'])
-    def holdings(self, request, wallet_address=None):
-        """Get all coin holdings for a specific user"""
-        user = self.get_object()
-        # Check permissions - users can only see their own holdings
-        if user.wallet_address != request.user.wallet_address and not request.user.is_staff:
-            return Response(
-                {"error": "You don't have permission to view this user's holdings"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+#     @action(detail=True, methods=['get'])
+#     def holdings(self, request, wallet_address=None):
+#         """Get all coin holdings for a specific user"""
+#         user = self.get_object()
+#         # Check permissions - users can only see their own holdings
+#         if user.wallet_address != request.user.wallet_address and not request.user.is_staff:
+#             return Response(
+#                 {"error": "You don't have permission to view this user's holdings"},
+#                 status=status.HTTP_403_FORBIDDEN
+#             )
             
-        holdings = user.holdings.all()
-        serializer = UserCoinHoldingsSerializer(holdings, many=True)
-        return Response(serializer.data)
+#         holdings = user.holdings.all()
+#         serializer = UserCoinHoldingsSerializer(holdings, many=True)
+#         return Response(serializer.data)
     
-    @action(detail=True, methods=['get'])
-    def trades(self, request, wallet_address=None):
-        """Get all trades for a specific user"""
-        user = self.get_object()
-        # Check permissions - users can only see their own trades
-        if user.wallet_address != request.user.wallet_address and not request.user.is_staff:
-            return Response(
-                {"error": "You don't have permission to view this user's trades"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+#     @action(detail=True, methods=['get'])
+#     def trades(self, request, wallet_address=None):
+#         """Get all trades for a specific user"""
+#         user = self.get_object()
+#         # Check permissions - users can only see their own trades
+#         if user.wallet_address != request.user.wallet_address and not request.user.is_staff:
+#             return Response(
+#                 {"error": "You don't have permission to view this user's trades"},
+#                 status=status.HTTP_403_FORBIDDEN
+#             )
             
-        trades = user.trades.all()
-        serializer = TradeSerializer(trades, many=True)
-        return Response(serializer.data)
+#         trades = user.trades.all()
+#         serializer = TradeSerializer(trades, many=True)
+#         return Response(serializer.data)
     
-    @action(detail=True, methods=['get'])
-    def created_coins(self, request, wallet_address=None):
-        """Get all coins created by a specific user"""
-        user = self.get_object()
-        coins = user.coins.all()
-        from .serializers import CoinSerializer
-        serializer = CoinSerializer(coins, many=True)
-        return Response(serializer.data)
+#     @action(detail=True, methods=['get'])
+#     def created_coins(self, request, wallet_address=None):
+#         """Get all coins created by a specific user"""
+#         user = self.get_object()
+#         coins = user.coins.all()
+#         from .serializers import CoinSerializer
+#         serializer = CoinSerializer(coins, many=True)
+#         return Response(serializer.data)
 
 class ConnectWalletView(APIView): # edit
     permission_classes = [permissions.AllowAny]

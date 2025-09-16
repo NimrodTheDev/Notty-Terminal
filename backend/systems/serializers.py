@@ -140,23 +140,24 @@ class TraderHistorySerializer(serializers.ModelSerializer):
         model = TraderHistory
         fields = ['id', 'key', 'score', 'created_at', 'description', 'user']
 
+# needs to be simpler and faster
 class CoinHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CoinHistory
         fields = ['id', 'key', 'score', 'created_at', 'description', 'coin']
 
-class CoinHolderSerializer(serializers.ModelSerializer):
-    user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
-    user_traderscore = serializers.IntegerField(source='user.trader_score.score', read_only=True)
-    held_percentage = serializers.SerializerMethodField()
+# class CoinHolderSerializer(serializers.ModelSerializer):
+#     user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
+#     user_traderscore = serializers.IntegerField(source='user.trader_score.score', read_only=True)
+#     held_percentage = serializers.SerializerMethodField()
 
-    class Meta:
-        model = UserCoinHoldings
-        fields = ['user_wallet_address', 'amount_held', 'held_percentage', 'user_traderscore']
+#     class Meta:
+#         model = UserCoinHoldings
+#         fields = ['user_wallet_address', 'amount_held', 'held_percentage', 'user_traderscore']
 
-    def get_held_percentage(self, obj):
-        supply = obj.coin.total_supply
+#     def get_held_percentage(self, obj):
+#         supply = obj.coin.total_supply
 
-        if not supply or supply == 0:
-            return 0.0
-        return float(obj.amount_held) / float(supply) * 100
+#         if not supply or supply == 0:
+#             return 0.0
+#         return float(obj.amount_held) / float(supply) * 100

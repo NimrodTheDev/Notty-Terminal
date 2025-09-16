@@ -16,7 +16,7 @@ def get_coin_info(queryset):
     )
 
 # add a calculation for change in volume per day how
-# nother cron job for the daily volume
+# another cron job for the daily volume
 
 def get_user_holdings(user, include_market_cap=False, include_net_worth=False):
     qs = (

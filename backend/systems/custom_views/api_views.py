@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from systems.models import SolanaUser, Coin
 from rest_framework.generics import ListAPIView
 from rest_framework import serializers
+# add bot api key
 
 class PriceView(APIView): # fails often because of the coin used is not found? check it again and why?
     permission_classes = [AllowAny]
