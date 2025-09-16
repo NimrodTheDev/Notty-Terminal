@@ -65,14 +65,14 @@ class SolanaUser(AbstractUser):
     def devscore(self): # corrrect it later
         """Dynamically retrieve and recalculate the developer score."""
         if hasattr(self, 'developer_score'):
-            return self.developer_score.recalculate_score()
+            return self.developer_score.score
         return 0  # Default base score if no score record exists
     
     @property
     def tradescore(self):
         """Dynamically retrieve and recalculate the trade score."""
         if hasattr(self, 'trader_score'):
-            return self.trader_score.recalculate_score()
+            return self.trader_score.score
         return 150  # Default base score if no score record exists
 
 class PriceApi(models.Model):

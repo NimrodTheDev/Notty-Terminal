@@ -146,6 +146,9 @@ CACHES = {
         "LOCATION": os.getenv('REDIS_URL')+"/1",  # Use appropriate host/port
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 5, "retry_on_timeout": True},
+            "SOCKET_CONNECT_TIMEOUT": 5,  # seconds
+            "SOCKET_TIMEOUT": 5,
         }
     }
 }
