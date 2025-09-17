@@ -74,14 +74,27 @@ class GetSolPriceView(APIView): # add a rate limit? per user auth
     throttle_classes = [SolPriceThrottle]
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
-        price = cache.get("sol_price")
+        price = None
+        
+        try:
+            price = cache.get("sol_price")
+        except Exception as e:
+            print("Redis unavailable: %s", e)
+
         if price is not None:
             return Response({"sol_price": price})
 
         try:
             instance = PriceApi.objects.only("sol_price").get(id=1)
-            cache.set("sol_price", str(instance.sol_price), timeout=300)
-            return Response({"sol_price": str(instance.sol_price)})
+            price = str(instance.sol_price)
+
+            # Try to set cache (ignore failures)
+            try:
+                cache.set("sol_price", price, timeout=300)
+            except Exception as e:
+                print("Failed to cache price: %s", e)
+
+            return Response({"sol_price": price})
         except PriceApi.DoesNotExist:
             return Response({"error": "No price yet."}, status=404)
 

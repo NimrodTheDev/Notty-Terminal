@@ -582,7 +582,7 @@ function CreateCoin() {
 									<div className='text-green-400'>🟢</div>
 								</div>
 							) : (
-								<div className='flex items-center justify-between'>
+								<div className='flex items-center justify-between space-x-3'>
 									<div>
 										<p className='text-yellow-400 text-sm font-medium'>
 											⚠️ Wallet Not Connected
@@ -593,7 +593,7 @@ function CreateCoin() {
 									</div>
 									<button
 										onClick={connect}
-										className='bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm transition-colors'
+										className='bg-[#9A83F6CC] hover:bg-[#9A83F6] text-white px-3 py-1 rounded text-sm transition-colors'
 									>
 										Connect
 									</button>

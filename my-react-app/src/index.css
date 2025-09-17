@@ -46,3 +46,14 @@
     background: none;
 }
 
+/* in your global.css or index.css */
+.wallet-adapter-button {
+    background-color: #9A83F6CC !important; /* your color */
+    color: white !important; /* text color */
+    /* border-radius: 8px !important; */
+}
+  
+.wallet-adapter-button:hover {
+    background-color: #9A83F6 !important;
+}
+  

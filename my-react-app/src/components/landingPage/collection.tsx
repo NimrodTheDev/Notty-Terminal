@@ -210,7 +210,7 @@ export function NFTCard({ nft, viewMode }: NFTCardProps) {
 
 			<div className='p-4'>
 				<h3 className='text-white text-xl font-bold mb-2'>{nft.name}</h3>
-				<p className='text-gray-400 text-sm mb-4 line-clamp-2'>{nft.description}</p>
+				<p className='text-gray-400 text-sm mb-4 line-clamp-1'>{nft.description}</p>
 
 				<div className='justify-between text-sm gap-y-4 items-center mb-4'>
 					<div className="flex flex-col mb-4 sm:flex-row justify-between">

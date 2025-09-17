@@ -55,7 +55,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
               placeholder="Let's Go!"
               value={searchTerm}
               onChange={onSearchChange}
-              className="w-full bg-transparent rounded-sm px-2 py-1 text-gray-900 placeholder-gray-500 border border-[#232842] focus:outline-none focus:ring-2 focus:ring-[#9A83F6CC] transition"
+              className="w-full bg-transparent rounded-sm px-2 py-1 text-white placeholder-gray-500 border border-[#232842] focus:outline-none focus:ring-2 focus:ring-[#9A83F6CC] transition"
               aria-label="Search coins by ID or name"
               spellCheck={false}
             />
@@ -67,7 +67,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
               <span>Filter</span>
             </div>
             <div className="flex space-x-1">
-              {(["all", "drcscore", "name"] as FilterOptions["filter"][]).map(
+              {(["all", "DRC Score", "name"] as FilterOptions["filter"][]).map(
                 (type) => (
                   <button
                     key={type}
