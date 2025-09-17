@@ -39,7 +39,7 @@ export default function Hero() {
 				<div className='flex flex-col gap-4 w-full sm:flex-row sm:gap-4 sm:justify-center'>
 
 					<Link to="coin/create">
-						<button className='px-6 py-3 sm:w-full bg-custom-light-purple hover:bg-purple-600 rounded-md text-white font-medium flex items-center justify-center w-full transition-colors'>
+						<button className='px-6 py-3 sm:w-full bg-custom-light-purple hover:bg-[#9A83F6] rounded-md text-white font-medium flex items-center justify-center w-full transition-colors'>
 							Create Coin <span className='ml-1'><WalletMinimal size={20} color="#ffffff" /></span>
 						</button>
 					</Link>

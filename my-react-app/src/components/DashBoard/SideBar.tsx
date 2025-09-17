@@ -26,7 +26,7 @@ const Sidebar = () => {
 			link: "home",
 		},
 		{
-			name: "Explorer Coins",
+			name: "Explore Coins",
 			icon: Coins,
 			category: "main",
 			link: "coinmarket",
