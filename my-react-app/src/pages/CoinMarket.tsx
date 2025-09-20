@@ -14,6 +14,7 @@ const CoinMarket: React.FC = () => {
 	const [filteredCoins, setFilteredCoins] = useState<CoinData[]>([]); // client filtered coins
 	const [filter, setFilter] = useState<FilterOptions["filter"]>("all");
 	const [searchTerm, setSearchTerm] = useState<string>("");
+	const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 	const { loading, request } = useAxios();
 	const [mainloading, setMainLoading] = useState(true);
 
@@ -87,6 +88,10 @@ const CoinMarket: React.FC = () => {
 		setSearchTerm("");
 	};
 
+	const handleViewModeChange = (newViewMode: 'card' | 'list') => {
+		setViewMode(newViewMode);
+	};
+
 	if (loading || mainloading) {
 		return (
 			<div className='bg-custom-dark-blue text-white min-h-screen p-4'>
@@ -102,8 +107,10 @@ const CoinMarket: React.FC = () => {
 				coins={filteredCoins}
 				filter={filter}
 				searchTerm={searchTerm}
+				viewMode={viewMode}
 				onSearchChange={handleSearchChange}
 				onFilterChange={handleFilterChange}
+				onViewModeChange={handleViewModeChange}
 			/>
 		</div>
 	);
