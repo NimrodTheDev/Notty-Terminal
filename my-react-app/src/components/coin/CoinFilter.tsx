@@ -37,7 +37,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
   onFilterChange,
 }) => {
   return (
-    <div className="bg-transperant min-h-screen p-4 sm:p-8 z-10 w-fit">
+    <div className="bg-transperant min-h-screen p-4 sm:p-8 z-10">
       <div className="mx-auto">
         {/* Header */}
         <div className="mx-auto text-center rounded-md px-6 mb-8">
@@ -48,8 +48,8 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         </div>
 
         {/* Navbar */}
-        <nav className="mb-8 mx-[-32px] bg-[#1F1A31] px-6 py-3 flex items-center flex-col justify-between w-[calc(100%+64px)] gap-2 md:flex-row ">
-          <div className="flex items-center flex-1 max-w-fit">
+        <nav className="mb-8 mx-[-32px] bg-[#1F1A31] px-6 py-3 flex flex-col md:flex-row items-center justify-between w-[calc(100%+64px)] gap-2 md:gap-8">
+          <div className="flex items-center flex-1 max-w-[600px]">
             <input
               type="text"
               placeholder="Let's Go!"
@@ -67,7 +67,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
               <span>Filter</span>
             </div>
             <div className="flex space-x-1">
-              {(["all", "DRC Score", "name"] as FilterOptions["filter"][]).map(
+              {(["all", "drcscore", "name"] as FilterOptions["filter"][]).map(
                 (type) => (
                   <button
                     key={type}
@@ -79,7 +79,13 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
                     }`}
                     aria-pressed={filter === type}
                   >
-                    {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+                    {
+                      type === "all"
+                      ? "All"
+                      : type === "drcscore"
+                      ? "DRC Score"
+                      : type.charAt(0).toUpperCase() + type.slice(1)
+                    }
                   </button>
                 )
               )}
@@ -91,9 +97,14 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         {coins.length === 0 ? (
           <p className="text-center text-gray-400 mt-10">No coins found.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div
+            className="grid gap-4 sm:gap-6 justify-items-center"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}
+          >
             {coins.map((coin) => (
-              <NFTCard key={coin.address} nft={coin} viewMode="card" />
+              <div key={coin.address} className="w-full max-w-[320px]">
+                <NFTCard nft={coin} viewMode="card" />
+              </div>
             ))}
           </div>
         )}
