@@ -29,16 +29,13 @@ function sumHeldPercentageByScore(
 	scoreThreshold: number,
 	scoreThreshold2: number
   ): number {
-	// return holders
-	//   .filter((h: { user_traderscore: number; }) => (h.user_traderscore < scoreThreshold && h.user_traderscore >= scoreThreshold2))
-	//   .reduce((sum: any, h: { held_percentage: any; }) => sum + h.held_percentage, 0);
 	const total = holders.length;
 	if (total === 0) return 0;
 
 	const countInRange = holders.filter(
-		(h: { user_traderscore: number }) =>
-		h.user_traderscore < scoreThreshold &&
-		h.user_traderscore >= scoreThreshold2
+		(h: { traderscore: number }) =>
+		h.traderscore < scoreThreshold &&
+		h.traderscore >= scoreThreshold2
 	).length;
 
 	return (countInRange / total) * 100; // return percentage of people
@@ -150,6 +147,8 @@ function BuyAndSell({ coinData, fetchCoin }: BuyAndSellProps) {
 			  fullAddress: item.wallet_address,
 			}))
 		);
+
+		console.log(holders)
 	  
 		setHolderAnalytics([
 		  { label: "Total Holders", value: holders.length.toString() },
