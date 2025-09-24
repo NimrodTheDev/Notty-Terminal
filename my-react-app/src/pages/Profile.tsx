@@ -11,7 +11,7 @@ interface UserInfo {
 }
 
 function Profile () {
-  const [activeTab, setActiveTab] = useState('createdCoins')
+  const [activeTab, setActiveTab] = useState('mintedCoins')
   const [coins, setCoins] = useState<any[]>([])
   const [heldCoins, setHeldCoins] = useState<any[]>([])
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
@@ -107,17 +107,17 @@ function Profile () {
                   <div className='flex flex-row min-w-max sm:min-w-0'>
                     <button
                       className={`px-3 py-3 sm:px-6 flex-shrink-0 sm:flex-1 font-medium text-xs sm:text-sm focus:outline-none relative whitespace-nowrap ${
-                        activeTab === 'createdCoins'
+                        activeTab === 'mintedCoins'
                           ? 'text-[#7E6DC8] font-semibold'
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
-                      onClick={() => setActiveTab('createdCoins')}
+                      onClick={() => setActiveTab('mintedCoins')}
                     >
                       <span className='text-[#b5a7f3] text-xs sm:text-sm mr-1'>
                         {coins.length}
                       </span>
                       Created Coins
-                      {activeTab === 'createdCoins' && (
+                      {activeTab === 'mintedCoins' && (
                         <span className='absolute bottom-0 left-0 right-0 h-0.5 bg-[#7E6DC8]'></span>
                       )}
                     </button>
@@ -179,7 +179,7 @@ function Profile () {
             {/* display beginning */}
 
             <div className='px-2 py-2 sm:px-6 sm:py-6'>
-              {activeTab === 'createdCoins' && (
+              {activeTab === 'mintedCoins' && (
                 <div className='space-y-2 sm:space-y-4'>
                   <div className='overflow-x-auto'>
                     <ul className='space-y-1 sm:space-y-0'>
