@@ -76,8 +76,6 @@ const DashHome = () => {
 					}
 				);
 				const { user, holdings, created_coins: coins, net_worth } = response.data;
-				console.log(wallet.publicKey?.toBase58());
-				console.log("Holdings:", holdings);
 				setPortfolioValue(net_worth);
 				setCreatedCoins(coins.length);
 				setCoins(holdings);
