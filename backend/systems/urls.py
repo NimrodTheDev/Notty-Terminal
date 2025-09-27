@@ -6,9 +6,7 @@ from .custom_views import coin_views
 from django.http import HttpResponse
 
 router = DefaultRouter()
-# router.register(r'users', views.UserViewSet)
 router.register(r'coins', views.CoinViewSet)
-router.register(r'holdings', views.UserCoinHoldingsViewSet)
 router.register(r'trades', views.TradeViewSet)
 
 auth_urls = [
