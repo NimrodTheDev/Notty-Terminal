@@ -89,14 +89,15 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 					{copySuccess && <span className="text-green-400 text-xs ml-1">Copied!</span>}</div>
 				</div>
 
-				<div className="flex items-center justify-between"><div className="text-[#ccc1fa]">Total Supply</div>
-				<div className="text-right">{coinData.total_supply}</div></div>
-			</div>
+				<div className="flex items-center justify-between">
+					<div className="text-[#ccc1fa]">Total Supply</div>
+					<div className="text-right">{coinData.total_supply}</div>
+				</div>
 
-			{/* Bonding curve progress */}
-			<div className="flex items-center gap-4 mt-4">
+				{/* Bonding curve progress */}
+			<div className="flex justify-between items-center mt-4">
 				<span className="text-[#ccc1fa]">Bonding curve progress</span>
-				<div className="flex-1 flex flex-col">
+				<div className=" flex flex-col">
 					<div className="flex items-center gap-2">
 						<div className="w-48 h-4 bg-gray-700 rounded-full overflow-hidden relative">
 							<div
@@ -113,6 +114,9 @@ export default function CryptoTokenDetails({ coinData }: CryptoTokenDetailsProps
 					</div> */}
 				</div>
 			</div>
+			</div>
+
+			
 
 			{/* Website */}
 			{coinData.website && (
