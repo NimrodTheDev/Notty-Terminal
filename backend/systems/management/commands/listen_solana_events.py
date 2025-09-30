@@ -138,7 +138,7 @@ class Command(BaseCommand):
                     creator=creator,
                     total_supply=Decimal(str(logs["total_supply"])),
                     image_url=logs.get("image", ""),
-                    current_price=Decimal(str(logs["initial_price_per_token"])),
+                    current_price=self.bigint_to_float(logs['initial_price_per_token'], 9),
                     description=logs.get("description", None),
                     discord=attributes.get("discord"),
                     website=attributes.get("website"),
