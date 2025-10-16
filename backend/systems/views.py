@@ -41,6 +41,7 @@ from adrf.generics import ListAPIView as alaview
 from asgiref.sync import sync_to_async
 from django.db.models import Value, When, BooleanField, Case, CharField
 from .utils.analyze import analysis
+from .authenticate import CustomDashTokenAuth
 
 User = get_user_model()
 
@@ -193,8 +194,19 @@ class CoinViewSet(RestrictedViewset):
         serializer = TradeSerializer(trades, many=True)
         return Response(serializer.data)
 
-class UserHolding(APIView):
-    def get_data(self, coinset, usercoinholdings_set, user):
+class UserHolding(APIView):    
+    def get_data(self, user):
+        coinset = Coin.objects.filter(creator=user)
+        usercoinholdings_set = (UserCoinHoldings.objects
+            .filter(user=user)
+            .select_related("coin")
+            .annotate(
+                value=ExpressionWrapper(
+                    F("amount_held") * F("coin__current_price"),
+                    output_field=DecimalField(max_digits=32, decimal_places=9),
+                )
+            )
+        )
         created_coins = get_coin_info(coinset)
         held_coins, net_worth = get_user_holdings_info(usercoinholdings_set)
 
@@ -214,24 +226,13 @@ class UserHolding(APIView):
         })
 
 class UserDashboardView(UserHolding): # 3 queries
+    # join with developer score//
+    authentication_classes = [CustomDashTokenAuth]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        # join with developer score//
-        coinset = Coin.objects.filter(user=user)
-        usercoinholdings_set = (UserCoinHoldings.objects
-            .filter(user=user)
-            .select_related("coin")
-            .annotate(
-                value=ExpressionWrapper(
-                    F("amount_held") * F("coin__current_price"),
-                    output_field=DecimalField(max_digits=32, decimal_places=9),
-                )
-            )
-        )
-
-        return self.get_data(usercoinholdings_set, coinset, user)
+        return self.get_data(user)
 
 class PublicProfileCoinsView(UserHolding): # we can still check if the user is authenticaed sha -> an extra query
     permission_classes = [permissions.AllowAny]
@@ -242,212 +243,7 @@ class PublicProfileCoinsView(UserHolding): # we can still check if the user is a
             return Response({"detail": "Missing wallet address."}, status=400)
 
         user = SolanaUser.objects.filter(wallet_address=wallet_address).select_related("developer_score").first()
-        coinset = (Coin.objects
-            .filter(creator=user)
-            # .values(
-            #     "address", "ticker", "name",
-            #     "created_at",
-            #     "current_price", "total_held", "score",
-            #     "current_marketcap",
-            # )
-        )
-        usercoinholdings_set = (UserCoinHoldings.objects
-            .filter(user=user)
-            .select_related("coin")
-            .annotate(
-                value=ExpressionWrapper(
-                    F("amount_held") * F("coin__current_price"),
-                    output_field=DecimalField(max_digits=32, decimal_places=9),
-                )
-            )
-            # .values(
-            #     "amount_held",
-            #     "value",
-            #     coin_address=F("coin__address"),
-            #     coin_ticker=F("coin__ticker"),
-            #     coin_name=F("coin__name"),
-            #     current_price=F("coin__current_price"),
-            #     current_marketcap=F("coin__current_marketcap"),
-            # )
-        )
-        
-
-        # analysis(coinset)
-        # analysis(usercoinholdings_set, True)
-        # print(len(list(connection.queries)))
-        # db_time = sum(float(q["time"]) for q in connection.queries)
-        # print(db_time)
-
-        return self.get_data(usercoinholdings_set, coinset, user)
-
-    # async def get(self, request):
-    #     wallet_address = request.query_params.get("address")
-    #     if not wallet_address:
-    #         return Response({"detail": "Missing wallet address."}, status=400)
-
-    #     try:
-    #         user = await SolanaUser.objects.aget(wallet_address=wallet_address)
-    #     except SolanaUser.DoesNotExist:
-    #         return Response({"detail": "User not found."}, status=404)
-
-    #     coinset = Coin.objects.filter(user=user)
-    #     usercoinholdings_set = (
-    #         UserCoinHoldings.objects
-    #         .filter(user=user)
-    #         .select_related("coin")
-    #         .annotate(
-    #             value=ExpressionWrapper(
-    #                 F("amount_held") * F("coin__current_price"),
-    #                 output_field=DecimalField(max_digits=32, decimal_places=9),
-    #             )
-    #         )
-    #     )
-
-    #     async def load_coins():
-    #         return [coin async for coin in coinset]
-
-    #     async def load_holdings():
-    #         return [holding async for holding in usercoinholdings_set]
-
-    #     coinset_list, usercoinholdings_list = await asyncio.gather(
-    #         load_coins(),
-    #         load_holdings(),
-    #     )
-
-    #     return await self.get_data(usercoinholdings_list, coinset_list, user)
-
-    # async def get(self, request):
-    #     wallet_address = request.query_params.get("address")
-    #     if not wallet_address:
-    #         return Response({"detail": "Missing wallet address."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     async def load_user():
-    #         return await SolanaUser.objects.aget(wallet_address=wallet_address)
-
-    #     @sync_to_async
-    #     def load_coins_sync():
-    #         return list(
-    #             Coin.objects.filter(
-    #                 creator__wallet_address=wallet_address
-    #             ).values(
-    #                 "address", "ticker", "name",
-    #                 "created_at", "current_price", "total_held",
-    #                 "score", "current_marketcap",
-    #             )
-    #         )
-
-    #     @sync_to_async
-    #     def load_holdings():
-    #         qs = (
-    #             UserCoinHoldings.objects
-    #             .filter(user__wallet_address=wallet_address)
-    #             .select_related("coin")
-    #             .annotate(
-    #                 value=ExpressionWrapper(
-    #                     F("amount_held") * F("coin__current_price"),
-    #                     output_field=DecimalField(max_digits=32, decimal_places=9),
-    #                 )
-    #             )
-    #             .values(
-    #                 "amount_held",
-    #                 "value",
-    #                 coin_address=F("coin__address"),
-    #                 coin_ticker=F("coin__ticker"),
-    #                 coin_name=F("coin__name"),
-    #                 current_price=F("coin__current_price"),
-    #                 current_marketcap=F("coin__current_marketcap"),
-    #             )
-    #         )
-    #         return list(qs)    # ✅ async iteration
-
-    #     try:
-    #         user, coinset_list, usercoinholdings_list = await asyncio.gather(
-    #             load_user(),
-    #             load_coins_sync(),
-    #             load_holdings(),
-    #         )
-    #     except SolanaUser.DoesNotExist:
-    #         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    #     return Response(
-    #         {
-    #             "user": user.wallet_address,
-    #             "coins": coinset_list,
-    #             "holdings": usercoinholdings_list,
-    #         },
-    #         status=status.HTTP_200_OK
-    #     )
- 
-    # async def get(self, request):
-    #     wallet_address = request.query_params.get("address")
-    #     if not wallet_address:
-    #         return Response({"detail": "Missing wallet address."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     @sync_to_async
-    #     def load_user_raw():
-    #         with connection.cursor() as cursor:
-    #             cursor.execute(
-    #                 "SELECT wallet_address FROM systems_solanauser WHERE wallet_address = %s",
-    #                 [wallet_address]
-    #             )
-    #             row = cursor.fetchone()
-    #             if not row:
-    #                 raise SolanaUser.DoesNotExist()
-    #             return {"wallet_address": row[0]}
-
-    #     # @sync_to_async  
-    #     # def load_coins_raw():
-    #     #     with connection.cursor() as cursor:
-    #     #         cursor.execute("""
-    #     #             SELECT c.address, c.ticker, c.name, c.created_at, 
-    #     #                    c.current_price, c.total_held, c.score, c.current_marketcap
-    #     #             FROM coin c
-    #     #             JOIN solana_user su ON c.creator_id = su.id 
-    #     #             WHERE su.wallet_address = %s
-    #     #         """, [wallet_address])
-                
-    #     #         columns = [col[0] for col in cursor.description]
-    #     #         return [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-    #     # @sync_to_async
-    #     # def load_holdings_raw():
-    #     #     with connection.cursor() as cursor:
-    #     #         cursor.execute("""
-    #     #             SELECT uch.amount_held,
-    #     #                    (uch.amount_held * c.current_price) as value,
-    #     #                    c.address as coin_address,
-    #     #                    c.ticker as coin_ticker,
-    #     #                    c.name as coin_name,
-    #     #                    c.current_price,
-    #     #                    c.current_marketcap
-    #     #             FROM user_coin_holdings uch
-    #     #             JOIN coin c ON uch.coin_id = c.id
-    #     #             JOIN solana_user su ON uch.user_id = su.id
-    #     #             WHERE su.wallet_address = %s
-    #     #         """, [wallet_address])
-                
-    #     #         columns = [col[0] for col in cursor.description]
-    #     #         return [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-    #     try:
-    #         # All 3 raw SQL queries run in parallel
-    #         # , coins, holdings
-    #         user = await asyncio.gather(
-    #             load_user_raw(),
-    #             # load_coins_raw(), 
-    #             # load_holdings_raw(),
-    #         )
-    #     except SolanaUser.DoesNotExist:
-    #         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    #     return Response(
-    #         {
-    #             "user": user["wallet_address"],
-    #             # "coins": coins,
-    #             # "holdings": holdings,
-    #         },
-    #         status=status.HTTP_200_OK
-    #     )
+        return self.get_data(user)
 
 class TradeViewSet(RestrictedViewset):
     """

@@ -15,11 +15,8 @@ def create_user_scores(sender, instance, created, **kwargs):
     """Create DRC scores when a new user is created"""
     if created:
         # Create trader score for all users
-        TraderScore.objects.get_or_create(trader=instance)
-        
-        # If user has coins, create developer score
-        if instance.coins.exists():
-            DeveloperScore.objects.get_or_create(developer=instance)
+        TraderScore.objects.create(trader=instance)
+        DeveloperScore.objects.create(developer=instance)
 
 def update_total_held_on_save(delta, coin):
     """
@@ -35,14 +32,14 @@ def update_total_held_on_save(delta, coin):
 
     Coin.objects.filter(pk=coin.pk).update(**update_data)
 
-@receiver(post_save, sender=Trade)
+@receiver(post_save, sender=Trade) # i feel a lot happens in the creation af trades 
 def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwargs):
     """
     Update user holdings and all related scores when a trade is created.
     """
     if not created:
         return  # Avoid reprocessing
-
+    # can't we use instance.prefetch its an extra call but?
     with transaction.atomic():
         user = instance.user
         coin = instance.coin
@@ -51,7 +48,7 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         sol_price = instance.sol_amount * (-1 if instance.trade_type == 'SELL' else 1)
         Coin.objects.filter(pk=coin.pk).update(
             current_marketcap=F('current_marketcap') + sol_price, 
-            change=F('change')+instance.sol_amount
+            change=F('change')+instance.sol_amount # improve change
         )
         coin.refresh_from_db(fields=['current_marketcap', 'change']) # test 
 
@@ -72,42 +69,47 @@ def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwar
         update_total_held_on_save(delta, coin)
 
         # Refresh holdings from DB
-        holdings.refresh_from_db()
+        holdings.refresh_from_db() # why is are we refreshing and also how does that affect the holdings
 
         delete_holdings = False
         # If holdings amount is zero or negative, mark for deletion
         if holdings.amount_held <= 0:
             delete_holdings = True
         
+        # i think we should reove from atomic
         # Update trader score - do this before potentially deleting holdings
-        trader_score, _ = TraderScore.objects.get_or_create(trader=user) # I don't think this should be like that.
+        trader_score = TraderScore.objects.get(trader=user) # I don't think this should be like that.
         
         # Update coin score - track 24h volume
-        coin_score, _ = CoinDRCScore.objects.get_or_create(coin=coin)
+        coin_score = CoinDRCScore.objects.get(coin=coin)
         
         # Now delete the holdings if necessary
         if delete_holdings:
             holdings.delete()
         
+        # a way to check the coin holders faster or handel outside
         # Update holders count and recalculate scores
         coin_score.update_holders_count()
-        trader_score.calculate_daily_score() # should this be in the atomic
+        # this calculation is heavy and should be done some where else
+        trader_score.calculate_daily_score() # should this be in the atomic 
         broadcast_trade_created(instance)
 
-@receiver(post_save, sender=Coin)
+@receiver(post_save, sender=Coin) # on create coin create developer score
 def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
     """
     Create a DRC score record when a new coin is created
     """
     if created:
         # Create coin DRC score
-        score, _ = CoinDRCScore.objects.get_or_create(coin=instance)
+        score = CoinDRCScore.objects.create(coin=instance)
         # score.last_recorded_price = instance.liquidity # there should be a starting price
         # score.recalculate_score() # remove this because the score is in daily
         
-        # Get or create developer score for the coin creator
-        dev_score, _ = DeveloperScore.objects.get_or_create(developer=instance.creator)
-        dev_score.recalculate_score()
+        dev_score = DeveloperScore.objects.get(developer=instance.creator)
+        # if not dev_score.is_active:
+            # dev_score.is_active = True
+            # dev_score.save(update_fields=["is_active"])
+        dev_score.recalculate_score((not dev_score.is_active))
         broadcast_coin_created(instance)
 
 @receiver(post_delete, sender=UserCoinHoldings)
