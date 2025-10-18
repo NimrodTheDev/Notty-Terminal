@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.core.cache import cache
-from django.db.models import F, ExpressionWrapper, FloatField, DecimalField, Prefetch
-from django.db import connection
+from django.db.models import F, ExpressionWrapper, FloatField, DecimalField#, Prefetch
+# from django.db import connection
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -22,7 +22,7 @@ from .models import (
 )
 from .serializers import (
     ConnectWalletSerializer, CoinHistorySerializer,
-    CoinSerializer, UserCoinHoldingsSerializer, 
+    CoinSerializer, #UserCoinHoldingsSerializer, 
     TradeSerializer, #SolanaUserSerializer,
     TraderHistorySerializer, #CoinHolderSerializer
 )
@@ -35,12 +35,12 @@ from datetime import timedelta
 import requests
 from decimal import Decimal
 
-import asyncio
-from adrf.views import APIView as aaview
-from adrf.generics import ListAPIView as alaview
-from asgiref.sync import sync_to_async
-from django.db.models import Value, When, BooleanField, Case, CharField
-from .utils.analyze import analysis
+# import asyncio
+# from adrf.views import APIView as aaview
+# from adrf.generics import ListAPIView as alaview
+# from asgiref.sync import sync_to_async
+# from django.db.models import Value, When, BooleanField, Case, CharField
+# from .utils.analyze import analysis
 from .authenticate import CustomDashTokenAuth
 
 User = get_user_model()
@@ -52,8 +52,8 @@ class RecalculateDailyScoresView(APIView):
         for drc in CoinDRCScore.objects.select_related('coin').all():
             drc.recalculate_score()
         #check
-        # for devs in DeveloperScore.objects.filter(is_active=True).select_related('developer').all():
-        #     devs.recalculate_score()
+        for devs in DeveloperScore.objects.filter(is_active=True).select_related('developer').all():
+            devs.recalculate_score()
         for trds in TraderScore.objects.select_related('trader').all():
             trds.recalculate_score()
         return HttpResponse("OK")
@@ -194,7 +194,7 @@ class CoinViewSet(RestrictedViewset):
         serializer = TradeSerializer(trades, many=True)
         return Response(serializer.data)
 
-class UserHolding(APIView):    
+class UserHolding(APIView):
     def get_data(self, user):
         coinset = Coin.objects.filter(creator=user)
         usercoinholdings_set = (UserCoinHoldings.objects
@@ -303,6 +303,7 @@ class TraderHistoryListView(ListAPIView):
         
         return qs
 
+# add acutal history for coin history
 class CoinHistoryListView(ListAPIView):
     serializer_class = CoinHistorySerializer
     pagination_class = HistoryPagination

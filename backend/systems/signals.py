@@ -105,11 +105,7 @@ def create_coin_drc_score(sender, instance, created, **kwargs): # making the sco
         # score.last_recorded_price = instance.liquidity # there should be a starting price
         # score.recalculate_score() # remove this because the score is in daily
         
-        dev_score = DeveloperScore.objects.get(developer=instance.creator)
-        # if not dev_score.is_active:
-            # dev_score.is_active = True
-            # dev_score.save(update_fields=["is_active"])
-        dev_score.recalculate_score((not dev_score.is_active))
+        DeveloperScore.objects.filter(developer=instance.creator, is_active=False).update(is_active=True)
         broadcast_coin_created(instance)
 
 @receiver(post_delete, sender=UserCoinHoldings)

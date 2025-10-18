@@ -151,6 +151,14 @@ class CoinDRCScore(DRCScore):
             price_growth_bonus + 
             retention_bonus
         )
+
+        # history
+        if fair_trading_bonus > 0:
+            log_coin_history(self.coin, CoinKey.FAIR_TRADING, fair_trading_bonus)
+        if price_growth_bonus > 0:
+            log_coin_history(self.coin, CoinKey.PRICE_GROWTH, price_growth_bonus)
+        if retention_bonus > 0:
+            log_coin_history(self.coin, CoinKey.RETENTION, retention_bonus)
         
         # Cap the bonus to prevent excessive score inflation
         capped_bonus = min(total_bonus, 300)
@@ -182,6 +190,10 @@ class CoinDRCScore(DRCScore):
             holder_rank_bonus
         )
         
+        # history
+        if holder_rank_bonus > 0:
+            log_coin_history(self.coin, CoinKey.HOLDER_RANK_BONUS, holder_rank_bonus)
+
         # Cap the bi-weekly bonus
         capped_bonus = min(total_biweekly_bonus, 50)
         self.score = max(0, self.score + int(capped_bonus))
@@ -289,8 +301,10 @@ class CoinDRCScore(DRCScore):
         # Final flag set
         if pump_detected and dump_detected:
             self.pump_and_dump_activity = True
+            # history
+            log_coin_history(self.coin, CoinKey.PUMP_AND_DUMP, -200)
+            self.score = max(0, self.score - 100)
             if save:
-                self.score = max(0, self.score - 100)
                 self.save(update_fields=[
                     'pump_and_dump_activity', 'score', 'updated_at'
                 ])
@@ -355,19 +369,23 @@ class CoinDRCScore(DRCScore):
             # Flag as abandoned if dev holds less than 1%
             if dev_percentage < 1.0:
                 self.team_abandonment = True
+                # history
+                log_coin_history(self.coin, CoinKey.TEAM_ABANDONED, -100)
                 self.score = max(0, self.score - 100)
                 if save:
                     self.save(update_fields=[
                         'team_abandonment', 'score', 'updated_at'
                     ])
         except self.coin.holders.model.DoesNotExist: # hmm
-            # Dev has no holdings - definitely abandoned
-            self.team_abandonment = True
-            self.score = max(0, self.score - 100)
-            if save:
-                self.save(update_fields=[
-                    'team_abandonment', 'score', 'updated_at'
-                ])
+            pass
+        # a if the dev bought and sold the thi is applicable, also the top people are the devs now i think?
+        #     # Dev has no holdings - definitely abandoned
+        #     self.team_abandonment = True
+        #     self.score = max(0, self.score - 100)
+        #     if save:
+        #         self.save(update_fields=[
+        #             'team_abandonment', 'score', 'updated_at'
+        #         ])
 
     def _check_token_abandonment(self, save=True): # inactivity for 2 weeks a little to on good trades # this is sell numbers not acutal amounts
         """Check if token shows signs of abandonment (low activity)"""
@@ -384,9 +402,13 @@ class CoinDRCScore(DRCScore):
         # 2. Sell ratio is too high (> 70%) indicating dump 
         if total_trades < 20 and self.age_in_hours > (7 * 24):  # After 1 week
             self.token_abandonment = True
+            # history
+            log_coin_history(self.coin, CoinKey.TOKEN_ABANDONED, -200)
             self.score = max(0, self.score - 200)
         elif total_trades >= 20 and (sell_trades / total_trades) > 0.7:
             self.token_abandonment = True
+            # history
+            log_coin_history(self.coin, CoinKey.TOKEN_ABANDONED, -200)
             self.score = max(0, self.score - 200)
         
         if self.token_abandonment and save:
