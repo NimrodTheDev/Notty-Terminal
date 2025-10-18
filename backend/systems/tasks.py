@@ -3,9 +3,10 @@ from celery import shared_task
 from django.db import transaction, close_old_connections, connection
 from decimal import Decimal
 from datetime import datetime, timezone as dt_timezone
-from systems.models import Coin, Trade, SolanaUser
+from systems.models import Coin, Trade, SolanaUser, CoinDRCScore, DeveloperScore
 import logging
 import time
+# from .utils.broadcast import broadcast_coin_created, broadcast_trade_created
 
 logger = logging.getLogger(__name__)
 
@@ -111,11 +112,12 @@ def process_creates_batch(self, events: list):
         # Bulk create
         if coins_to_create:
             with transaction.atomic():
-                Coin.objects.bulk_create(
+                created_coins = Coin.objects.bulk_create(
                     coins_to_create,
                     ignore_conflicts=True,
                     batch_size=100
                 )
+                transaction.on_commit(lambda: handle_coin_post_create(created_coins))
             
             logger.info(
                 f"Successfully created {len(coins_to_create)} coins "
@@ -134,6 +136,26 @@ def process_creates_batch(self, events: list):
         logger.error(f"Error processing create batch: {e}", exc_info=True)
         # Retry the task
         raise self.retry(exc=e)
+
+# signal
+def handle_coin_post_create(coins: list[Coin]):
+    """
+    Mimics post_save signal behavior for bulk-created coins.
+    """
+    if not coins:
+        return
+
+    # 1. Create DRC scores in bulk
+    drc_scores = [CoinDRCScore(coin=coin) for coin in coins]
+    CoinDRCScore.objects.bulk_create(drc_scores, ignore_conflicts=True, batch_size=100)
+
+    # 2. Activate developers in bulk
+    creator_ids = {coin.creator_id for coin in coins}
+    DeveloperScore.objects.filter(developer_id__in=creator_ids, is_active=False).update(is_active=True)
+
+    # 3. Optionally broadcast in bulk (optional)
+    # for coin in coins:
+    #     broadcast_coin_created(coin)
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=5)
