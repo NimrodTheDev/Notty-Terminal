@@ -12,3 +12,4 @@ django-cors-headers
 django_redis
 requests
 aiohttp
+adrf

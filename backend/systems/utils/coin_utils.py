@@ -15,6 +15,23 @@ def get_coin_info(queryset):
         )
     )
 
+def get_user_holdings_info(holdings):
+    """
+    Version of get_user_holdings that works on an already-prefetched queryset/list.
+    """
+    result = list(holdings.values(
+        "value",
+        "amount_held",
+        coin_address=F("coin__address"),
+        coin_ticker=F("coin__ticker"),
+        coin_name=F("coin__name"),
+        current_price=F("coin__current_price"),
+        current_marketcap=F("coin__current_marketcap"),
+    ))
+    net_worth = sum(h["value"] for h in result)
+    return result, net_worth
+
+
 # add a calculation for change in volume per day how
 # another cron job for the daily volume
 

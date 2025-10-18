@@ -6,7 +6,7 @@ from .models import (
     Trade, TraderHistory, CoinHistory
 )
 
-class SolanaUserSerializer(serializers.ModelSerializer):
+class SolanaUserSerializer(serializers.ModelSerializer): # we should always select_relations in user 
     devscore = serializers.SerializerMethodField()
     tradescore = serializers.SerializerMethodField()
 
@@ -59,9 +59,9 @@ class CoinSerializer(serializers.ModelSerializer):
         return obj.creator.get_display_name()
     
     def get_marketcap(self, obj):
-        return obj.marketcap
+        return obj.current_marketcap
 
-class UserCoinHoldingsSerializer(serializers.ModelSerializer): # do we need images
+class UserCoinHoldingsSerializer(serializers.ModelSerializer): # we need to select_relationship on ths too
     coin_ticker = serializers.ReadOnlyField(source='coin.ticker')
     coin_name = serializers.ReadOnlyField(source='coin.name')
     current_price = serializers.ReadOnlyField(source='coin.current_price')
@@ -145,19 +145,3 @@ class CoinHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CoinHistory
         fields = ['id', 'key', 'score', 'created_at', 'description', 'coin']
-
-# class CoinHolderSerializer(serializers.ModelSerializer):
-#     user_wallet_address = serializers.CharField(source='user.wallet_address', read_only=True)
-#     user_traderscore = serializers.IntegerField(source='user.trader_score.score', read_only=True)
-#     held_percentage = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = UserCoinHoldings
-#         fields = ['user_wallet_address', 'amount_held', 'held_percentage', 'user_traderscore']
-
-#     def get_held_percentage(self, obj):
-#         supply = obj.coin.total_supply
-
-#         if not supply or supply == 0:
-#             return 0.0
-#         return float(obj.amount_held) / float(supply) * 100
