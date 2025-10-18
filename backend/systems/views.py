@@ -1,10 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
-# from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
 from django.core.cache import cache
 from django.db.models import F, ExpressionWrapper, FloatField, DecimalField#, Prefetch
-# from django.db import connection
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -15,10 +11,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 
 from .models import (
-    DeveloperScore, TraderScore, 
-    CoinDRCScore, TraderHistory,
     Coin, UserCoinHoldings, Trade, SolanaUser,
-    PriceApi, CoinHistory
+    PriceApi, CoinHistory, TraderHistory,
 )
 from .serializers import (
     ConnectWalletSerializer, CoinHistorySerializer,
@@ -28,12 +22,8 @@ from .serializers import (
 )
 from .paginations import HistoryPagination
 from .utils.coin_utils import get_coin_info, get_user_holdings_info
-from .permissions import IsCronjobRequest
 from .throttling import SolPriceThrottle
-
-from datetime import timedelta
-import requests
-from decimal import Decimal
+from .authenticate import CustomDashTokenAuth
 
 # import asyncio
 # from adrf.views import APIView as aaview
@@ -41,46 +31,11 @@ from decimal import Decimal
 # from asgiref.sync import sync_to_async
 # from django.db.models import Value, When, BooleanField, Case, CharField
 # from .utils.analyze import analysis
-from .authenticate import CustomDashTokenAuth
+# from django.db import connection
 
 User = get_user_model()
 
-class RecalculateDailyScoresView(APIView):
-    permission_classes = [IsCronjobRequest]
-
-    def post(self, request):
-        for drc in CoinDRCScore.objects.select_related('coin').all():
-            drc.recalculate_score()
-        #check
-        for devs in DeveloperScore.objects.filter(is_active=True).select_related('developer').all():
-            devs.recalculate_score()
-        for trds in TraderScore.objects.select_related('trader').all():
-            trds.recalculate_score()
-        return HttpResponse("OK")
-
-class UpdateSolPriceView(APIView): # cron job
-    permission_classes = [IsCronjobRequest]
-
-    def post(self, request):
-        instance, _ = PriceApi.objects.get_or_create(id=1)
-
-        if instance.updated_at > now() - timedelta(minutes=4):
-            return Response({"detail": "Price already fresh."})
-
-        try:
-            response = requests.get(
-                "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
-                timeout=2
-            )
-            print(response)
-            response.raise_for_status()
-            instance.sol_price = Decimal(response.json()["solana"]["usd"])
-            instance.save()
-            return Response({"detail": "Updated", "sol_price": str(instance.sol_price)})
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
-
-class GetSolPriceView(APIView): # add a rate limit? per user auth
+class GetSolPriceView(APIView):
     throttle_classes = [SolPriceThrottle]
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
@@ -225,8 +180,7 @@ class UserHolding(APIView):
             "net_worth": float(net_worth),
         })
 
-class UserDashboardView(UserHolding): # 3 queries
-    # join with developer score//
+class UserDashboardView(UserHolding):
     authentication_classes = [CustomDashTokenAuth]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -234,7 +188,7 @@ class UserDashboardView(UserHolding): # 3 queries
         user = request.user
         return self.get_data(user)
 
-class PublicProfileCoinsView(UserHolding): # we can still check if the user is authenticaed sha -> an extra query
+class PublicProfileCoinsView(UserHolding):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -307,7 +261,7 @@ class TraderHistoryListView(ListAPIView):
 class CoinHistoryListView(ListAPIView):
     serializer_class = CoinHistorySerializer
     pagination_class = HistoryPagination
-    permission_classes = [permissions.AllowAny]#IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         qs = CoinHistory.objects.all().order_by('-created_at')
