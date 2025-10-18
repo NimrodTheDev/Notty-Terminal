@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'channels',
+    'django_redis',
     'systems',
     # 'adrf'
 ]
@@ -108,19 +109,36 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Channels configuration
 ASGI_APPLICATION = 'core.asgi.application'
 
+REDIS_URL= os.getenv('REDIS_URL')
+
 # Channel layers configuration for Redis
 CHANNEL_LAYERS = {
     'default': {
         # redis
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [os.getenv('REDIS_URL')],
+            'hosts': [REDIS_URL],
         },
     },
 }
 
+# Celery Configuration
+CELERY_BROKER_URL = f"{REDIS_URL}/0"
+CELERY_RESULT_BACKEND = f"{REDIS_URL}/0"
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
+
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
 
 DATABASES = {
     # 'default': {
@@ -144,7 +162,7 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.getenv('REDIS_URL')+"/1",  # Use appropriate host/port
+        "LOCATION": f"{REDIS_URL}/1",  # Use appropriate host/port
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {"max_connections": 5, "retry_on_timeout": True},
