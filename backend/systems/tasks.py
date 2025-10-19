@@ -1,39 +1,15 @@
 # systems/tasks.py
 from celery import shared_task
-from django.db import transaction, close_old_connections, connection
+from django.db import transaction
 from decimal import Decimal
 from datetime import datetime, timezone as dt_timezone
-from systems.models import Coin, Trade, SolanaUser, CoinDRCScore, DeveloperScore
+from systems.models import Coin, Trade, SolanaUser
 import logging
 import time
-# from .utils.broadcast import broadcast_coin_created, broadcast_trade_created
+from celery_sys.utlis import ensure_connection, get_transaction_type, bigint_to_float
+from celery_sys.batched_signals import handle_coin_post_create, handle_trades_post_create
 
 logger = logging.getLogger(__name__)
-
-
-def ensure_connection():
-    """Ensure database connection is usable"""
-    close_old_connections()
-    if not connection.is_usable():
-        connection.connect()
-
-
-def bigint_to_float(value: int, power: int = 9) -> Decimal:
-    """Convert bigint to float with proper decimal places"""
-    result = Decimal(value).scaleb(-power).quantize(Decimal(f'0.{"0"*(power-1)}1'))
-    return result
-
-
-def get_transaction_type(ttype: str) -> str:
-    """Get transaction type from code"""
-    if ttype == "1":
-        return "SELL"
-    if ttype == "2":
-        return "COIN_CREATE"
-    if ttype == "0":
-        return "BUY"
-    raise ValueError(f"Type not registered: {ttype}")
-
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=5)
 def process_creates_batch(self, events: list):
@@ -136,27 +112,6 @@ def process_creates_batch(self, events: list):
         logger.error(f"Error processing create batch: {e}", exc_info=True)
         # Retry the task
         raise self.retry(exc=e)
-
-# signal
-def handle_coin_post_create(coins: list[Coin]):
-    """
-    Mimics post_save signal behavior for bulk-created coins.
-    """
-    if not coins:
-        return
-
-    # 1. Create DRC scores in bulk
-    drc_scores = [CoinDRCScore(coin=coin) for coin in coins]
-    CoinDRCScore.objects.bulk_create(drc_scores, ignore_conflicts=True, batch_size=100)
-
-    # 2. Activate developers in bulk
-    creator_ids = {coin.creator_id for coin in coins}
-    DeveloperScore.objects.filter(developer_id__in=creator_ids, is_active=False).update(is_active=True)
-
-    # 3. Optionally broadcast in bulk (optional)
-    # for coin in coins:
-    #     broadcast_coin_created(coin)
-
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=5)
 def process_trades_batch(self, events: list):
@@ -269,7 +224,7 @@ def process_trades_batch(self, events: list):
         with transaction.atomic():
             # Create trades
             if trades_to_create:
-                Trade.objects.bulk_create(
+                created_trades = Trade.objects.bulk_create(
                     trades_to_create,
                     ignore_conflicts=True,
                     batch_size=500
@@ -285,6 +240,8 @@ def process_trades_batch(self, events: list):
                         current_price=price,
                         updated=timestamp
                     )
+        if created_trades:
+            handle_trades_post_create(created_trades)
         
         logger.info(
             f"Successfully created {len(trades_to_create)} trades "
@@ -304,6 +261,17 @@ def process_trades_batch(self, events: list):
         # Retry the task
         raise self.retry(exc=e)
 
+@shared_task(bind=True)
+def recalc_trader_scores_task(self, trader_ids: list):
+    from systems.models import TraderScore
+    # Loop through trader ids and call existing logic (idempotent)
+    for tid in trader_ids:
+        try:
+            ts = TraderScore.objects.select_related('trader').get(trader_id=tid)
+            # call the heavier scoring functions (they should be idempotent)
+            ts.calculate_daily_score()
+        except TraderScore.DoesNotExist:
+            continue
 
 @shared_task
 def cleanup_old_cache_entries():

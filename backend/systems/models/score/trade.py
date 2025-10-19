@@ -247,7 +247,7 @@ class TraderScore(DRCScore):
             ]
         }
 
-    def recalculate_score(self):
+    def recalculate_score(self):# this runs daily so use it daliy
         # this should happen later the current review system makes things slower not realtime
         self._check_flash_pump_and_dump()
         self._check_sniping_and_dumping()

@@ -1,10 +1,27 @@
-name: my-docker-project
+name: Notty-listener
+
+# services:
+#   app:
+#     image: my-docker-image
+#     container_name: my-docker-container
+#     ports:
+#       - "8001:8000"
+#     volumes:
+#       - .:/app
+
+version: '3.9'
 
 services:
-  app:
-    image: my-docker-image
-    container_name: my-docker-container
-    ports:
-      - "8001:8000"
-    volumes:
-      - .:/app
+  listener:
+    build: .
+    command: python manage.py run_listener --mode=all --batch-size=50
+    restart: always
+    # env_file: .env
+    depends_on:
+      - celery_worker
+
+  celery_worker:
+    build: .
+    command: celery -A core worker -l info --concurrency=4
+    restart: always
+    # env_file: .env
