@@ -92,3 +92,4 @@ To modify the system:
 ## Security Model
 
 This system uses a signal-based approach for database modifications. User requests don't directly modify the database; instead, blockchain events trigger signals that handle database updates. This separation enhances security by ensuring that database modifications follow a verified path through blockchain events. 
+```

@@ -69,8 +69,8 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
 					name: tokenName,
 					tokenSymbol: tokenSymbol,
 					tokenUri: tokenUri,
-					targetSol: new BN(450_000_000_000), // 460 SOL (matches your metrics) -> 450
-					startMcap: new BN(50_000_000_000), // 25 SOL (matches your metrics) -> 50
+					targetSol: new BN(450), // 460 SOL (matches your metrics) -> 450
+					startMcap: new BN(50), // 25 SOL (matches your metrics) -> 50
 					totalSupply: new BN(1_000_000_000), // 1B tokens (matches your metrics)
 				})
 				.signers([mintAccount])
