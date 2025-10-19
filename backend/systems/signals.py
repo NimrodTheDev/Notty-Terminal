@@ -10,6 +10,8 @@ from .models import (
 )
 from .utils.broadcast import broadcast_coin_created, broadcast_trade_created
 
+# my biggest problem so far with optimizatons most will be removed from here
+# fixed
 @receiver(post_save, sender=SolanaUser)
 def create_user_scores(sender, instance, created, **kwargs):
     """Create DRC scores when a new user is created"""
@@ -107,28 +109,6 @@ def create_coin_drc_score(sender, instance, created, **kwargs): # making the sco
         
         DeveloperScore.objects.filter(developer=instance.creator, is_active=False).update(is_active=True)
         broadcast_coin_created(instance)
-
-@receiver(post_delete, sender=UserCoinHoldings)
-def update_on_holdings_delete(sender, instance, **kwargs):
-    """Update scores when holdings are deleted (e.g. when amount becomes zero)"""
-    # This handles cases where holdings might be deleted outside of trade context
-    coin = instance.coin
-    coin.total_held -= instance.amount_held
-    coin.save(update_fields=['total_held'])
-    # Update coin score holders count
-    try:
-        coin_score:CoinDRCScore = instance.coin.drc_score
-        coin_score.update_holders_count()
-        # coin_score.recalculate_score() # change to support ore scaled growth
-    except CoinDRCScore.DoesNotExist:
-        pass
-   
-    # Update trader score
-    try:
-        trader_score:TraderScore = instance.user.trader_score
-        trader_score.calculate_daily_score() # change to support ore scaled growth
-    except TraderScore.DoesNotExist:
-        pass
 
 def update_price_stability(coin, new_price):
     """Update price stability score when price changes"""

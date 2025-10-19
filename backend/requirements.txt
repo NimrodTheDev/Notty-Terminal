@@ -13,3 +13,4 @@ django_redis
 requests
 aiohttp
 adrf
+celery[redis]

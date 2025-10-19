@@ -135,7 +135,7 @@ class TraderScore(DRCScore):
         return 0
 
     def _check_long_term_holding(self): 
-        # we can give cons score holding them for a least a month and the score could be used to decide if the 
+        # we can give cions score holding them for a least a month and the score could be used to decide if the 
         # holdings is valuable, 1000 drs will be like 90% 500 40% with a 500 + 1000 it satifise the condition or 
         # something like that, also account for if the token is abandoned sha rework abondoned logic
         """
@@ -247,7 +247,7 @@ class TraderScore(DRCScore):
             ]
         }
 
-    def recalculate_score(self):
+    def recalculate_score(self):# this runs daily so use it daliy
         # this should happen later the current review system makes things slower not realtime
         self._check_flash_pump_and_dump()
         self._check_sniping_and_dumping()
