@@ -20,95 +20,95 @@ def create_user_scores(sender, instance, created, **kwargs):
         TraderScore.objects.create(trader=instance)
         DeveloperScore.objects.create(developer=instance)
 
-def update_total_held_on_save(delta, coin):
-    """
-    Adjust total_held based on the change in this Holding's amount.
-    Atomic and race-condition safe.
-    """
-    update_data = {}
-    if delta != 0:
-        update_data['total_held'] = F('total_held') + delta
+# def update_total_held_on_save(delta, coin):
+#     """
+#     Adjust total_held based on the change in this Holding's amount.
+#     Atomic and race-condition safe.
+#     """
+#     update_data = {}
+#     if delta != 0:
+#         update_data['total_held'] = F('total_held') + delta
 
-    # Use DB's GREATEST function for atomic ATH update
-    update_data['ath'] = Greatest(F('ath'), Value(coin.current_price))
+#     # Use DB's GREATEST function for atomic ATH update
+#     update_data['ath'] = Greatest(F('ath'), Value(coin.current_price))
 
-    Coin.objects.filter(pk=coin.pk).update(**update_data)
+#     Coin.objects.filter(pk=coin.pk).update(**update_data)
 
-@receiver(post_save, sender=Trade) # i feel a lot happens in the creation af trades 
-def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwargs):
-    """
-    Update user holdings and all related scores when a trade is created.
-    """
-    if not created:
-        return  # Avoid reprocessing
-    # can't we use instance.prefetch its an extra call but?
-    with transaction.atomic():
-        user = instance.user
-        coin = instance.coin
+# @receiver(post_save, sender=Trade) # i feel a lot happens in the creation af trades 
+# def update_holdings_and_scores_on_trade(sender, instance: Trade, created, **kwargs):
+#     """
+#     Update user holdings and all related scores when a trade is created.
+#     """
+#     if not created:
+#         return  # Avoid reprocessing
+#     # can't we use instance.prefetch its an extra call but?
+#     with transaction.atomic():
+#         user = instance.user
+#         coin = instance.coin
 
-        # Update market cap (atomic)
-        sol_price = instance.sol_amount * (-1 if instance.trade_type == 'SELL' else 1)
-        Coin.objects.filter(pk=coin.pk).update(
-            current_marketcap=F('current_marketcap') + sol_price, 
-            change=F('change')+instance.sol_amount # improve change
-        )
-        coin.refresh_from_db(fields=['current_marketcap', 'change']) # test 
+#         # Update market cap (atomic)
+#         sol_price = instance.sol_amount * (-1 if instance.trade_type == 'SELL' else 1)
+#         Coin.objects.filter(pk=coin.pk).update(
+#             current_marketcap=F('current_marketcap') + sol_price, 
+#             change=F('change')+instance.sol_amount # improve change
+#         )
+#         coin.refresh_from_db(fields=['current_marketcap', 'change']) # test 
 
-        # Get or create user's holdings for this coin
-        holdings, _ = UserCoinHoldings.objects.get_or_create(
-            user=user,
-            coin=coin,
-            defaults={'amount_held': 0}
-        )
+#         # Get or create user's holdings for this coin
+#         holdings, _ = UserCoinHoldings.objects.get_or_create(
+#             user=user,
+#             coin=coin,
+#             defaults={'amount_held': 0}
+#         )
 
-        # Determine delta for holdings
-        delta = instance.coin_amount if instance.trade_type in ('BUY', 'COIN_CREATE') else -instance.coin_amount
+#         # Determine delta for holdings
+#         delta = instance.coin_amount if instance.trade_type in ('BUY', 'COIN_CREATE') else -instance.coin_amount
 
-        if delta != 0:
-            UserCoinHoldings.objects.filter(pk=holdings.pk).update(amount_held=F('amount_held') + delta)
+#         if delta != 0:
+#             UserCoinHoldings.objects.filter(pk=holdings.pk).update(amount_held=F('amount_held') + delta)
 
-        # Increment total_held atomically
-        update_total_held_on_save(delta, coin)
+#         # Increment total_held atomically
+#         update_total_held_on_save(delta, coin)
 
-        # Refresh holdings from DB
-        holdings.refresh_from_db() # why is are we refreshing and also how does that affect the holdings
+#         # Refresh holdings from DB
+#         holdings.refresh_from_db() # why is are we refreshing and also how does that affect the holdings
 
-        delete_holdings = False
-        # If holdings amount is zero or negative, mark for deletion
-        if holdings.amount_held <= 0:
-            delete_holdings = True
+#         delete_holdings = False
+#         # If holdings amount is zero or negative, mark for deletion
+#         if holdings.amount_held <= 0:
+#             delete_holdings = True
         
-        # i think we should reove from atomic
-        # Update trader score - do this before potentially deleting holdings
-        trader_score = TraderScore.objects.get(trader=user) # I don't think this should be like that.
+#         # i think we should reove from atomic
+#         # Update trader score - do this before potentially deleting holdings
+#         trader_score = TraderScore.objects.get(trader=user) # I don't think this should be like that.
         
-        # Update coin score - track 24h volume
-        coin_score = CoinDRCScore.objects.get(coin=coin)
+#         # Update coin score - track 24h volume
+#         coin_score = CoinDRCScore.objects.get(coin=coin)
         
-        # Now delete the holdings if necessary
-        if delete_holdings:
-            holdings.delete()
+#         # Now delete the holdings if necessary
+#         if delete_holdings:
+#             holdings.delete()
         
-        # a way to check the coin holders faster or handel outside
-        # Update holders count and recalculate scores
-        coin_score.update_holders_count()
-        # this calculation is heavy and should be done some where else
-        trader_score.calculate_daily_score() # should this be in the atomic 
-        broadcast_trade_created(instance)
+#         # a way to check the coin holders faster or handel outside
+#         # Update holders count and recalculate scores
+#         coin_score.update_holders_count()
+#         # this calculation is heavy and should be done some where else
+#         trader_score.calculate_daily_score() # should this be in the atomic 
+#         broadcast_trade_created(instance)
 
-@receiver(post_save, sender=Coin) # on create coin create developer score
-def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
-    """
-    Create a DRC score record when a new coin is created
-    """
-    if created:
-        # Create coin DRC score
-        score = CoinDRCScore.objects.create(coin=instance)
-        # score.last_recorded_price = instance.liquidity # there should be a starting price
-        # score.recalculate_score() # remove this because the score is in daily
+# @receiver(post_save, sender=Coin) # on create coin create developer score
+# def create_coin_drc_score(sender, instance, created, **kwargs): # making the score realtime
+#     """
+#     Create a DRC score record when a new coin is created
+#     """
+#     if created:
+#         # Create coin DRC score
+#         score = CoinDRCScore.objects.create(coin=instance)
+#         # score.last_recorded_price = instance.liquidity # there should be a starting price
+#         # score.recalculate_score() # remove this because the score is in daily
         
-        DeveloperScore.objects.filter(developer=instance.creator, is_active=False).update(is_active=True)
-        broadcast_coin_created(instance)
+#         DeveloperScore.objects.filter(developer=instance.creator, is_active=False).update(is_active=True)
+#         broadcast_coin_created(instance)
 
 def update_price_stability(coin, new_price):
     """Update price stability score when price changes"""
